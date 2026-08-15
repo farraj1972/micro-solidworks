@@ -25,6 +25,7 @@ public:
     ApplicationWindow& operator=(ApplicationWindow&&) = delete;
 
     [[nodiscard]] bool shouldClose() const;
+    void requestClose();
     void makeContextCurrent();
     [[nodiscard]] GraphicsProcedure graphicsProcedureAddress(const char* name) const;
     [[nodiscard]] FramebufferSize framebufferSize() const;

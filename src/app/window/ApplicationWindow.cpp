@@ -76,6 +76,11 @@ public:
         return glfwWindowShouldClose(window_) == GLFW_TRUE;
     }
 
+    void requestClose()
+    {
+        glfwSetWindowShouldClose(window_, GLFW_TRUE);
+    }
+
     void makeContextCurrent()
     {
         glfwMakeContextCurrent(window_);
@@ -131,6 +136,11 @@ ApplicationWindow::~ApplicationWindow() = default;
 bool ApplicationWindow::shouldClose() const
 {
     return implementation_->shouldClose();
+}
+
+void ApplicationWindow::requestClose()
+{
+    implementation_->requestClose();
 }
 
 void ApplicationWindow::makeContextCurrent()

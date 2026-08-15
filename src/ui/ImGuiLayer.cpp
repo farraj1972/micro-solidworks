@@ -80,31 +80,6 @@ void ImGuiLayer::beginFrame()
     ImGui::NewFrame();
 }
 
-void ImGuiLayer::drawDiagnosticPanel()
-{
-    ImGui::SetNextWindowSize(ImVec2{390.0F, 190.0F}, ImGuiCond_FirstUseEver);
-    ImGui::Begin("Diagnostics", nullptr, ImGuiWindowFlags_NoCollapse);
-    ImGui::TextUnformatted("Micro SolidWorks");
-    ImGui::TextUnformatted("Dear ImGui integration operational");
-    ImGui::TextUnformatted("OpenGL 3.3 Core");
-    ImGui::Separator();
-    ImGui::InputText("Keyboard input", diagnosticInput_.data(), diagnosticInput_.size());
-
-    if (ImGui::Button("Test mouse input"))
-    {
-        diagnosticButtonClicked_ = true;
-        Logger::info("Dear ImGui diagnostic input received");
-    }
-
-    if (diagnosticButtonClicked_)
-    {
-        ImGui::SameLine();
-        ImGui::TextUnformatted("Input received");
-    }
-
-    ImGui::End();
-}
-
 void ImGuiLayer::endFrame()
 {
     ImGui::Render();

@@ -109,6 +109,7 @@ target_link_libraries(microsw_rendering PRIVATE
 )
 
 add_library(microsw_ui STATIC
+    src/ui/ApplicationShell.cpp
     src/ui/ImGuiLayer.cpp
 )
 

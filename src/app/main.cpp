@@ -1,6 +1,7 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
+#include "ui/ApplicationShell.h"
 #include "ui/ImGuiLayer.h"
 
 #include <exception>
@@ -15,12 +16,13 @@ int main()
             microsw::ApplicationWindow window{1280, 720, "Micro SolidWorks"};
             microsw::OpenGLContext openGLContext{window};
             microsw::ImGuiLayer ui{window, openGLContext};
+            microsw::ApplicationShell shell{window};
 
             while (!window.shouldClose())
             {
                 window.pollEvents();
                 ui.beginFrame();
-                ui.drawDiagnosticPanel();
+                shell.draw();
                 openGLContext.clear();
                 ui.endFrame();
                 window.swapBuffers();
