@@ -28,6 +28,7 @@ public:
     void makeContextCurrent();
     [[nodiscard]] GraphicsProcedure graphicsProcedureAddress(const char* name) const;
     [[nodiscard]] FramebufferSize framebufferSize() const;
+    [[nodiscard]] void* nativeHandle() const;
     void swapBuffers();
     void pollEvents();
 

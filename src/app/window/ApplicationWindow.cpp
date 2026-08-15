@@ -98,6 +98,11 @@ public:
         return size;
     }
 
+    [[nodiscard]] void* nativeHandle() const
+    {
+        return window_;
+    }
+
     void swapBuffers()
     {
         glfwSwapBuffers(window_);
@@ -142,6 +147,11 @@ ApplicationWindow::GraphicsProcedure ApplicationWindow::graphicsProcedureAddress
 FramebufferSize ApplicationWindow::framebufferSize() const
 {
     return implementation_->framebufferSize();
+}
+
+void* ApplicationWindow::nativeHandle() const
+{
+    return implementation_->nativeHandle();
 }
 
 void ApplicationWindow::swapBuffers()

@@ -24,6 +24,12 @@ FetchContent_Declare(
     SOURCE_SUBDIR cmake
 )
 
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG f5befd2d29e66809cd1110a152e375a7f1981f06
+)
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -32,6 +38,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glad)
+FetchContent_MakeAvailable(imgui)
 
 glad_add_library(glad_gl_core_33 REPRODUCIBLE LOADER API gl:core=3.3)
 if(MSVC)
@@ -40,6 +47,26 @@ if(MSVC)
         PRIVATE "$<$<CONFIG:Debug>:/MDd>" "$<$<NOT:$<CONFIG:Debug>>:/MD>"
     )
 endif()
+
+add_library(microsw_imgui_backend STATIC
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+target_compile_features(microsw_imgui_backend PUBLIC cxx_std_20)
+set_target_properties(microsw_imgui_backend PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_compile_definitions(microsw_imgui_backend PRIVATE GLFW_INCLUDE_NONE)
+target_include_directories(microsw_imgui_backend PUBLIC
+    ${imgui_SOURCE_DIR}
+    ${imgui_SOURCE_DIR}/backends
+)
+target_link_libraries(microsw_imgui_backend PRIVATE glfw)
 
 add_library(microsw_logging STATIC
     src/app/logging/Logger.cpp
@@ -81,6 +108,23 @@ target_link_libraries(microsw_rendering PRIVATE
     microsw_windowing
 )
 
+add_library(microsw_ui STATIC
+    src/ui/ImGuiLayer.cpp
+)
+
+target_compile_features(microsw_ui PUBLIC cxx_std_20)
+set_target_properties(microsw_ui PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_ui PUBLIC src)
+target_link_libraries(microsw_ui PRIVATE
+    glfw
+    microsw_imgui_backend
+    microsw_logging
+    microsw_rendering
+    microsw_windowing
+)
+
 add_executable(micro_solidworks
     src/app/main.cpp
 )
@@ -92,6 +136,7 @@ set_target_properties(micro_solidworks PROPERTIES
 target_link_libraries(micro_solidworks PRIVATE
     microsw_logging
     microsw_rendering
+    microsw_ui
     microsw_windowing
 )
 
