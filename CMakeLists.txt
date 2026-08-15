@@ -11,7 +11,19 @@ FetchContent_Declare(
     GIT_TAG 6fa36017cfd5731d617e1a934f0e5ea9c4445b13
 )
 
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG a74efa0d5628b74adc0426af4c5710e287fa7c2c
+)
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(spdlog)
+FetchContent_MakeAvailable(glfw)
 
 add_library(microsw_logging STATIC
     src/app/logging/Logger.cpp
@@ -24,6 +36,20 @@ set_target_properties(microsw_logging PROPERTIES
 target_include_directories(microsw_logging PUBLIC src)
 target_link_libraries(microsw_logging PRIVATE spdlog::spdlog)
 
+add_library(microsw_windowing STATIC
+    src/app/window/ApplicationWindow.cpp
+)
+
+target_compile_features(microsw_windowing PUBLIC cxx_std_20)
+set_target_properties(microsw_windowing PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_windowing PUBLIC src)
+target_link_libraries(microsw_windowing PRIVATE
+    glfw
+    microsw_logging
+)
+
 add_executable(micro_solidworks
     src/app/main.cpp
 )
@@ -32,7 +58,10 @@ target_compile_features(micro_solidworks PRIVATE cxx_std_20)
 set_target_properties(micro_solidworks PROPERTIES
     CXX_EXTENSIONS OFF
 )
-target_link_libraries(micro_solidworks PRIVATE microsw_logging)
+target_link_libraries(micro_solidworks PRIVATE
+    microsw_logging
+    microsw_windowing
+)
 
 if(BUILD_TESTING)
     if(POLICY CMP0135)
