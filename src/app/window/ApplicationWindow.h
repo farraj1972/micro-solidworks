@@ -5,9 +5,17 @@
 
 namespace microsw
 {
+struct FramebufferSize
+{
+    int width;
+    int height;
+};
+
 class ApplicationWindow
 {
 public:
+    using GraphicsProcedure = void (*)();
+
     ApplicationWindow(int width, int height, std::string_view title);
     ~ApplicationWindow();
 
@@ -17,6 +25,10 @@ public:
     ApplicationWindow& operator=(ApplicationWindow&&) = delete;
 
     [[nodiscard]] bool shouldClose() const;
+    void makeContextCurrent();
+    [[nodiscard]] GraphicsProcedure graphicsProcedureAddress(const char* name) const;
+    [[nodiscard]] FramebufferSize framebufferSize() const;
+    void swapBuffers();
     void pollEvents();
 
 private:

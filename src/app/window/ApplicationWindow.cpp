@@ -25,7 +25,14 @@ public:
         try
         {
             Logger::info("GLFW initialized");
-            Logger::info("Creating application window");
+            Logger::info("Creating OpenGL 3.3 core context and application window");
+
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if defined(__APPLE__)
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+#endif
 
             const std::string windowTitle{title};
             window_ = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
@@ -69,6 +76,33 @@ public:
         return glfwWindowShouldClose(window_) == GLFW_TRUE;
     }
 
+    void makeContextCurrent()
+    {
+        glfwMakeContextCurrent(window_);
+        if (glfwGetCurrentContext() != window_)
+        {
+            Logger::error("Failed to make OpenGL context current");
+            throw std::runtime_error{"OpenGL context could not be made current"};
+        }
+    }
+
+    [[nodiscard]] GraphicsProcedure graphicsProcedureAddress(const char* name) const
+    {
+        return glfwGetProcAddress(name);
+    }
+
+    [[nodiscard]] FramebufferSize framebufferSize() const
+    {
+        FramebufferSize size{};
+        glfwGetFramebufferSize(window_, &size.width, &size.height);
+        return size;
+    }
+
+    void swapBuffers()
+    {
+        glfwSwapBuffers(window_);
+    }
+
     void pollEvents()
     {
         glfwPollEvents();
@@ -92,6 +126,27 @@ ApplicationWindow::~ApplicationWindow() = default;
 bool ApplicationWindow::shouldClose() const
 {
     return implementation_->shouldClose();
+}
+
+void ApplicationWindow::makeContextCurrent()
+{
+    implementation_->makeContextCurrent();
+}
+
+ApplicationWindow::GraphicsProcedure ApplicationWindow::graphicsProcedureAddress(
+    const char* name) const
+{
+    return implementation_->graphicsProcedureAddress(name);
+}
+
+FramebufferSize ApplicationWindow::framebufferSize() const
+{
+    return implementation_->framebufferSize();
+}
+
+void ApplicationWindow::swapBuffers()
+{
+    implementation_->swapBuffers();
 }
 
 void ApplicationWindow::pollEvents()

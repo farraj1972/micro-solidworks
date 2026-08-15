@@ -17,6 +17,13 @@ FetchContent_Declare(
     GIT_TAG a74efa0d5628b74adc0426af4c5710e287fa7c2c
 )
 
+FetchContent_Declare(
+    glad
+    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+    GIT_TAG 73db193f853e2ee079bf3ca8a64aa2eaf6459043
+    SOURCE_SUBDIR cmake
+)
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -24,6 +31,15 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(glfw)
+FetchContent_MakeAvailable(glad)
+
+glad_add_library(glad_gl_core_33 REPRODUCIBLE LOADER API gl:core=3.3)
+if(MSVC)
+    target_compile_options(
+        glad_gl_core_33
+        PRIVATE "$<$<CONFIG:Debug>:/MDd>" "$<$<NOT:$<CONFIG:Debug>>:/MD>"
+    )
+endif()
 
 add_library(microsw_logging STATIC
     src/app/logging/Logger.cpp
@@ -50,6 +66,21 @@ target_link_libraries(microsw_windowing PRIVATE
     microsw_logging
 )
 
+add_library(microsw_rendering STATIC
+    src/rendering/OpenGLContext.cpp
+)
+
+target_compile_features(microsw_rendering PUBLIC cxx_std_20)
+set_target_properties(microsw_rendering PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_rendering PUBLIC src)
+target_link_libraries(microsw_rendering PRIVATE
+    glad_gl_core_33
+    microsw_logging
+    microsw_windowing
+)
+
 add_executable(micro_solidworks
     src/app/main.cpp
 )
@@ -60,6 +91,7 @@ set_target_properties(micro_solidworks PROPERTIES
 )
 target_link_libraries(micro_solidworks PRIVATE
     microsw_logging
+    microsw_rendering
     microsw_windowing
 )
 

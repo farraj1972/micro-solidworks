@@ -1,5 +1,6 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
+#include "rendering/OpenGLContext.h"
 
 #include <exception>
 
@@ -11,9 +12,12 @@ int main()
     {
         {
             microsw::ApplicationWindow window{1280, 720, "Micro SolidWorks"};
+            microsw::OpenGLContext openGLContext{window};
 
             while (!window.shouldClose())
             {
+                openGLContext.clear();
+                window.swapBuffers();
                 window.pollEvents();
             }
         }
