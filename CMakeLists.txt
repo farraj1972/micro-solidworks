@@ -3,6 +3,26 @@ cmake_minimum_required(VERSION 3.20)
 project(MicroSolidWorks LANGUAGES CXX)
 
 include(CTest)
+include(FetchContent)
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG 6fa36017cfd5731d617e1a934f0e5ea9c4445b13
+)
+
+FetchContent_MakeAvailable(spdlog)
+
+add_library(microsw_logging STATIC
+    src/app/logging/Logger.cpp
+)
+
+target_compile_features(microsw_logging PUBLIC cxx_std_20)
+set_target_properties(microsw_logging PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_logging PUBLIC src)
+target_link_libraries(microsw_logging PRIVATE spdlog::spdlog)
 
 add_executable(micro_solidworks
     src/app/main.cpp
@@ -12,10 +32,9 @@ target_compile_features(micro_solidworks PRIVATE cxx_std_20)
 set_target_properties(micro_solidworks PROPERTIES
     CXX_EXTENSIONS OFF
 )
+target_link_libraries(micro_solidworks PRIVATE microsw_logging)
 
 if(BUILD_TESTING)
-    include(FetchContent)
-
     if(POLICY CMP0135)
         cmake_policy(SET CMP0135 NEW)
     endif()
@@ -34,13 +53,17 @@ if(BUILD_TESTING)
 
     add_executable(micro_solidworks_tests
         tests/test_infrastructure.cpp
+        tests/test_logging.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
     set_target_properties(micro_solidworks_tests PROPERTIES
         CXX_EXTENSIONS OFF
     )
-    target_link_libraries(micro_solidworks_tests PRIVATE GTest::gtest_main)
+    target_link_libraries(micro_solidworks_tests PRIVATE
+        GTest::gtest_main
+        microsw_logging
+    )
 
     include(GoogleTest)
     gtest_discover_tests(micro_solidworks_tests)
