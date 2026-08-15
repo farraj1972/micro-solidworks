@@ -1,4 +1,4 @@
-# Micro SolidWorks — Initial Architecture
+# Micro SolidWorks — Architecture
 
 ## 1. Objectivo
 
@@ -8,31 +8,64 @@ A arquitectura deverá permitir evolução incremental e substituição controla
 
 ---
 
-## 2. Arquitectura conceptual
+## 2. Arquitectura planeada
 
+```text
 Application
     |
     +-- UI
-    |
     +-- Interaction
-    |
-    +-- Document
+    +-- Persistence
             |
-            +-- Modeling
-                    |
-                    +-- Topology
-                    |
-                    +-- Geometry
-                            |
-                            +-- Math
+            v
+         Document
+            |
+            v
+         Modeling
+            |
+            v
+         Topology
+            |
+            v
+         Geometry
+            |
+            v
+           Math
+```
 
 Rendering consome representações apropriadas do modelo, mas não define o modelo CAD.
 
 Persistence serializa o Document através de uma fronteira própria.
 
+Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
+secção ainda não existem em B0.
+
 ---
 
-## 3. Módulos iniciais
+## 3. Implementação actual em B0
+
+```text
+Application
+    |
+    +-> Windowing -> GLFW
+    +-> Rendering -> GLAD/OpenGL 3.3 Core
+    +-> UI -> Dear ImGui
+```
+
+As fronteiras concretas são targets CMake project-owned:
+
+- `microsw_logging`: `Logger`, com spdlog isolado na implementação;
+- `microsw_windowing`: `ApplicationWindow`, com GLFW isolado;
+- `microsw_rendering`: `OpenGLContext`, responsável pelo bootstrap OpenGL;
+- `microsw_ui`: `ImGuiLayer` para lifecycle e `ApplicationShell` para composição.
+
+O executável `micro_solidworks` compõe estas fronteiras. GoogleTest e CTest
+fornecem a infraestrutura de testes. B0 não contém math, geometry, topology,
+modeling, document, interaction ou persistence implementados.
+
+---
+
+## 4. Módulos planeados
 
 ### app
 
@@ -126,7 +159,7 @@ Responsabilidades futuras:
 
 Representação visual.
 
-Responsabilidades:
+Responsabilidades futuras:
 
 - render pipeline;
 - camera;
@@ -166,10 +199,11 @@ Deverá depender de contratos do modelo e não da representação gráfica.
 
 ---
 
-## 4. Regra de dependências
+## 5. Regra de dependências
 
-Orientação desejada:
+Orientação planeada:
 
+```text
 app
  ↓
 ui / interaction / persistence
@@ -181,6 +215,7 @@ topology
 geometry
  ↓
 math
+```
 
 Dependências inversas deverão ser evitadas.
 
@@ -194,7 +229,7 @@ document   X→ concrete UI
 
 ---
 
-## 5. Fronteiras substituíveis
+## 6. Fronteiras substituíveis
 
 São candidatos naturais a interfaces arquitecturais:
 
@@ -212,29 +247,33 @@ Não criar interfaces automaticamente para todas as classes.
 
 ---
 
-## 6. Representação CAD vs representação gráfica
+## 7. Representação CAD vs representação gráfica
 
 Esta separação é obrigatória.
 
-Um Solid não é um mesh gráfico.
+> CAD representation is authoritative. Render representation is derived.
 
-Conceptualmente:
+Uma entidade CAD não é um mesh gráfico. O pipeline planeado é:
 
-CAD Solid
-   |
-Tessellator
-   |
-Render Mesh
-   |
-Renderer
-   |
-GPU
+```text
+CAD Representation
+        |
+        v
+   Tessellation
+        |
+        v
+   Render Model
+        |
+        v
+      OpenGL
+```
 
-Alterações no renderer não deverão obrigar a modificar a representação fundamental do Solid.
+Alterações no renderer não deverão obrigar a modificar a representação CAD.
+Tessellation e as representações CAD ainda não estão implementadas em B0.
 
 ---
 
-## 7. Estrutura inicial
+## 8. Estrutura planeada
 
 micro-solidworks/
 ├── CMakeLists.txt

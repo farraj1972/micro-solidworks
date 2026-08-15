@@ -21,6 +21,21 @@ Objectivo:
 
 Estabelecer um projecto C++ compilável, testável e executável.
 
+Estado dos increments:
+
+| Increment | Estado |
+| --- | --- |
+| B0.1 — Repository & Build Foundation | COMPLETE |
+| B0.2 — Test Infrastructure | COMPLETE |
+| B0.3 — Logging | COMPLETE |
+| B0.4 — GLFW Application Window | COMPLETE |
+| B0.5 — OpenGL Bootstrap | COMPLETE |
+| B0.6 — Dear ImGui Integration | COMPLETE |
+| B0.7 — Application Shell | COMPLETE |
+| B0.8 — D0 Documentation & ADRs | CURRENT |
+| B0.9 — Baseline Validation | PENDING |
+| B0.FREEZE | PENDING |
+
 Resultados:
 
 - C++20;

@@ -9,10 +9,10 @@ The project is currently at:
 ```text
 Decision Gate D0: FROZEN
 Baseline B0: APPROVED
-Current permitted increment: B0.1 — Repository & Build Foundation
+Current permitted increment: B0.8 — D0 Documentation & ADRs
 ```
 
-No work beyond B0.1 is authorized until explicitly requested.
+No work beyond B0.8 is authorized until explicitly requested.
 
 ---
 
@@ -115,7 +115,7 @@ Only one increment should be implemented at a time.
 
 ---
 
-# 6. Current Increment
+# 6. Initial Increment
 
 ## B0.1 — Repository & Build Foundation
 
