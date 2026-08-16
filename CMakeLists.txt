@@ -79,6 +79,16 @@ set_target_properties(microsw_logging PROPERTIES
 target_include_directories(microsw_logging PUBLIC src)
 target_link_libraries(microsw_logging PRIVATE spdlog::spdlog)
 
+add_library(microsw_math STATIC
+    src/core/math/Tolerance.cpp
+)
+
+target_compile_features(microsw_math PUBLIC cxx_std_20)
+set_target_properties(microsw_math PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_math PUBLIC src)
+
 add_library(microsw_windowing STATIC
     src/app/window/ApplicationWindow.cpp
 )
@@ -161,6 +171,7 @@ if(BUILD_TESTING)
     add_executable(micro_solidworks_tests
         tests/test_infrastructure.cpp
         tests/test_logging.cpp
+        tests/math/test_tolerance.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
@@ -170,6 +181,7 @@ if(BUILD_TESTING)
     target_link_libraries(micro_solidworks_tests PRIVATE
         GTest::gtest_main
         microsw_logging
+        microsw_math
     )
 
     include(GoogleTest)
