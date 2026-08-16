@@ -8,11 +8,11 @@ The project is currently at:
 
 ```text
 Decision Gate D0: FROZEN
-Baseline B0: APPROVED
-Current permitted increment: B0.8 — D0 Documentation & ADRs
+Baseline B0: FROZEN
+Next baseline: B1 — Mathematical Foundation
 ```
 
-No work beyond B0.8 is authorized until explicitly requested.
+B1 work requires explicit authorization.
 
 ---
 

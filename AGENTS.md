@@ -775,13 +775,20 @@ STATUS: FROZEN
 
 # 31. Current Development Boundary
 
-Current approved baseline:
+Current stable baseline:
 
 ```text
 B0 — Foundation
 ```
 
-Do not begin B1 or later work until explicitly authorized.
+Next permitted baseline:
+
+```text
+None until explicit authorization.
+```
+
+`B1 — Mathematical Foundation` has not started. Do not begin B1 or later work
+until explicitly authorized.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
 

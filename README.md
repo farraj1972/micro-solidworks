@@ -5,11 +5,13 @@ implementing the foundations of a small 3D parametric CAD application in C++.
 It is not intended to provide compatibility with the commercial SolidWorks
 product.
 
-## Current baseline
+## Current stable baseline
 
-Development is currently in **B0 — Foundation**, at increment
-**B0.8 — D0 Documentation & ADRs**. The repository provides the executable B0
+**B0 — Foundation** is frozen. The repository provides the executable B0
 foundation and application shell; CAD functionality is not implemented yet.
+
+The next baseline is **B1 — Mathematical Foundation**. B1 has not started and
+requires explicit authorization.
 
 The approved technology foundation is C++20, CMake, GoogleTest with CTest,
 GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment

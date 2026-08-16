@@ -17,6 +17,8 @@ Cada increment deverá:
 
 # B0 — Foundation
 
+Status: FROZEN
+
 Objectivo:
 
 Estabelecer um projecto C++ compilável, testável e executável.
@@ -32,9 +34,9 @@ Estado dos increments:
 | B0.5 — OpenGL Bootstrap | COMPLETE |
 | B0.6 — Dear ImGui Integration | COMPLETE |
 | B0.7 — Application Shell | COMPLETE |
-| B0.8 — D0 Documentation & ADRs | CURRENT |
-| B0.9 — Baseline Validation | PENDING |
-| B0.FREEZE | PENDING |
+| B0.8 — D0 Documentation & ADRs | COMPLETE |
+| B0.9 — Baseline Validation | COMPLETE |
+| B0.FREEZE | FROZEN |
 
 Resultados:
 
