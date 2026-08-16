@@ -781,14 +781,27 @@ Current stable baseline:
 B0 — Foundation
 ```
 
+Current decision gate:
+
+```text
+D1 — Mathematical Conventions
+STATUS: FROZEN
+```
+
+Next baseline:
+
+```text
+B1 — Mathematical Foundation
+STATUS: NOT STARTED
+```
+
 Next permitted baseline:
 
 ```text
 None until explicit authorization.
 ```
 
-`B1 — Mathematical Foundation` has not started. Do not begin B1 or later work
-until explicitly authorized.
+No B1 implementation may begin without explicit increment authorization.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
 

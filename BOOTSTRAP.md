@@ -9,10 +9,13 @@ The project is currently at:
 ```text
 Decision Gate D0: FROZEN
 Baseline B0: FROZEN
+Decision Gate D1: FROZEN
 Next baseline: B1 — Mathematical Foundation
+B1 status: AUTHORIZED FOR PLANNING; NOT STARTED
+Next permitted implementation increment: B1.1 — requires explicit authorization
 ```
 
-B1 work requires explicit authorization.
+B1 implementation work requires explicit increment authorization.
 
 ---
 
@@ -32,6 +35,9 @@ Before changing the repository, read the following documents in this order:
 9. docs/adr/ADR-0004-dear-imgui-ui.md
 10. docs/adr/ADR-0005-internal-math-library.md
 11. docs/adr/ADR-0006-educational-geometry-kernel.md
+12. docs/adr/ADR-0007-mathematical-scalar-and-tolerance.md
+13. docs/adr/ADR-0008-coordinate-and-unit-conventions.md
+14. docs/adr/ADR-0009-matrix-and-transform-conventions.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

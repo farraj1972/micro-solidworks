@@ -13,6 +13,12 @@ foundation and application shell; CAD functionality is not implemented yet.
 The next baseline is **B1 — Mathematical Foundation**. B1 has not started and
 requires explicit authorization.
 
+The current decision gate is **D1 — Mathematical Conventions**, with status
+**FROZEN**. Its accepted decisions are recorded in
+[`ADR-0007`](docs/adr/ADR-0007-mathematical-scalar-and-tolerance.md),
+[`ADR-0008`](docs/adr/ADR-0008-coordinate-and-unit-conventions.md), and
+[`ADR-0009`](docs/adr/ADR-0009-matrix-and-transform-conventions.md).
+
 The approved technology foundation is C++20, CMake, GoogleTest with CTest,
 GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment
 that requires them.

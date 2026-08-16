@@ -59,7 +59,18 @@ application launch → PASS
 
 ---
 
+# Decision Gate D1 — Mathematical Conventions
+
+Status: FROZEN
+
+The scalar, tolerance, coordinate, unit, angle, vector, matrix and transform
+conventions for B1 are recorded in ADR-0007 through ADR-0009.
+
+---
+
 # B1 — Mathematical Foundation
+
+Status: NOT STARTED
 
 Objectivo:
 
@@ -80,6 +91,22 @@ Capacidades previstas:
 - numerical tolerance policy.
 
 Todos os componentes matemáticos deverão possuir testes.
+
+Estado dos increments:
+
+| Increment | Estado |
+| --- | --- |
+| B1.1 — Numeric Utilities & Tolerance | PENDING |
+| B1.2 — Vector2 | PENDING |
+| B1.3 — Vector3 | PENDING |
+| B1.4 — Matrix Foundation | PENDING |
+| B1.5 — Matrix3 | PENDING |
+| B1.6 — Matrix4 | PENDING |
+| B1.7 — Transformation Operations | PENDING |
+| B1.8 — Mathematical Integration Tests | PENDING |
+| B1.9 — Documentation & D1 ADR Validation | PENDING |
+| B1.10 — Baseline Validation | PENDING |
+| B1.FREEZE | PENDING |
 
 ---
 

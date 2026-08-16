@@ -40,6 +40,26 @@ Persistence serializa o Document através de uma fronteira própria.
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção ainda não existem em B0.
 
+### Planned B1 Math Foundation
+
+Decision Gate D1 freezes the following conventions for the future Math layer:
+
+```text
+Scalar:             double
+Coordinate system:  right-handed
+World orientation:  XY horizontal/base plane; Z vertical
+Angles:             radians internally
+Vectors:            column-vector convention
+Transforms:         v' = M * v
+```
+
+The Math core will remain unit-agnostic, while the initial CAD/document unit
+convention is millimetres. Rendering must adapt to these CAD-domain
+mathematical conventions rather than shaping the Math core around OpenGL.
+
+Math implementation has not started. These statements describe the approved
+B1 conventions, not types or APIs that currently exist.
+
 ---
 
 ## 3. Implementação actual em B0
