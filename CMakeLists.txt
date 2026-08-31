@@ -82,6 +82,7 @@ target_link_libraries(microsw_logging PRIVATE spdlog::spdlog)
 add_library(microsw_math STATIC
     src/core/math/Tolerance.cpp
     src/core/math/Vector2.cpp
+    src/core/math/Vector3.cpp
 )
 
 target_compile_features(microsw_math PUBLIC cxx_std_20)
@@ -174,6 +175,7 @@ if(BUILD_TESTING)
         tests/test_logging.cpp
         tests/math/test_tolerance.cpp
         tests/math/test_vector2.cpp
+        tests/math/test_vector3.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
