@@ -80,6 +80,7 @@ target_include_directories(microsw_logging PUBLIC src)
 target_link_libraries(microsw_logging PRIVATE spdlog::spdlog)
 
 add_library(microsw_math STATIC
+    src/core/math/Matrix3.cpp
     src/core/math/Tolerance.cpp
     src/core/math/Vector2.cpp
     src/core/math/Vector3.cpp
@@ -173,6 +174,7 @@ if(BUILD_TESTING)
     add_executable(micro_solidworks_tests
         tests/test_infrastructure.cpp
         tests/test_logging.cpp
+        tests/math/test_matrix3.cpp
         tests/math/test_tolerance.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
