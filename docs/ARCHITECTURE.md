@@ -57,8 +57,52 @@ The Math core will remain unit-agnostic, while the initial CAD/document unit
 convention is millimetres. Rendering must adapt to these CAD-domain
 mathematical conventions rather than shaping the Math core around OpenGL.
 
-Math implementation has not started. These statements describe the approved
-B1 conventions, not types or APIs that currently exist.
+The initial scalar, tolerance and vector increments implement the applicable
+parts of these conventions. Matrix types remain deferred to their explicitly
+authorized increments.
+
+### B1 Matrix Foundation Contracts
+
+Future concrete matrix APIs use zero-based `(row, column)` indexing. Public
+element access outside the valid row or column range throws
+`std::out_of_range`; it must not rely on silent undefined behavior.
+
+Matrices operate on column vectors, so vector application is written as:
+
+```text
+v' = M * v
+```
+
+For matrix multiplication `C = A * B`, every element follows the mathematical
+definition:
+
+```text
+C(row, column) = sum over k of A(row, k) * B(k, column)
+```
+
+Consequently, composition applies right to left. `M = T * R * S` applies `S`,
+then `R`, then `T`.
+
+The future identity matrix `I` must satisfy:
+
+```text
+I * v = v
+I * M = M
+M * I = M
+```
+
+Logical matrix semantics are independent of physical storage. A column-major
+logical convention does not authorize tests or clients to depend on a concrete
+memory layout.
+
+Future matrix comparison is the explicit free operation
+`almostEqual(matrixA, matrixB)`. It compares corresponding elements using the
+B1.1 scalar tolerance policy. Approximate equality is not exposed through
+`operator==`.
+
+B1.4 introduces contracts only. It deliberately adds no matrix storage, matrix
+type, indexing helper, multiplication implementation or synthetic test type;
+those require a concrete matrix increment before they have executable behavior.
 
 ---
 
