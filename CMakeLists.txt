@@ -96,6 +96,7 @@ target_include_directories(microsw_math PUBLIC src)
 
 add_library(microsw_viewer STATIC
     src/viewer/OrbitCamera.cpp
+    src/viewer/ViewProjection.cpp
 )
 
 target_compile_features(microsw_viewer PUBLIC cxx_std_20)
@@ -195,6 +196,7 @@ if(BUILD_TESTING)
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
         tests/viewer/test_orbit_camera.cpp
+        tests/viewer/test_view_projection.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
