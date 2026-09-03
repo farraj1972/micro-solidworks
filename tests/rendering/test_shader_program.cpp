@@ -1,4 +1,8 @@
 #include "rendering/ShaderProgram.h"
+#include "rendering/LineRenderer.h"
+#include "viewer/ReferenceAxes.h"
+#include "viewer/OrbitCamera.h"
+#include "viewer/ViewProjection.h"
 #include "rendering/OpenGLContext.h"
 #include "app/window/ApplicationWindow.h"
 
@@ -20,6 +24,14 @@ namespace
 
 using microsw::rendering::ShaderProgram;
 using microsw::math::Matrix4;
+using microsw::math::Vector3;
+
+constexpr std::string_view colorFragmentSource = R"(#version 330 core
+uniform vec3 uColor;
+uniform vec3 uInactive;
+out vec4 FragColor;
+void main() { FragColor = vec4(uColor, 1.0); }
+)";
 
 constexpr std::string_view vertexSource = R"(#version 330 core
 layout(location = 0) in vec3 aPosition;
@@ -290,6 +302,121 @@ TEST_F(ShaderProgramTest, InvalidMatrixConversionDoesNotUpload)
     std::array<GLfloat, 16> uploaded{};
     glGetUniformfv(currentProgram(), glGetUniformLocation(currentProgram(), "uModel"), uploaded.data());
     EXPECT_FLOAT_EQ(uploaded[0], 1.0F);
+}
+
+TEST_F(ShaderProgramTest, VectorUploadPreservesComponentsAndAcceptsNameViews)
+{
+    ShaderProgram program{vertexSource, colorFragmentSource};
+    program.bind();
+    const Vector3 value{0.123456789, -0.7654321, 0.987654321};
+    program.setVector3(std::string_view{"uColorTrailing", 6}, value);
+    std::array<GLfloat, 3> uploaded{};
+    glGetUniformfv(currentProgram(), glGetUniformLocation(currentProgram(), "uColor"), uploaded.data());
+    EXPECT_FLOAT_EQ(uploaded[0], static_cast<float>(value.x()));
+    EXPECT_FLOAT_EQ(uploaded[1], static_cast<float>(value.y()));
+    EXPECT_FLOAT_EQ(uploaded[2], static_cast<float>(value.z()));
+}
+
+TEST_F(ShaderProgramTest, VectorUploadRejectsMissingInactiveAndInvalidNames)
+{
+    ShaderProgram program{vertexSource, colorFragmentSource};
+    program.bind();
+    EXPECT_THROW(program.setVector3("uMissing", {}), std::invalid_argument);
+    EXPECT_THROW(program.setVector3("uInactive", {}), std::invalid_argument);
+    EXPECT_THROW(program.setVector3("", {}), std::invalid_argument);
+    const std::string badName{"uColor\0suffix", 13};
+    EXPECT_THROW(program.setVector3(badName, {}), std::invalid_argument);
+}
+
+TEST_F(ShaderProgramTest, VectorUploadRequiresThisProgramBound)
+{
+    ShaderProgram first{vertexSource, colorFragmentSource};
+    ShaderProgram second{vertexSource, colorFragmentSource};
+    EXPECT_THROW(first.setVector3("uColor", {}), std::logic_error);
+    second.bind();
+    const auto id = currentProgram();
+    EXPECT_THROW(first.setVector3("uColor", {}), std::logic_error);
+    EXPECT_EQ(currentProgram(), id);
+}
+
+TEST_F(ShaderProgramTest, VectorUploadRejectsMovedFromProgram)
+{
+    ShaderProgram source{vertexSource, colorFragmentSource};
+    ShaderProgram destination{std::move(source)};
+    destination.bind();
+    EXPECT_THROW(source.setVector3("uColor", {}), std::logic_error);
+    EXPECT_NO_THROW(destination.setVector3("uColor", {1.0, 0.0, 0.0}));
+}
+
+TEST_F(ShaderProgramTest, InvalidVectorConversionDoesNotUpload)
+{
+    ShaderProgram program{vertexSource, colorFragmentSource};
+    program.bind();
+    program.setVector3("uColor", {0.25, 0.5, 0.75});
+    for (const double invalid : {std::numeric_limits<double>::quiet_NaN(),
+                                std::numeric_limits<double>::infinity(),
+                                -std::numeric_limits<double>::infinity(),
+                                std::numeric_limits<double>::max(),
+                                -std::numeric_limits<double>::max()})
+    {
+        for (const Vector3 value : {Vector3{invalid, 0.0, 0.0},
+                                   Vector3{0.0, invalid, 0.0},
+                                   Vector3{0.0, 0.0, invalid}})
+        {
+            EXPECT_THROW(program.setVector3("uColor", value), std::invalid_argument);
+            std::array<GLfloat, 3> uploaded{};
+            glGetUniformfv(currentProgram(), glGetUniformLocation(currentProgram(), "uColor"), uploaded.data());
+            EXPECT_FLOAT_EQ(uploaded[0], 0.25F);
+            EXPECT_FLOAT_EQ(uploaded[1], 0.5F);
+            EXPECT_FLOAT_EQ(uploaded[2], 0.75F);
+        }
+    }
+}
+
+TEST_F(ShaderProgramTest, VectorUploadAcceptsFloatRangeLimits)
+{
+    ShaderProgram program{vertexSource, colorFragmentSource};
+    program.bind();
+    const double limit = std::numeric_limits<float>::max();
+    program.setVector3("uColor", {limit, -limit, 0.0});
+    std::array<GLfloat, 3> uploaded{};
+    glGetUniformfv(currentProgram(), glGetUniformLocation(currentProgram(), "uColor"), uploaded.data());
+    EXPECT_FLOAT_EQ(uploaded[0], std::numeric_limits<float>::max());
+    EXPECT_FLOAT_EQ(uploaded[1], -std::numeric_limits<float>::max());
+    EXPECT_FLOAT_EQ(uploaded[2], 0.0F);
+}
+
+TEST_F(ShaderProgramTest, ReferenceAxisBatchesDrawWithoutOpenGLErrors)
+{
+    const microsw::viewer::ReferenceAxes axes;
+    std::array<microsw::rendering::LineRenderer, 3> batches;
+    batches[0].setVertices(axes.xAxis());
+    batches[1].setVertices(axes.yAxis());
+    batches[2].setVertices(axes.zAxis());
+    const std::array<Vector3, 3> colors{
+        Vector3{1.0, 0.0, 0.0}, Vector3{0.0, 1.0, 0.0}, Vector3{0.0, 0.0, 1.0}};
+    ShaderProgram program{vertexSource, colorFragmentSource};
+    program.bind();
+    program.setMatrix4("uModel", Matrix4::identity());
+    program.setMatrix4("uView", microsw::viewer::viewMatrix(microsw::viewer::OrbitCamera{}));
+    program.setMatrix4("uProjection", microsw::viewer::perspective(1.0, 1.0, 0.1, 100.0));
+    glViewport(0, 0, 64, 64);
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ASSERT_EQ(glGetError(), GL_NO_ERROR);
+    for (std::size_t index = 0; index < batches.size(); ++index)
+    {
+        SCOPED_TRACE(index);
+        program.setVector3("uColor", colors[index]);
+        batches[index].draw();
+        EXPECT_EQ(glGetError(), GL_NO_ERROR);
+        EXPECT_EQ(glIsEnabled(GL_DEPTH_TEST), GL_TRUE);
+        std::array<GLfloat, 3> uploaded{};
+        glGetUniformfv(currentProgram(), glGetUniformLocation(currentProgram(), "uColor"), uploaded.data());
+        EXPECT_FLOAT_EQ(uploaded[0], static_cast<float>(colors[index].x()));
+        EXPECT_FLOAT_EQ(uploaded[1], static_cast<float>(colors[index].y()));
+        EXPECT_FLOAT_EQ(uploaded[2], static_cast<float>(colors[index].z()));
+    }
 }
 
 TEST_F(ShaderProgramTest, RepeatedFailureDoesNotPreventSubsequentSuccess)

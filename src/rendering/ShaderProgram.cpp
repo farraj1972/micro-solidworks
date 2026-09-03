@@ -196,4 +196,41 @@ void ShaderProgram::setMatrix4(std::string_view name, const math::Matrix4& value
     glUniformMatrix4fv(location, 1, GL_FALSE, data.data());
 }
 
+void ShaderProgram::setVector3(std::string_view name, const math::Vector3& value) const
+{
+    if (!impl_)
+    {
+        throw std::logic_error{"Cannot upload to a moved-from ShaderProgram"};
+    }
+    requireContext();
+    GLint current{};
+    glGetIntegerv(GL_CURRENT_PROGRAM, &current);
+    if (static_cast<GLuint>(current) != impl_->program)
+    {
+        throw std::logic_error{"ShaderProgram must be bound before uniform upload"};
+    }
+    if (name.empty() || name.find('\0') != std::string_view::npos)
+    {
+        throw std::invalid_argument{"Uniform name must be nonempty and contain no null characters"};
+    }
+    const std::string terminatedName{name};
+    const GLint location = glGetUniformLocation(impl_->program, terminatedName.c_str());
+    if (location == -1)
+    {
+        throw std::invalid_argument{"Uniform not found or inactive: " + terminatedName};
+    }
+    const std::array<math::Scalar, 3> components{value.x(), value.y(), value.z()};
+    std::array<GLfloat, 3> data{};
+    for (std::size_t index = 0; index < components.size(); ++index)
+    {
+        if (!std::isfinite(components[index])
+            || std::abs(components[index]) > std::numeric_limits<GLfloat>::max())
+        {
+            throw std::invalid_argument{"Vector component must be finite and float-representable"};
+        }
+        data[index] = static_cast<GLfloat>(components[index]);
+    }
+    glUniform3fv(location, 1, data.data());
+}
+
 }

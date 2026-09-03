@@ -1,6 +1,7 @@
 #include "viewer/WorkspaceViewport.h"
 
 #include "viewer/OrbitCamera.h"
+#include "viewer/ReferenceAxes.h"
 #include "viewer/ViewProjection.h"
 #include "rendering/ShaderProgram.h"
 #include "rendering/LineRenderer.h"
@@ -8,7 +9,6 @@
 #include <glad/gl.h>
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <numbers>
 
@@ -62,7 +62,8 @@ void main()
 )";
 constexpr const char* fragmentSource = R"(#version 330 core
 out vec4 FragColor;
-void main() { FragColor = vec4(1.0); }
+uniform vec3 uColor;
+void main() { FragColor = vec4(uColor, 1.0); }
 )";
 
 // Local pass guard, including exception paths; not a general OpenGL state stack.
@@ -113,9 +114,10 @@ class WorkspaceViewport::Impl
 public:
     Impl() : shader{vertexSource, fragmentSource}
     {
-        const std::array<math::Vector3, 2> vertices{
-            math::Vector3{-1.0, 0.0, 0.0}, math::Vector3{1.0, 0.0, 0.0}};
-        line.setVertices(vertices);
+        const ReferenceAxes axes;
+        xAxis.setVertices(axes.xAxis());
+        yAxis.setVertices(axes.yAxis());
+        zAxis.setVertices(axes.zAxis());
     }
 
     OrbitCamera camera;
@@ -123,7 +125,9 @@ public:
     const math::Scalar nearPlane = 0.1;
     const math::Scalar farPlane = 100.0;
     rendering::ShaderProgram shader;
-    rendering::LineRenderer line;
+    rendering::LineRenderer xAxis;
+    rendering::LineRenderer yAxis;
+    rendering::LineRenderer zAxis;
 };
 
 WorkspaceViewport::WorkspaceViewport() : impl_{std::make_unique<Impl>()} {}
@@ -153,7 +157,12 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     impl_->shader.setMatrix4("uView", viewMatrix(impl_->camera));
     impl_->shader.setMatrix4("uProjection",
         perspective(impl_->verticalFov, rect.aspectRatio(), impl_->nearPlane, impl_->farPlane));
-    impl_->line.draw();
+    impl_->shader.setVector3("uColor", {1.0, 0.0, 0.0});
+    impl_->xAxis.draw();
+    impl_->shader.setVector3("uColor", {0.0, 1.0, 0.0});
+    impl_->yAxis.draw();
+    impl_->shader.setVector3("uColor", {0.0, 0.0, 1.0});
+    impl_->zAxis.draw();
 }
 
 }

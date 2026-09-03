@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/math/Matrix4.h"
+#include "core/math/Vector3.h"
 
 #include <memory>
 #include <string_view>
@@ -29,6 +30,9 @@ public:
     // Missing/invalid names throw std::invalid_argument (including optimized-out uniforms).
     // Converts finite, float-representable coefficients to column-major floats.
     void setMatrix4(std::string_view name, const math::Matrix4& value) const;
+
+    // Same binding/name policy; converts finite, float-representable components.
+    void setVector3(std::string_view name, const math::Vector3& value) const;
 
 private:
     class Impl;
