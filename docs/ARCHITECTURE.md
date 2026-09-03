@@ -40,7 +40,7 @@ Persistence serializa o Document através de uma fronteira própria.
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção ainda não existem em B0.
 
-### Implemented B1 Math Foundation (B1.1–B1.8)
+### CURRENT — Implemented B1 Math Foundation (B1.1–B1.8)
 
 B1 is FROZEN; B0 remains a previous frozen stable baseline. The implemented
 Math module lives in `src/core/math`, under namespace `microsw::math`.
@@ -179,7 +179,7 @@ rendering adapters.
 
 #### Deferred after B1
 
-Not implemented or authorized by this increment:
+Not implemented in B1:
 
 - `Point2`, `Point3`, `Direction3`, `Vector4`;
 - generic `Vector<T,N>` and `Matrix<T,R,C>`;
@@ -191,10 +191,53 @@ Not implemented or authorized by this increment:
 
 Deferred does not mean rejected forever. Each capability requires a future
 explicitly authorized scope. B1.9 and B1.10 are complete; B1 is FROZEN.
+Perspective/orthographic projection are now planned by D2 for B2; their
+implementation still requires explicit increment authorization.
+
+### PLANNED B2 — Viewer boundary (D2 FROZEN)
+
+The Viewer observes the CAD world; it does not define or own CAD representation.
+The planned composition complements the future CAD-domain dependency chain:
+
+```text
+Application
+    +-- UI (ApplicationShell Workspace)
+    +-- Viewer
+    |     +-- Camera ------> microsw_math
+    |     +-- Navigation
+    |     +-- Grid / Axes (render aids)
+    |     +-- Rendering ---> OpenGL / GLAD
+    +-- future CAD domain
+```
+
+These are conceptual boundaries, not implemented classes or new CMake targets.
+CURRENT: B0 provides window/context/UI bootstrap and a placeholder Workspace;
+B1 provides internal Math. PLANNED B2: camera, navigation, projections and
+line rendering in that Workspace. B2 remains NOT STARTED.
+
+The approved details are in
+[ADR-0010](adr/ADR-0010-viewer-camera-and-navigation.md),
+[ADR-0011](adr/ADR-0011-view-and-projection-conventions.md) and
+[ADR-0012](adr/ADR-0012-viewer-rendering-pipeline.md):
+
+- Orbit camera with target/distance/yaw/pitch, derived position and +Z world up;
+  camera/navigation own view state, never CAD geometry or topology.
+- Internal BUILD view and perspective/orthographic projection mathematics using
+  `microsw_math`; column-vector pipeline
+  `clip = Projection * View * Model * position`, initially Model = Identity.
+- OpenGL 3.3 Core / GLAD, GLSL 330 Core, unlit lines and project-owned GPU
+  resource encapsulation without public GLuint leakage.
+- Direct rendering into the existing Workspace with viewport/scissor and
+  depth testing, without a second window or offscreen framebuffer.
+- XY grid at Z = 0 and origin axes: X red, Y green, Z blue (rendering/UI only).
+
+Picking, hover, selection and highlighting remain B5 scope. A scene graph
+solely for aids, matrix inverse and offscreen rendering remain deferred.
+No B1 point/direction API is changed.
 
 ---
 
-## 3. Implementação actual em B0
+## 3. CURRENT — Implementação da baseline B0
 
 ```text
 Application
@@ -298,6 +341,12 @@ Responsabilidades futuras:
 - feature tree;
 - rebuild.
 
+### viewer (PLANNED B2)
+
+Observa o mundo CAD e gere camera, viewport/navigation state, orbit, pan,
+zoom e render aids. Camera usa `microsw_math`; desenho usa Rendering.
+Não possui geometria CAD, topology ou scene/domain ownership.
+
 ### rendering
 
 Representação visual.
@@ -305,12 +354,10 @@ Representação visual.
 Responsabilidades futuras:
 
 - render pipeline;
-- camera;
-- viewport;
+- viewport/scissor e recursos GPU para o Viewer;
 - tessellation boundary;
 - visual styles;
-- grid;
-- axes.
+- desenho de grid/axes enquanto render aids.
 
 O renderer não deverá tornar-se proprietário do modelo CAD.
 
@@ -324,9 +371,7 @@ Responsabilidades futuras:
 - selection;
 - hover;
 - manipulators;
-- orbit;
-- pan;
-- zoom.
+- encaminhamento de input de orbit/pan/zoom para o Viewer.
 
 ### ui
 
@@ -413,6 +458,10 @@ CAD Representation
 
 Alterações no renderer não deverão obrigar a modificar a representação CAD.
 Tessellation e as representações CAD ainda não estão implementadas em B0.
+
+Em B2, grid/axes podem gerar render primitives directamente: são viewer aids,
+não representação CAD. Esta excepção conceptual não permite tratar futuras
+entidades CAD como meshes nem contornar o pipeline de tessellation do domínio.
 
 ---
 

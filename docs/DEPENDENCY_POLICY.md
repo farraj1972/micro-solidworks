@@ -56,6 +56,9 @@ instalação global manual.
 ## 5. Capacidades internas aprovadas
 
 - Math: `BUILD`, ainda não implementado em B0.
+- Viewer camera/view/projection math: `BUILD` usando `microsw_math`,
+  conforme D2 (ADR-0010/0011); planeado para B2, ainda não implementado.
+  Inclui view matrix, perspective e orthographic projection; sem GLM/Eigen.
 - Educational Geometry Kernel: `BUILD` com possível substituição futura,
   ainda não implementado em B0.
 

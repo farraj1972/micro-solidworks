@@ -108,28 +108,48 @@ Estado dos increments:
 | B1.FREEZE | FROZEN |
 
 B1 está FROZEN. Tag: `b1-mathematical-foundation`.
-B2 permanece NOT STARTED; o planeamento / Decision Gate requer autorização explícita.
+B2 permanece NOT STARTED; implementação requer autorização explícita por increment.
+
+---
+
+# Decision Gate D2 — 3D Viewer Conventions
+
+Status: FROZEN
+
+As decisões aprovadas de camera/navigation, view/projection e rendering
+estão materializadas em ADR-0010, ADR-0011 e ADR-0012.
+B2 está autorizado para planeamento, não para implementação automática.
 
 ---
 
 # B2 — 3D Viewer
 
+Status: NOT STARTED
+
 Objectivo:
 
 Criar um viewport tridimensional navegável.
 
-Possíveis increments:
+Estado dos increments planeados:
 
-B2.1 — Rendering Context  
-B2.2 — Coordinate Axes  
-B2.3 — Camera  
-B2.4 — Perspective Projection  
-B2.5 — Orbit  
-B2.6 — Pan  
-B2.7 — Zoom  
-B2.8 — Reference Grid  
-B2.9 — Resize / viewport handling  
-B2.10 — Integration Validation
+| Increment | Estado |
+| --- | --- |
+| B2.1 — Camera Mathematical Foundation | PENDING |
+| B2.2 — View & Projection Matrices | PENDING |
+| B2.3 — Shader Infrastructure | PENDING |
+| B2.4 — GPU Buffer / Line Rendering | PENDING |
+| B2.5 — Workspace 3D Viewport | PENDING |
+| B2.6 — Reference Axes | PENDING |
+| B2.7 — XY Grid | PENDING |
+| B2.8 — Orbit Navigation | PENDING |
+| B2.9 — Pan & Zoom | PENDING |
+| B2.10 — Perspective / Orthographic Modes | PENDING |
+| B2.11 — Viewer Integration Tests & Runtime Validation | PENDING |
+| B2.12 — Documentation & D2 Validation | PENDING |
+| B2.13 — Baseline Validation | PENDING |
+| B2.FREEZE | PENDING |
+
+B2.1 requer autorização explícita. D2 não implementa camera, viewer ou render aids.
 
 Resultado:
 

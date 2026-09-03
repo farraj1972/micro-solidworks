@@ -17,13 +17,14 @@ integration tests, described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 B1.1–B1.10 are complete.
 
 Next baseline: **B2 — 3D Viewer**, **NOT STARTED**.
-B2 planning / Decision Gate requires explicit authorization.
+B2 is authorized for planning; implementation requires explicit increment authorization.
 
-The current decision gate is **D1 — Mathematical Conventions**, with status
+The current decision gate is **D2 — 3D Viewer Conventions**, with status
 **FROZEN**. Its accepted decisions are recorded in
-[`ADR-0007`](docs/adr/ADR-0007-mathematical-scalar-and-tolerance.md),
-[`ADR-0008`](docs/adr/ADR-0008-coordinate-and-unit-conventions.md), and
-[`ADR-0009`](docs/adr/ADR-0009-matrix-and-transform-conventions.md).
+[`ADR-0010`](docs/adr/ADR-0010-viewer-camera-and-navigation.md),
+[`ADR-0011`](docs/adr/ADR-0011-view-and-projection-conventions.md), and
+[`ADR-0012`](docs/adr/ADR-0012-viewer-rendering-pipeline.md).
+D1 remains FROZEN. Camera and viewer functionality are not implemented yet.
 
 The approved technology foundation is C++20, CMake, GoogleTest with CTest,
 GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment

@@ -14,11 +14,14 @@ Current baseline: B1 — Mathematical Foundation
 B1 status: FROZEN
 B1.1–B1.10: COMPLETE
 B1.FREEZE: FROZEN
+Decision Gate D2: FROZEN
 Next baseline: B2 — 3D Viewer
-B2 status: NOT STARTED
+B2 status: AUTHORIZED FOR PLANNING; NOT STARTED
+Next implementation increment: B2.1 — Camera Mathematical Foundation
+B2.1 requires explicit authorization
 ```
 
-B2 planning / Decision Gate and implementation require explicit authorization.
+B2 implementation requires explicit increment authorization.
 
 ---
 
@@ -41,6 +44,9 @@ Before changing the repository, read the following documents in this order:
 12. docs/adr/ADR-0007-mathematical-scalar-and-tolerance.md
 13. docs/adr/ADR-0008-coordinate-and-unit-conventions.md
 14. docs/adr/ADR-0009-matrix-and-transform-conventions.md
+15. docs/adr/ADR-0010-viewer-camera-and-navigation.md
+16. docs/adr/ADR-0011-view-and-projection-conventions.md
+17. docs/adr/ADR-0012-viewer-rendering-pipeline.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

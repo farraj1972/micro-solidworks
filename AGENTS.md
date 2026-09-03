@@ -794,9 +794,11 @@ STATUS: FROZEN
 Current decision gate:
 
 ```text
-D1 — Mathematical Conventions
+D2 — 3D Viewer Conventions
 STATUS: FROZEN
 ```
+
+D0 and D1 remain FROZEN.
 
 Next baseline:
 
@@ -811,8 +813,9 @@ Next permitted baseline:
 None until explicit authorization.
 ```
 
-B2 planning / Decision Gate requires explicit authorization.
-No B2 implementation without explicit authorization.
+B2 is authorized for planning only; B2.1 — Camera Mathematical Foundation
+requires explicit authorization.
+No B2 implementation without explicit increment authorization.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
 
