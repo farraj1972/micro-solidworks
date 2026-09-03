@@ -1,4 +1,10 @@
 #include "viewer/WorkspaceViewport.h"
+#include "viewer/ReferenceGrid.h"
+#include "viewer/ReferenceAxes.h"
+#include "viewer/OrbitCamera.h"
+#include "viewer/ViewProjection.h"
+#include "rendering/LineRenderer.h"
+#include "rendering/ShaderProgram.h"
 #include "core/math/Tolerance.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
@@ -117,6 +123,52 @@ TEST_F(WorkspaceViewportTest, ConstructsRendersResizesAndDestroys)
         EXPECT_EQ(glGetError(), GL_NO_ERROR);
     }
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
+TEST_F(WorkspaceViewportTest, GridAndAxesUploadAndDrawInOneDepthPass)
+{
+    const microsw::viewer::ReferenceGrid grid;
+    const microsw::viewer::ReferenceAxes axes;
+    std::array<microsw::rendering::LineRenderer, 4> batches;
+    batches[0].setVertices(grid.vertices());
+    batches[1].setVertices(axes.xAxis());
+    batches[2].setVertices(axes.yAxis());
+    batches[3].setVertices(axes.zAxis());
+    EXPECT_EQ(batches[0].vertexCount(), 80u);
+    ASSERT_EQ(glGetError(), GL_NO_ERROR);
+
+    const char* vertex = R"(#version 330 core
+layout(location = 0) in vec3 aPosition;
+uniform mat4 uMVP;
+void main() { gl_Position = uMVP * vec4(aPosition, 1.0); }
+)";
+    const char* fragment = R"(#version 330 core
+uniform vec3 uColor;
+out vec4 FragColor;
+void main() { FragColor = vec4(uColor, 1.0); }
+)";
+    microsw::rendering::ShaderProgram shader{vertex, fragment};
+    shader.bind();
+    shader.setMatrix4("uMVP", microsw::viewer::perspective(1.0, 1.0, 0.1, 100.0)
+        * microsw::viewer::viewMatrix(microsw::viewer::OrbitCamera{}));
+    const std::array<microsw::math::Vector3, 4> colors{
+        microsw::math::Vector3{0.35, 0.35, 0.38}, microsw::math::Vector3{1.0, 0.0, 0.0},
+        microsw::math::Vector3{0.0, 1.0, 0.0}, microsw::math::Vector3{0.0, 0.0, 1.0}};
+    glViewport(0, 0, 128, 128);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (std::size_t i = 0; i < batches.size(); ++i)
+    {
+        SCOPED_TRACE(i);
+        shader.setVector3("uColor", colors[i]);
+        batches[i].draw();
+        EXPECT_EQ(glGetError(), GL_NO_ERROR);
+        EXPECT_EQ(glIsEnabled(GL_DEPTH_TEST), GL_TRUE);
+        GLint depthFunction{};
+        glGetIntegerv(GL_DEPTH_FUNC, &depthFunction);
+        EXPECT_EQ(depthFunction, GL_LESS);
+    }
 }
 
 TEST_F(WorkspaceViewportTest, EmptyRenderDoesNotChangeState)

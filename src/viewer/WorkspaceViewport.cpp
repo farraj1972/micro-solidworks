@@ -2,6 +2,7 @@
 
 #include "viewer/OrbitCamera.h"
 #include "viewer/ReferenceAxes.h"
+#include "viewer/ReferenceGrid.h"
 #include "viewer/ViewProjection.h"
 #include "rendering/ShaderProgram.h"
 #include "rendering/LineRenderer.h"
@@ -115,6 +116,8 @@ public:
     Impl() : shader{vertexSource, fragmentSource}
     {
         const ReferenceAxes axes;
+        const ReferenceGrid grid;
+        gridRenderer.setVertices(grid.vertices());
         xAxis.setVertices(axes.xAxis());
         yAxis.setVertices(axes.yAxis());
         zAxis.setVertices(axes.zAxis());
@@ -125,6 +128,7 @@ public:
     const math::Scalar nearPlane = 0.1;
     const math::Scalar farPlane = 100.0;
     rendering::ShaderProgram shader;
+    rendering::LineRenderer gridRenderer;
     rendering::LineRenderer xAxis;
     rendering::LineRenderer yAxis;
     rendering::LineRenderer zAxis;
@@ -157,6 +161,9 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     impl_->shader.setMatrix4("uView", viewMatrix(impl_->camera));
     impl_->shader.setMatrix4("uProjection",
         perspective(impl_->verticalFov, rect.aspectRatio(), impl_->nearPlane, impl_->farPlane));
+    // Same depth pass; central grid lines are omitted to preserve origin axes.
+    impl_->shader.setVector3("uColor", {0.35, 0.35, 0.38});
+    impl_->gridRenderer.draw();
     impl_->shader.setVector3("uColor", {1.0, 0.0, 0.0});
     impl_->xAxis.draw();
     impl_->shader.setVector3("uColor", {0.0, 1.0, 0.0});
