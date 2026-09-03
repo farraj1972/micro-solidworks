@@ -70,25 +70,24 @@ conventions for B1 are recorded in ADR-0007 through ADR-0009.
 
 # B1 — Mathematical Foundation
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 Objectivo:
 
 Construir os fundamentos matemáticos necessários ao motor geométrico.
 
-Capacidades previstas:
+Capacidades implementadas até B1.8:
 
-- scalar utilities;
+- Scalar e numerical comparison tolerance;
 - Vector2;
 - Vector3;
-- Vector4 quando necessário;
-- Matrix;
-- transforms;
-- coordinate systems;
-- Ray;
-- Plane;
-- BoundingBox;
-- numerical tolerance policy.
+- Matrix3 e Matrix4;
+- affine Transformation Operations;
+- testes de integração matemática.
+
+Vector4, Ray, Plane, BoundingBox e as restantes capacidades listadas em
+"Deferred after B1" de ARCHITECTURE.md não estão implementadas nem fazem
+parte dos increments restantes de B1.
 
 Todos os componentes matemáticos deverão possuir testes.
 
@@ -96,17 +95,21 @@ Estado dos increments:
 
 | Increment | Estado |
 | --- | --- |
-| B1.1 — Numeric Utilities & Tolerance | PENDING |
-| B1.2 — Vector2 | PENDING |
-| B1.3 — Vector3 | PENDING |
-| B1.4 — Matrix Foundation | PENDING |
-| B1.5 — Matrix3 | PENDING |
-| B1.6 — Matrix4 | PENDING |
-| B1.7 — Transformation Operations | PENDING |
-| B1.8 — Mathematical Integration Tests | PENDING |
-| B1.9 — Documentation & D1 ADR Validation | PENDING |
+| B1.1 — Numeric Utilities & Tolerance | COMPLETE |
+| B1.2 — Vector2 | COMPLETE |
+| B1.3 — Vector3 | COMPLETE |
+| B1.4 — Matrix Foundation | COMPLETE |
+| B1.5 — Matrix3 | COMPLETE |
+| B1.6 — Matrix4 | COMPLETE |
+| B1.7 — Transformation Operations | COMPLETE |
+| B1.8 — Mathematical Integration Tests | COMPLETE |
+| B1.9 — Documentation & D1 ADR Validation | CURRENT |
 | B1.10 — Baseline Validation | PENDING |
 | B1.FREEZE | PENDING |
+
+B1.9 é o único increment actualmente autorizado. B1.10 é o próximo quality
+gate pendente e requer autorização explícita; B1 não está FROZEN.
+B2 não foi iniciado.
 
 ---
 

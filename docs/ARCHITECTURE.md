@@ -40,69 +40,158 @@ Persistence serializa o Document através de uma fronteira própria.
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção ainda não existem em B0.
 
-### Planned B1 Math Foundation
+### Implemented B1 Math Foundation (B1.1–B1.8)
 
-Decision Gate D1 freezes the following conventions for the future Math layer:
-
-```text
-Scalar:             double
-Coordinate system:  right-handed
-World orientation:  XY horizontal/base plane; Z vertical
-Angles:             radians internally
-Vectors:            column-vector convention
-Transforms:         v' = M * v
-```
-
-The Math core will remain unit-agnostic, while the initial CAD/document unit
-convention is millimetres. Rendering must adapt to these CAD-domain
-mathematical conventions rather than shaping the Math core around OpenGL.
-
-The initial scalar, tolerance and vector increments implement the applicable
-parts of these conventions. Matrix types remain deferred to their explicitly
-authorized increments.
-
-### B1 Matrix Foundation Contracts
-
-Future concrete matrix APIs use zero-based `(row, column)` indexing. Public
-element access outside the valid row or column range throws
-`std::out_of_range`; it must not rely on silent undefined behavior.
-
-Matrices operate on column vectors, so vector application is written as:
+B1 is IN PROGRESS; B0 remains the frozen stable baseline. The implemented
+Math module lives in `src/core/math`, under namespace `microsw::math`.
+Its project-owned CMake target has only this dependency:
 
 ```text
-v' = M * v
+microsw_math -> C++ standard library only
 ```
 
-For matrix multiplication `C = A * B`, every element follows the mathematical
-definition:
+It is independent of logging, windowing, rendering and UI, including GLFW,
+GLAD, OpenGL, Dear ImGui and spdlog. Math is tested through the existing
+`micro_solidworks_tests` target; the B0 application shell remains unchanged.
+
+#### Scalar and numerical comparison
+
+`microsw::math::Scalar` is an alias for `double`. `Tolerance.h` provides
+the free functions `almostEqual` and `isNearlyZero`, with defaults:
+
+```cpp
+defaultAbsoluteTolerance = 1.0e-12;
+defaultRelativeTolerance = 1.0e-12;
+```
+
+For finite scalar operands, `almostEqual(a, b)` combines absolute and relative
+tolerance as defined in ADR-0007:
 
 ```text
-C(row, column) = sum over k of A(row, k) * B(k, column)
+|a - b| <= max(absoluteTolerance, relativeTolerance * max(|a|, |b|))
 ```
 
-Consequently, composition applies right to left. `M = T * R * S` applies `S`,
-then `R`, then `T`.
+`isNearlyZero(value)` uses absolute tolerance only. Negative tolerances throw
+`std::invalid_argument`. NaN operands do not compare equal; equal signed
+infinities compare equal, but infinities never compare nearly zero.
 
-The future identity matrix `I` must satisfy:
+These are numerical comparison tolerances. They are NOT CAD geometric
+modelling tolerance. A global geometric modelling tolerance remains deferred.
 
-```text
-I * v = v
-I * M = M
-M * I = M
-```
+#### Vector2 and Vector3
 
-Logical matrix semantics are independent of physical storage. A column-major
-logical convention does not authorize tests or clients to depend on a concrete
-memory layout.
+Both concrete types provide zero default construction, construction from
+components, read-only component access (`x()`, `y()`, and `z()` for
+`Vector3`), addition, subtraction, unary negation, scalar multiplication in
+both orders, scalar division, `squaredLength()`, `length()`,
+`normalized()`, `dot` and component-wise `almostEqual`.
+Normalization returns a new vector. Division by an effectively zero scalar
+and normalization of a zero or nearly-zero-length vector throw
+`std::domain_error`.
 
-Future matrix comparison is the explicit free operation
-`almostEqual(matrixA, matrixB)`. It compares corresponding elements using the
-B1.1 scalar tolerance policy. Approximate equality is not exposed through
-`operator==`.
+`Vector3` additionally provides `cross`. The executable right-handed
+invariant is `cross(X, Y) = Z`, or `X × Y = Z`, for the unit basis.
 
-B1.4 introduces contracts only. It deliberately adds no matrix storage, matrix
-type, indexing helper, multiplication implementation or synthetic test type;
-those require a concrete matrix increment before they have executable behavior.
+Math types are unit-agnostic. D1 defines XY as the CAD horizontal/base plane
+and Z as vertical, millimetres at the future CAD/document boundary, radians
+internally and degrees at the UI boundary. Document units and angular UI
+conversion are conventions for future consumers, not implemented features.
+Rendering must adapt to CAD Math, not the reverse.
+
+#### Matrix3 and Matrix4
+
+Both concrete types use zero-based `matrix(row, column)` access.
+An out-of-range row or column throws `std::out_of_range`. Explicit constructor
+arguments describe successive mathematical rows, independently of storage.
+
+| Type | Implemented operations |
+| --- | --- |
+| `Matrix3` | Zero default, construction from 9 scalars, `identity()`, `Matrix3 * Vector3`, `Matrix3 * Matrix3`, `transposed()`, `determinant()`, `almostEqual` |
+| `Matrix4` | Zero default, construction from 16 scalars, `identity()`, `Matrix4 * Matrix4`, `transposed()`, `almostEqual` |
+
+Matrices use column vectors and the column-major logical convention of
+ADR-0009. Vector application follows `v' = M * v`; multiplication follows
+`C(row, column) = sum over k of A(row, k) * B(k, column)`.
+The identity preserves supported vector and matrix products on the
+applicable sides.
+
+Logical semantics are independent of physical memory layout. Physical
+storage is private, not a public contract. Free `almostEqual(matrixA, matrixB)`
+compares corresponding elements with the scalar tolerance policy; approximate
+equality is not exposed through `operator==`.
+
+`Matrix4` has no `determinant()` or `inverse()`.
+`Matrix4 * Vector3` is intentionally NOT provided.
+
+#### Transformation Operations
+
+`Transformations.h` provides free functions returning `Matrix4`:
+
+- `translation(const Vector3& offset)`;
+- `scaling(const Vector3& factors)`;
+- `rotationX(Scalar radians)`, `rotationY(Scalar radians)`,
+  `rotationZ(Scalar radians)`.
+
+Rotations are right-handed and angles are in radians. Scaling accepts
+per-axis factors, including zero and negative values. Composition
+`T * R * S` applies `S -> R -> T`.
+
+Application explicitly distinguishes two operations returning `Vector3`:
+
+- `transformPoint(matrix, vector)`: input homogeneous `w = 1`;
+  includes translation and requires resulting `w'` approximately 1.
+- `transformDirection(matrix, vector)`: input homogeneous `w = 0`;
+  excludes translation and requires resulting `w'` approximately 0.
+
+These operations are affine only and never perform perspective division.
+They check the resulting homogeneous coordinate for the supplied operand
+using `almostEqual(w', 1)` or `isNearlyZero(w')`, respectively, and throw
+`std::domain_error` if that contract fails. This is not a general validator
+of every matrix element or a projective-transform API.
+
+Using a `Vector3` argument for `transformPoint` is a temporary semantic
+operation for a position, not a promotion of `Vector3` to a dedicated point
+type. `Point3` remains deferred; callers must preserve the explicit
+point/direction distinction.
+
+#### B1.8 integration validation
+
+The 18 tests in `tests/math/test_math_integration.cpp` validate relationships
+between components, beyond isolated unit behavior. Examples include rotation
+preservation of length, dot product and cross orientation; orthonormal
+rotated bases; `R^T * R ≈ I` and `R * R^T ≈ I` for pure rotations;
+sequential versus composed transforms; Matrix3 application associativity;
+and Matrix4 multiplication associativity. They use public APIs and the
+existing numerical tolerance policy, without storage assumptions.
+The suite through B1.8 contains 97 tests including infrastructure tests.
+
+#### D1 implementation validation
+
+| Accepted ADR | Result | Implementation evidence |
+| --- | --- | --- |
+| ADR-0007 | CONFORMANT | `Scalar = double`; absolute/relative comparison; explicit invalid-operation failures; geometric tolerance deferred |
+| ADR-0008 | CONFORMANT | Unit-agnostic types; `cross(X,Y)=Z`; right-handed rotations in radians; CAD/document and UI conventions preserved for future boundaries |
+| ADR-0009 | CONFORMANT | Column-vector application; `T * R * S` order; column-major logical convention independent of memory layout; generic types and Quaternion deferred |
+
+The formal status of all three ADRs remains ACCEPTED; D1 remains FROZEN.
+This validation does not introduce document units, UI angle controls or
+rendering adapters.
+
+#### Deferred after B1
+
+Not implemented or authorized by this increment:
+
+- `Point2`, `Point3`, `Direction3`, `Vector4`;
+- generic `Vector<T,N>` and `Matrix<T,R,C>`;
+- `Quaternion` and arbitrary-axis rotation;
+- matrix inverse and Matrix4 determinant;
+- perspective and orthographic projection;
+- global geometric modelling tolerance;
+- a `Transform` class, `Ray`, `Plane` and `BoundingBox`.
+
+Deferred does not mean rejected forever. Each capability requires a future
+explicitly authorized scope. B1.9 consolidates documentation; B1.10 is the
+next pending quality gate and requires separate authorization. B1 is not frozen.
 
 ---
 
@@ -144,18 +233,9 @@ Responsável por:
 
 Matemática independente do domínio CAD.
 
-Exemplos futuros:
-
-- Vector2
-- Vector3
-- Vector4
-- Matrix3
-- Matrix4
-- Quaternion
-- Transform
-- Ray
-- Plane
-- BoundingBox
+Implementado em B1.1–B1.8: Scalar, Tolerance, Vector2, Vector3, Matrix3,
+Matrix4 e Transformation Operations, conforme a secção Math acima.
+Os conceitos ainda não implementados estão separados em "Deferred after B1".
 
 ### core/geometry
 

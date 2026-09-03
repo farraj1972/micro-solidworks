@@ -10,9 +10,12 @@ The project is currently at:
 Decision Gate D0: FROZEN
 Baseline B0: FROZEN
 Decision Gate D1: FROZEN
-Next baseline: B1 — Mathematical Foundation
-B1 status: AUTHORIZED FOR PLANNING; NOT STARTED
-Next permitted implementation increment: B1.1 — requires explicit authorization
+Current baseline: B1 — Mathematical Foundation
+B1 status: IN PROGRESS
+B1.1–B1.8: COMPLETE
+Current increment: B1.9 — Documentation & D1 ADR Validation
+B1.10 — Baseline Validation: next pending quality gate; requires explicit authorization
+B1.FREEZE: PENDING
 ```
 
 B1 implementation work requires explicit increment authorization.

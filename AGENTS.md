@@ -788,11 +788,15 @@ D1 — Mathematical Conventions
 STATUS: FROZEN
 ```
 
-Next baseline:
+Current baseline:
 
 ```text
 B1 — Mathematical Foundation
-STATUS: NOT STARTED
+STATUS: IN PROGRESS
+B1.1–B1.8: COMPLETE
+B1.9 — Documentation & D1 ADR Validation: CURRENT
+B1.10 — Baseline Validation: PENDING; requires explicit authorization
+B1.FREEZE: PENDING
 ```
 
 Next permitted baseline:
@@ -801,7 +805,8 @@ Next permitted baseline:
 None until explicit authorization.
 ```
 
-No B1 implementation may begin without explicit increment authorization.
+B1.9 is the only currently authorized increment. Do not begin B1.10 or B2
+without explicit authorization.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
 

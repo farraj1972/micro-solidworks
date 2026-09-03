@@ -10,8 +10,12 @@ product.
 **B0 — Foundation** is frozen. The repository provides the executable B0
 foundation and application shell; CAD functionality is not implemented yet.
 
-The next baseline is **B1 — Mathematical Foundation**. B1 has not started and
-requires explicit authorization.
+The current baseline is **B1 — Mathematical Foundation**, **IN PROGRESS**.
+B1.1–B1.8 are complete. The current increment is
+**B1.9 — Documentation & D1 ADR Validation**; the implemented Math foundation
+is described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+B1.10 — Baseline Validation is the next pending quality gate and requires
+separate explicit authorization. B1 is not frozen.
 
 The current decision gate is **D1 — Mathematical Conventions**, with status
 **FROZEN**. Its accepted decisions are recorded in
