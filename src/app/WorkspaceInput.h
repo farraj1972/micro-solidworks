@@ -14,5 +14,6 @@ struct WorkspaceInput
     bool pointerValid{};
     bool workspaceHovered{};
     bool blocked{};
+    double wheelDelta{};
 };
 }

@@ -171,6 +171,34 @@ void main() { FragColor = vec4(uColor, 1.0); }
     }
 }
 
+TEST_F(WorkspaceViewportTest, PanZoomAndOrbitRenderWithoutErrors)
+{
+    WorkspaceViewport viewport;
+    const WorkspaceLayout layout{16, 16, 96, 96, 128, 128};
+    microsw::WorkspaceInput input{40, 40, true, true, true, true, true, true, false, 0};
+    viewport.updateNavigation(layout, input);
+    input.middlePressed = false;
+    input.x = 60;
+    viewport.updateNavigation(layout, input);
+    viewport.render(layout, 128, 128);
+    input.middleDown = false;
+    input.wheelDelta = 10000;
+    viewport.updateNavigation(layout, input);
+    viewport.render(layout, 128, 128);
+    input.wheelDelta = -10000;
+    viewport.updateNavigation(layout, input);
+    viewport.render(layout, 128, 128);
+    input.wheelDelta = 0;
+    input.shiftDown = false;
+    input.middlePressed = input.middleDown = true;
+    viewport.updateNavigation(layout, input);
+    input.middlePressed = false;
+    input.y = 70;
+    viewport.updateNavigation(layout, input);
+    viewport.render(layout, 128, 128);
+    EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
 TEST_F(WorkspaceViewportTest, EmptyRenderDoesNotChangeState)
 {
     WorkspaceViewport viewport;

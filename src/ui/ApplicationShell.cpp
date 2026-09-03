@@ -50,6 +50,7 @@ void ApplicationShell::draw()
     input_.shiftDown = io.KeyShift;
     input_.focused = !io.AppFocusLost;
     input_.pointerValid = ImGui::IsMousePosValid();
+    input_.wheelDelta = io.MouseWheel;
     // The Workspace itself legitimately requests mouse capture. Its default
     // hovered test permits starts there, while respecting other windows/items.
     // Popups (including About) and active UI interactions also cancel a drag.

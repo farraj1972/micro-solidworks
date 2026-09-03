@@ -2,6 +2,7 @@
 
 #include "viewer/OrbitCamera.h"
 #include "viewer/OrbitNavigation.h"
+#include "viewer/PanZoomNavigation.h"
 #include "viewer/ReferenceAxes.h"
 #include "viewer/ReferenceGrid.h"
 #include "viewer/ViewProjection.h"
@@ -126,9 +127,11 @@ public:
 
     OrbitCamera camera;
     OrbitNavigation navigation;
+    PanZoomNavigation panZoomNavigation;
     const math::Scalar verticalFov = std::numbers::pi_v<math::Scalar> / 3.0;
     const math::Scalar nearPlane = 0.1;
-    const math::Scalar farPlane = 100.0;
+    // Keep the origin aids within clipping range at the maximum zoom distance.
+    const math::Scalar farPlane = PanZoomNavigation::maximumDistance() + 100.0;
     rendering::ShaderProgram shader;
     rendering::LineRenderer gridRenderer;
     rendering::LineRenderer xAxis;
@@ -142,6 +145,7 @@ WorkspaceViewport::~WorkspaceViewport() = default;
 void WorkspaceViewport::updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input)
 {
     impl_->navigation.handle(layout, input, impl_->camera);
+    impl_->panZoomNavigation.handle(layout, input, impl_->camera);
 }
 
 void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight)
