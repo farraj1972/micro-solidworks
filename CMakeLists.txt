@@ -83,6 +83,7 @@ add_library(microsw_math STATIC
     src/core/math/Matrix3.cpp
     src/core/math/Matrix4.cpp
     src/core/math/Tolerance.cpp
+    src/core/math/Transformations.cpp
     src/core/math/Vector2.cpp
     src/core/math/Vector3.cpp
 )
@@ -178,6 +179,7 @@ if(BUILD_TESTING)
         tests/math/test_matrix3.cpp
         tests/math/test_matrix4.cpp
         tests/math/test_tolerance.cpp
+        tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
     )
