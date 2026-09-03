@@ -176,6 +176,7 @@ if(BUILD_TESTING)
     add_executable(micro_solidworks_tests
         tests/test_infrastructure.cpp
         tests/test_logging.cpp
+        tests/math/test_math_integration.cpp
         tests/math/test_matrix3.cpp
         tests/math/test_matrix4.cpp
         tests/math/test_tolerance.cpp
