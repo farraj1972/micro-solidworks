@@ -11,14 +11,14 @@ Decision Gate D0: FROZEN
 Baseline B0: FROZEN
 Decision Gate D1: FROZEN
 Current baseline: B1 — Mathematical Foundation
-B1 status: IN PROGRESS
-B1.1–B1.8: COMPLETE
-Current increment: B1.9 — Documentation & D1 ADR Validation
-B1.10 — Baseline Validation: next pending quality gate; requires explicit authorization
-B1.FREEZE: PENDING
+B1 status: FROZEN
+B1.1–B1.10: COMPLETE
+B1.FREEZE: FROZEN
+Next baseline: B2 — 3D Viewer
+B2 status: NOT STARTED
 ```
 
-B1 implementation work requires explicit increment authorization.
+B2 planning / Decision Gate and implementation require explicit authorization.
 
 ---
 

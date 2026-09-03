@@ -5,17 +5,19 @@ implementing the foundations of a small 3D parametric CAD application in C++.
 It is not intended to provide compatibility with the commercial SolidWorks
 product.
 
-## Current stable baseline
+## Stable baselines
 
-**B0 — Foundation** is frozen. The repository provides the executable B0
+**B0 — Foundation** is FROZEN (tag: `b0-foundation`). The repository provides the executable B0
 foundation and application shell; CAD functionality is not implemented yet.
 
-The current baseline is **B1 — Mathematical Foundation**, **IN PROGRESS**.
-B1.1–B1.8 are complete. The current increment is
-**B1.9 — Documentation & D1 ADR Validation**; the implemented Math foundation
-is described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
-B1.10 — Baseline Validation is the next pending quality gate and requires
-separate explicit authorization. B1 is not frozen.
+The current stable baseline is **B1 — Mathematical Foundation**, **FROZEN**
+(tag: `b1-mathematical-foundation`). It contains Scalar/numeric tolerance,
+Vector2, Vector3, Matrix3, Matrix4, Transformation Operations and mathematical
+integration tests, described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+B1.1–B1.10 are complete.
+
+Next baseline: **B2 — 3D Viewer**, **NOT STARTED**.
+B2 planning / Decision Gate requires explicit authorization.
 
 The current decision gate is **D1 — Mathematical Conventions**, with status
 **FROZEN**. Its accepted decisions are recorded in

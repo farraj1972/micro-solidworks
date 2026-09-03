@@ -70,7 +70,7 @@ conventions for B1 are recorded in ADR-0007 through ADR-0009.
 
 # B1 — Mathematical Foundation
 
-Status: IN PROGRESS
+Status: FROZEN
 
 Objectivo:
 
@@ -103,13 +103,12 @@ Estado dos increments:
 | B1.6 — Matrix4 | COMPLETE |
 | B1.7 — Transformation Operations | COMPLETE |
 | B1.8 — Mathematical Integration Tests | COMPLETE |
-| B1.9 — Documentation & D1 ADR Validation | CURRENT |
-| B1.10 — Baseline Validation | PENDING |
-| B1.FREEZE | PENDING |
+| B1.9 — Documentation & D1 ADR Validation | COMPLETE |
+| B1.10 — Baseline Validation | COMPLETE |
+| B1.FREEZE | FROZEN |
 
-B1.9 é o único increment actualmente autorizado. B1.10 é o próximo quality
-gate pendente e requer autorização explícita; B1 não está FROZEN.
-B2 não foi iniciado.
+B1 está FROZEN. Tag: `b1-mathematical-foundation`.
+B2 permanece NOT STARTED; o planeamento / Decision Gate requer autorização explícita.
 
 ---
 

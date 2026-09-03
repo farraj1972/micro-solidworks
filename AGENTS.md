@@ -778,7 +778,17 @@ STATUS: FROZEN
 Current stable baseline:
 
 ```text
+B1 — Mathematical Foundation
+STATUS: FROZEN
+B1.1–B1.10: COMPLETE
+B1.FREEZE: FROZEN
+```
+
+Previous stable baseline:
+
+```text
 B0 — Foundation
+STATUS: FROZEN
 ```
 
 Current decision gate:
@@ -788,15 +798,11 @@ D1 — Mathematical Conventions
 STATUS: FROZEN
 ```
 
-Current baseline:
+Next baseline:
 
 ```text
-B1 — Mathematical Foundation
-STATUS: IN PROGRESS
-B1.1–B1.8: COMPLETE
-B1.9 — Documentation & D1 ADR Validation: CURRENT
-B1.10 — Baseline Validation: PENDING; requires explicit authorization
-B1.FREEZE: PENDING
+B2 — 3D Viewer
+STATUS: NOT STARTED
 ```
 
 Next permitted baseline:
@@ -805,8 +811,8 @@ Next permitted baseline:
 None until explicit authorization.
 ```
 
-B1.9 is the only currently authorized increment. Do not begin B1.10 or B2
-without explicit authorization.
+B2 planning / Decision Gate requires explicit authorization.
+No B2 implementation without explicit authorization.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
 

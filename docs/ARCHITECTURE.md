@@ -42,7 +42,7 @@ secção ainda não existem em B0.
 
 ### Implemented B1 Math Foundation (B1.1–B1.8)
 
-B1 is IN PROGRESS; B0 remains the frozen stable baseline. The implemented
+B1 is FROZEN; B0 remains a previous frozen stable baseline. The implemented
 Math module lives in `src/core/math`, under namespace `microsw::math`.
 Its project-owned CMake target has only this dependency:
 
@@ -190,8 +190,7 @@ Not implemented or authorized by this increment:
 - a `Transform` class, `Ray`, `Plane` and `BoundingBox`.
 
 Deferred does not mean rejected forever. Each capability requires a future
-explicitly authorized scope. B1.9 consolidates documentation; B1.10 is the
-next pending quality gate and requires separate authorization. B1 is not frozen.
+explicitly authorized scope. B1.9 and B1.10 are complete; B1 is FROZEN.
 
 ---
 
