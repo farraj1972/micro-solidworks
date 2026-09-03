@@ -28,6 +28,7 @@ int main()
                 openGLContext.clear();
                 ui.beginFrame();
                 shell.draw();
+                workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());
                 const auto framebuffer = window.framebufferSize();
                 workspace.render(shell.workspaceRect(), framebuffer.width, framebuffer.height);
                 ui.endFrame();

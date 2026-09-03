@@ -96,6 +96,7 @@ target_include_directories(microsw_math PUBLIC src)
 
 add_library(microsw_viewer STATIC
     src/viewer/OrbitCamera.cpp
+    src/viewer/OrbitNavigation.cpp
     src/viewer/ReferenceAxes.cpp
     src/viewer/ReferenceGrid.cpp
     src/viewer/ViewProjection.cpp
@@ -206,6 +207,7 @@ if(BUILD_TESTING)
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
         tests/viewer/test_orbit_camera.cpp
+        tests/viewer/test_orbit_navigation.cpp
         tests/viewer/test_reference_axes.cpp
         tests/viewer/test_reference_grid.cpp
         tests/viewer/test_view_projection.cpp

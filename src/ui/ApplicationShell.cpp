@@ -35,11 +35,26 @@ ApplicationShell::ApplicationShell(ApplicationWindow& window)
 
 void ApplicationShell::draw()
 {
+    input_ = {};
     drawMainMenu();
     drawModelPanel();
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
+    const auto& io = ImGui::GetIO();
+    const auto* viewport = ImGui::GetMainViewport();
+    input_.x = static_cast<double>(io.MousePos.x) - viewport->Pos.x;
+    input_.y = static_cast<double>(io.MousePos.y) - viewport->Pos.y;
+    input_.middlePressed = ImGui::IsMouseClicked(ImGuiMouseButton_Middle);
+    input_.middleDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+    input_.shiftDown = io.KeyShift;
+    input_.focused = !io.AppFocusLost;
+    input_.pointerValid = ImGui::IsMousePosValid();
+    // The Workspace itself legitimately requests mouse capture. Its default
+    // hovered test permits starts there, while respecting other windows/items.
+    // Popups (including About) and active UI interactions also cancel a drag.
+    input_.blocked = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel)
+        || (io.WantCaptureMouse && ImGui::IsAnyItemActive());
 }
 
 void ApplicationShell::drawMainMenu()
@@ -133,6 +148,7 @@ void ApplicationShell::drawWorkspace()
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::TextDisabled("Workspace");
+    input_.workspaceHovered = ImGui::IsWindowHovered();
     ImGui::End();
 }
 

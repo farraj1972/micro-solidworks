@@ -1,6 +1,7 @@
 #include "viewer/WorkspaceViewport.h"
 
 #include "viewer/OrbitCamera.h"
+#include "viewer/OrbitNavigation.h"
 #include "viewer/ReferenceAxes.h"
 #include "viewer/ReferenceGrid.h"
 #include "viewer/ViewProjection.h"
@@ -124,6 +125,7 @@ public:
     }
 
     OrbitCamera camera;
+    OrbitNavigation navigation;
     const math::Scalar verticalFov = std::numbers::pi_v<math::Scalar> / 3.0;
     const math::Scalar nearPlane = 0.1;
     const math::Scalar farPlane = 100.0;
@@ -136,6 +138,11 @@ public:
 
 WorkspaceViewport::WorkspaceViewport() : impl_{std::make_unique<Impl>()} {}
 WorkspaceViewport::~WorkspaceViewport() = default;
+
+void WorkspaceViewport::updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input)
+{
+    impl_->navigation.handle(layout, input, impl_->camera);
+}
 
 void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight)
 {

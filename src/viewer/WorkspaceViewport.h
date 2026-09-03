@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app/WorkspaceLayout.h"
+#include "app/WorkspaceInput.h"
 #include "core/math/Scalar.h"
 
 #include <memory>
@@ -34,6 +35,7 @@ public:
 
     // Empty/invalid surfaces are no-ops. Restores the OpenGL states changed by this pass.
     void render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight);
+    void updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input);
 
 private:
     class Impl;
