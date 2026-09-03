@@ -120,7 +120,18 @@ void ApplicationShell::drawWorkspace()
         viewport->WorkSize.x - modelPanelWidth,
         viewport->WorkSize.y - statusBarHeight};
 
-    beginStructuralWindow("Workspace", position, size);
+    const ImGuiIO& io = ImGui::GetIO();
+    workspace_ = {position.x - viewport->Pos.x, position.y - viewport->Pos.y,
+                  size.x, size.y, io.DisplaySize.x, io.DisplaySize.y};
+    if (size.x <= 0.0F || size.y <= 0.0F)
+        return;
+
+    ImGui::SetNextWindowPos(position);
+    ImGui::SetNextWindowSize(size);
+    // Reserve the UI region without covering the directly rendered 3D content.
+    ImGui::Begin("Workspace", nullptr, structuralWindowFlags |
+        ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::TextDisabled("Workspace");
     ImGui::End();
 }

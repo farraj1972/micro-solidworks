@@ -97,6 +97,7 @@ target_include_directories(microsw_math PUBLIC src)
 add_library(microsw_viewer STATIC
     src/viewer/OrbitCamera.cpp
     src/viewer/ViewProjection.cpp
+    src/viewer/WorkspaceViewport.cpp
 )
 
 target_compile_features(microsw_viewer PUBLIC cxx_std_20)
@@ -138,6 +139,9 @@ target_link_libraries(microsw_rendering PRIVATE
     microsw_windowing
 )
 
+# Viewport integration depends on rendering, never the reverse.
+target_link_libraries(microsw_viewer PRIVATE microsw_rendering glad_gl_core_33)
+
 add_library(microsw_ui STATIC
     src/ui/ApplicationShell.cpp
     src/ui/ImGuiLayer.cpp
@@ -165,6 +169,7 @@ set_target_properties(micro_solidworks PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_link_libraries(micro_solidworks PRIVATE
+    microsw_viewer
     microsw_logging
     microsw_rendering
     microsw_ui
@@ -200,6 +205,7 @@ if(BUILD_TESTING)
         tests/math/test_vector3.cpp
         tests/viewer/test_orbit_camera.cpp
         tests/viewer/test_view_projection.cpp
+        tests/viewer/test_workspace_viewport.cpp
         tests/rendering/test_shader_program.cpp
         tests/rendering/test_line_renderer.cpp
     )

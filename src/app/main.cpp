@@ -3,6 +3,7 @@
 #include "rendering/OpenGLContext.h"
 #include "ui/ApplicationShell.h"
 #include "ui/ImGuiLayer.h"
+#include "viewer/WorkspaceViewport.h"
 
 #include <exception>
 
@@ -17,13 +18,18 @@ int main()
             microsw::OpenGLContext openGLContext{window};
             microsw::ImGuiLayer ui{window, openGLContext};
             microsw::ApplicationShell shell{window};
+            microsw::viewer::WorkspaceViewport workspace;
 
             while (!window.shouldClose())
             {
                 window.pollEvents();
+                // Whole-frame background before UI composition; the 3D pass clears
+                // only its scissored Workspace region.
+                openGLContext.clear();
                 ui.beginFrame();
                 shell.draw();
-                openGLContext.clear();
+                const auto framebuffer = window.framebufferSize();
+                workspace.render(shell.workspaceRect(), framebuffer.width, framebuffer.height);
                 ui.endFrame();
                 window.swapBuffers();
             }

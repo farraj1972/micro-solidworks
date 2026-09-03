@@ -1,5 +1,7 @@
 #pragma once
 
+#include "app/WorkspaceLayout.h"
+
 namespace microsw
 {
 class ApplicationWindow;
@@ -10,6 +12,7 @@ public:
     explicit ApplicationShell(ApplicationWindow& window);
 
     void draw();
+    [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
 
 private:
     void drawMainMenu();
@@ -19,6 +22,7 @@ private:
     void drawAboutDialog();
 
     ApplicationWindow& window_;
+    WorkspaceLayout workspace_{};
     bool aboutDialogRequested_{false};
 };
 }
