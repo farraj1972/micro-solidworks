@@ -122,6 +122,7 @@ target_link_libraries(microsw_windowing PRIVATE
 
 add_library(microsw_rendering STATIC
     src/rendering/OpenGLContext.cpp
+    src/rendering/ShaderProgram.cpp
 )
 
 target_compile_features(microsw_rendering PUBLIC cxx_std_20)
@@ -129,6 +130,7 @@ set_target_properties(microsw_rendering PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_include_directories(microsw_rendering PUBLIC src)
+target_link_libraries(microsw_rendering PUBLIC microsw_math)
 target_link_libraries(microsw_rendering PRIVATE
     glad_gl_core_33
     microsw_logging
@@ -197,6 +199,7 @@ if(BUILD_TESTING)
         tests/math/test_vector3.cpp
         tests/viewer/test_orbit_camera.cpp
         tests/viewer/test_view_projection.cpp
+        tests/rendering/test_shader_program.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
@@ -208,6 +211,10 @@ if(BUILD_TESTING)
         microsw_logging
         microsw_math
         microsw_viewer
+        microsw_rendering
+        microsw_windowing
+        glad_gl_core_33
+        glfw
     )
 
     include(GoogleTest)
