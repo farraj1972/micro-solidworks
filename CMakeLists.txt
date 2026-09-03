@@ -94,6 +94,17 @@ set_target_properties(microsw_math PROPERTIES
 )
 target_include_directories(microsw_math PUBLIC src)
 
+add_library(microsw_viewer STATIC
+    src/viewer/OrbitCamera.cpp
+)
+
+target_compile_features(microsw_viewer PUBLIC cxx_std_20)
+set_target_properties(microsw_viewer PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_viewer PUBLIC src)
+target_link_libraries(microsw_viewer PUBLIC microsw_math)
+
 add_library(microsw_windowing STATIC
     src/app/window/ApplicationWindow.cpp
 )
@@ -183,6 +194,7 @@ if(BUILD_TESTING)
         tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
+        tests/viewer/test_orbit_camera.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
@@ -193,6 +205,7 @@ if(BUILD_TESTING)
         GTest::gtest_main
         microsw_logging
         microsw_math
+        microsw_viewer
     )
 
     include(GoogleTest)
