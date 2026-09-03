@@ -121,6 +121,7 @@ target_link_libraries(microsw_windowing PRIVATE
 )
 
 add_library(microsw_rendering STATIC
+    src/rendering/LineRenderer.cpp
     src/rendering/OpenGLContext.cpp
     src/rendering/ShaderProgram.cpp
 )
@@ -200,6 +201,7 @@ if(BUILD_TESTING)
         tests/viewer/test_orbit_camera.cpp
         tests/viewer/test_view_projection.cpp
         tests/rendering/test_shader_program.cpp
+        tests/rendering/test_line_renderer.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
