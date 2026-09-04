@@ -38,9 +38,9 @@ Rendering consome representações apropriadas do modelo, mas não define o mode
 Persistence serializa o Document através de uma fronteira própria.
 
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
-secção (Document, Modeling, Topology e Geometry) continuam por implementar.
-As secções seguintes distinguem FROZEN FOUNDATIONS, FROZEN B2 IMPLEMENTATION
-e PLANNED / DEFERRED.
+secção (Document, Modeling e Topology) continuam por implementar. Geometry já
+existe em B3.1–B3.8. As secções seguintes distinguem FROZEN FOUNDATIONS,
+FROZEN B2 IMPLEMENTATION, CURRENT B3 IMPLEMENTATION e PLANNED / DEFERRED.
 
 ### FROZEN FOUNDATIONS — B1 Math Foundation (B1.1–B1.8)
 
@@ -220,13 +220,15 @@ Application
 
 #### Actual CMake boundaries
 
-The table records direct `target_link_libraries` relationships in
+The table includes the current B3 Geometry boundary alongside frozen B2
+targets and records direct `target_link_libraries` relationships in
 `CMakeLists.txt`, not an invented idealized graph. Standard C++ dependencies
 are implicit.
 
 | Target | Responsibility | PUBLIC links | PRIVATE links |
 | --- | --- | --- | --- |
 | `microsw_math` | Internal B1 mathematics | None | None |
+| `microsw_geometry` | B3 geometric values, predicates and point metrics | `microsw_math` | None |
 | `microsw_logging` | Project-owned `Logger` | None | `spdlog::spdlog` |
 | `microsw_windowing` | `ApplicationWindow`, GLFW/window/context lifetime | None | `glfw`, `microsw_logging` |
 | `microsw_rendering` | `OpenGLContext`, `ShaderProgram`, `LineRenderer` | `microsw_math` | `glad_gl_core_33`, `microsw_logging`, `microsw_windowing` |
@@ -234,7 +236,7 @@ are implicit.
 | `microsw_imgui_backend` | Dear ImGui and GLFW/OpenGL3 backends | None | `glfw` |
 | `microsw_ui` | `ImGuiLayer` and `ApplicationShell` | None | `glfw`, `microsw_imgui_backend`, `microsw_logging`, `microsw_rendering`, `microsw_windowing` |
 | `micro_solidworks` | Application composition | None | `microsw_viewer`, `microsw_logging`, `microsw_rendering`, `microsw_ui`, `microsw_windowing` |
-| `micro_solidworks_tests` | GoogleTest/CTest, including real-context tests | None | `GTest::gtest_main`, `microsw_logging`, `microsw_math`, `microsw_viewer`, `microsw_rendering`, `microsw_windowing`, `glad_gl_core_33`, `glfw` |
+| `micro_solidworks_tests` | GoogleTest/CTest, including real-context tests | None | `GTest::gtest_main`, `microsw_geometry`, `microsw_logging`, `microsw_math`, `microsw_viewer`, `microsw_rendering`, `microsw_windowing`, `glad_gl_core_33`, `glfw` |
 
 `glad_gl_core_33` is the generated OpenGL 3.3 Core loader. OpenGL is supplied
 by the system driver. Rendering's Windowing dependency supports context
@@ -443,12 +445,14 @@ consistent and requires no change.
   EBO/indexed rendering and per-vertex colors for viewer content; lighting,
   materials, PBR and scene textures. Dear ImGui's own backend drawing/font
   resources do not constitute these Viewer capabilities.
-- CAD/domain: geometry, topology, scene graph, CAD tessellation, selection,
-  picking, ray casting, entity hover/highlighting. Workspace hover used for
-  input gating is not CAD hover.
+- CAD/domain: topology, scene graph, CAD tessellation, selection,
+  picking, ray casting, entity hover/highlighting. Value Geometry is now
+  implemented in B3, but not connected to Viewer rendering. Workspace hover
+  used for input gating is not CAD hover.
 - Math: production Vector4, generic Vector/Matrix, Matrix4 determinant,
   matrix inverse, Quaternion, arbitrary-axis rotation, global geometric
-  modelling tolerance, Point/Direction types, Ray, Plane and BoundingBox.
+  modelling tolerance inside Math, dedicated Direction types and BoundingBox.
+  Point, Ray and Plane now exist in Geometry, not Math; B1 stays unchanged.
   Local homogeneous helpers in tests do not add a production Vector4.
 
 No B1 point/direction API is changed. Future CAD representation remains
@@ -502,44 +506,207 @@ Os conceitos ainda não implementados estão separados em "Deferred after B1".
 
 ### core/geometry
 
-#### D3 FROZEN — future Geometry boundary (PLANNED / NOT STARTED)
+#### CURRENT B3 IMPLEMENTATION — Geometric Primitives (D3 FROZEN)
 
-D3 freezes ADR-0013 through ADR-0016; all are ACCEPTED. The ADR inventory is
-now 16/16 ACCEPTED; the 12/12 statement above records the B2 validation snapshot.
-B3 remains NOT STARTED, with every B3 increment PENDING. No geometric type
-or `microsw_geometry` target exists yet.
+B3 is IN PROGRESS. B3.1–B3.8 are COMPLETE / ACCEPTED; B3.9 — Documentation &
+D3 Validation is CURRENT. B3.10 and B3.FREEZE are PENDING and each needs
+explicit authorization. No B3 freeze is declared.
 
-Foundation-to-consumer flow (not dependency arrows):
+Geometry is implemented in `src/core/geometry`, namespace
+`microsw::geometry`, using the project-owned `microsw_geometry` target.
+Its real dependency graph is:
 
 ```text
+microsw_geometry
+    |
+    v
 microsw_math
     |
     v
-microsw_geometry (planned)
+C++ standard library
 ```
 
-The planned dependency is `microsw_geometry -> microsw_math`, never the reverse.
-Geometry uses BUILD and is independent of Rendering, Viewer, UI, Document,
-Topology, Modeling and Persistence. It supplies value geometry to future
-Topology/Modeling/CAD consumers: Point3 is not Vertex, Segment3 is not Edge,
-and Plane is not Face. No IDs, selection, display properties, domain ownership,
-persistence metadata or GPU resources belong to these primitive values.
-Rendering remains derived; future Viewer consumption requires explicit boundaries.
+Math does not depend on Geometry. Geometry does not depend on Viewer,
+Rendering, UI, Windowing or Logging. The application executable
+`micro_solidworks` does not yet consume `microsw_geometry`; only the existing
+test executable links it. The B2 Viewer does not render Geometry primitives.
+Its grid and axes remain independent viewer aids.
 
-The approved direction is concrete Point2/Point3 distinct from Vector2/Vector3;
-endpoint-based Segment2/Segment3; origin plus normalized direction for
-Line2/Line3 and Ray2/Ray3; origin plus normalized normal for Plane (or an
-equivalent project-owned form). Geometric/modeling tolerance is initially
-1e-9 mm at the document/kernel scale, separate from B1's numeric tolerances
-of 1e-12 absolute and relative. Units are not embedded in geometric types.
-This is an approved future Geometry policy, not an implemented global Math
-tolerance or a physical accuracy guarantee. Earlier B1/B2 deferred statements
-describe their frozen implementation scope; D3 does not modify those APIs.
+The conceptual foundation-to-consumer flow is Math -> Geometry -> future
+Topology / Modeling / CAD. These are not reversed dependency arrows.
+Topology, Modeling and CAD entities remain NOT IMPLEMENTED.
 
-See ADR-0013–0016 for point arithmetic, finite values, normalized invariants,
-degenerate segments, explicit exceptions and representation versus equivalence.
-Generic primitives and general intersections are not part of initial B3.
-B3.1 requires explicit authorization; D3 adds documentation only.
+Geometry currently supplies finite positions, canonical geometric primitives,
+predicates, point-to-primitive metric/projection operations and a geometric
+tolerance policy. Types are small project-owned, copyable/movable values,
+valid on construction, with read-only invariant-bearing state. There is no
+inheritance between primitives and no stored query cache.
+
+##### Point2 / Point3
+
+Point2 stores x/y Scalars; Point3 stores x/y/z Scalars. Default construction
+is the origin. Coordinates must be finite. Points are distinct from B1
+Vector2/Vector3; no implicit conversion or inheritance conflates positions
+with displacements.
+
+| Operation | Result |
+| --- | --- |
+| Point - Point | Vector |
+| Point + Vector | Point |
+| Vector + Point | Point |
+| Point - Vector | Point |
+
+There is no Point + Point, Point * Scalar, Point / Scalar or approximate
+operator==. `areCoincident(a,b,tolerance)` compares Euclidean separation
+against a finite non-negative geometric tolerance, without relative tolerance.
+Zero tolerance requires identical coordinates.
+
+##### Primitive representations and operations
+
+| Types | Stored state / domain | Implemented operations |
+| --- | --- | --- |
+| Segment2 / Segment3 | Endpoints A and B only; parameter [0,1] | a, b, length, squaredLength, midpoint, direction, isDegenerate, pointAt, contains, closestPoint, distance, isParallel, isPerpendicular |
+| Line2 / Line3 | Origin + unit direction; parameter in R | origin, direction, pointAt, contains, closestPoint, distance, isParallel, isPerpendicular |
+| Ray2 / Ray3 | Origin + unit direction; parameter >= 0 | origin, direction, pointAt, contains, closestPoint, distance, isParallel, isPerpendicular |
+| Plane (3D only) | Origin + unit normal | origin, normal, contains, closestPoint, distance, signedDistance, isParallel, isPerpendicular |
+
+Line/Ray directions and Plane normals are normalized at construction.
+Their input Euclidean magnitude must exceed 1e-9; zero, near-zero and
+non-finite inputs are rejected. These types have no invalid default state.
+
+Segment permits coincident or approximately coincident endpoints.
+`isDegenerate` uses endpoint coincidence; `direction` uses the default
+geometric tolerance and throws domain_error for degeneracy. Same-type
+parallel/perpendicular relations consequently also reject a degenerate operand.
+Midpoint and convex `pointAt(t)` preserve Point semantics and avoid naive
+overflow in A+B or B-A. For exactly equal endpoints, every valid pointAt
+returns A. For distinct but approximately coincident endpoints, pointAt
+still interpolates the endpoints; it does not snap them to A.
+The metric degeneracy policy uses the default geometric tolerance:
+closestPoint returns A and distance remains the Euclidean distance to A.
+
+For a non-degenerate Segment, closestPoint clamps the projected parameter
+to [0,1]. Line projection has no domain clamp. Ray projection clamps a
+negative projected parameter exactly to its origin, not according to geometric
+tolerance. Thus a point 5e-10 behind a Ray origin can satisfy default contains
+but still have its closest point at the origin and a non-zero distance.
+
+Representation is not equivalence: different origins can represent the same
+Line; +D/-D preserve the same line point set with opposite parameter
+orientations. Opposite Ray directions describe different half-lines.
+Plane is conceptually dot(P-origin,normal)=0. Plane(O,N) and Plane(O,-N)
+have the same point set with opposite orientation: signedDistance changes
+sign, distance remains its absolute value and closestPoint is geometrically
+unchanged. No primitive-equivalence API is implemented.
+
+##### Predicates, metrics and tolerance
+
+`pointAt`, `contains` and relation queries derive from canonical state.
+Contains tests support-line/plane residuals and, where applicable, domain
+bounds. Segment contains uses its supplied tolerance to decide degeneracy;
+its metric operations use the default degeneracy policy described above.
+
+Same-type `isParallel` and `isPerpendicular` exist for Segment, Line, Ray
+and Plane (matching dimensions). They compare dimensionless unit-vector
+cross/dot residuals using the geometric default as their explicit threshold;
+this is not a general conversion of length tolerance into angular units.
+There is no cross-type relation matrix (Line-Ray, Plane-Line, etc.).
+
+```text
+Geometry defaultGeometricTolerance = 1e-9
+Math defaultAbsoluteTolerance      = 1e-12
+Math defaultRelativeTolerance      = 1e-12
+```
+
+Geometric tolerance is not numeric tolerance. The initial Geometry/kernel
+length scale is interpreted in millimetres at the future document boundary;
+1e-9 mm is a kernel policy, not a physical-accuracy guarantee. Types do not
+embed units. Math's numeric tolerances are unchanged.
+
+Predicates areCoincident, isDegenerate, contains, isParallel and
+isPerpendicular accept finite non-negative tolerance; zero uses the exact
+computed residual (not approximate equality). Floating-point generation of a
+diagonal point may leave a residual, so zero-tolerance containment is not a
+promise of symbolic exact arithmetic.
+
+Metric APIs follow one public convention: `operation(primitive, point)`.
+Only point-to-Segment/Line/Ray/Plane distance and closestPoint are provided,
+plus Plane signedDistance. No reverse overload set, public projection
+parameter, public Point-Point distance, or primitive-primitive metric exists.
+Metrics have no tolerance parameter and do not snap small results to zero.
+For an applicable perpendicular offset of 5e-10, contains may be true while
+distance remains approximately 5e-10. The Segment degeneracy policy is an
+explicit domain rule, not general metric-output snapping.
+
+##### Numerical support and failures
+
+`GeometryQuerySupport` is an internal implementation detail shared by
+primitive implementations, not a public conceptual query API or new Scalar.
+Binary-scaled intermediates support robust offsets, dot/cross residuals,
+norms, projection and metric reconstruction where ordinary intermediate
+differences or products could overflow. Reconstruction avoids selected
+extreme-origin cancellation cases; this is not arbitrary-precision arithmetic
+or a guarantee against all floating-point loss. It does not depend on a
+wider native long double on MSVC.
+
+Public geometric state stays finite. A representable closest point can still
+exist when distance overflows, and a finite perpendicular distance can exist
+when the closest point is unrepresentable; these operations are checked
+independently where supported.
+
+| Failure | Exception / examples |
+| --- | --- |
+| Invalid input | std::invalid_argument: non-finite coordinates, directions/normals or parameters; invalid tolerance; near-zero Line/Ray direction or Plane normal |
+| Undefined operation | std::domain_error: degenerate Segment direction/relations; pointAt outside Segment/Ray domain |
+| Non-representable result | std::overflow_error: point arithmetic, lengths, pointAt or metric/projection result overflow |
+
+No silent inf/NaN is returned as valid geometric state or metric output.
+Queries and operations do not mutate their operands.
+
+##### Geometry / Topology / CAD / Rendering boundaries
+
+Point3 != Vertex; Segment3 != Edge; Plane != Face. Line/Ray are not CAD
+construction entities merely because they are geometric values.
+Geometry has no topological connectivity, incidence, adjacency, loops,
+shells or topological ownership. Primitive direction/normal orientation is
+not a topological orientation model.
+
+Geometry has no IDs, names, selection state, document/feature ownership,
+history, constraints or persistence metadata. Public APIs expose no OpenGL,
+GLAD, GLFW, Dear ImGui, spdlog, VAO, VBO, Shader, Color, LineWidth or Render/Draw
+methods. Future CAD representation remains authoritative, flowing through
+tessellation to derived render representations; Geometry owns no GPU resources.
+
+Not implemented: general or individual Line-Line/Ray-Ray/Segment-Segment/
+Plane-* intersections; primitive equivalence (sameLine/samePlane/sameRay/
+sameSegment); cross-type relation matrices; primitive-primitive distances or
+closest points; Vertex/Edge/Face/Wire/Shell/Solid, Topology/BRep;
+Document/Sketch/Feature/constraints, extrude/revolve/booleans, selection,
+persistent IDs/history; Geometry rendering integration.
+No such future work is authorized by B3.9.
+
+##### Testing and D3 validation
+
+B3.8's validated snapshot is 533 tests, 533 PASS, 0 FAIL, with no findings.
+It includes primitive/unit, invariant, tolerance, query, metric/projection
+and extreme-coordinate tests. The 31 tests in
+`tests/geometry/test_geometry_integration.cpp` cross Point/Vector semantics,
+Segment degeneracy, Line projection and origin invariance, Ray domain and
+predicate-vs-metric distinctions, Plane signed orientation and tangent-origin
+invariance, parallel/perpendicular relations, extreme coordinates, overflow
+contracts and 2D/3D consistency. Runtime smoke validates startup, a visible
+unchanged B2 viewer, normal close and exit code 0, not rendering of Geometry.
+
+| Accepted ADR | B3 implementation audit | Evidence |
+| --- | --- | --- |
+| ADR-0013 | CONFORMANT | Point2/3 finite Scalar state, distinct Point/Vector arithmetic, areCoincident, no inheritance or ambiguous Point operators |
+| ADR-0014 | CONFORMANT | Endpoint-only Segment; origin + normalized direction/normal for Line/Ray/Plane; derived queries without redundant state; no equivalence/intersections |
+| ADR-0015 | CONFORMANT | Separate 1e-9 geometric and 1e-12 numeric policies, finite validation, explicit degeneracy/exceptions, no metric-output snapping |
+| ADR-0016 | CONFORMANT | Geometry -> Math only; no topology/CAD identity or rendering ownership; application/Viewer do not consume Geometry |
+
+ADR-0001 through ADR-0016 remain 16/16 ACCEPTED, unchanged. D0/D1/D2/D3
+remain FROZEN. B3 remains IN PROGRESS; B3.9 records compliance, not baseline
+validation or freeze. PROJECT_CHARTER remains consistent and unchanged.
 
 #### Longer-term Geometry direction
 

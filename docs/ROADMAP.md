@@ -175,7 +175,7 @@ D0/D1/D2 e as baselines B0/B1/B2 permanecem FROZEN.
 
 # B3 — Geometric Primitives
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 Objectivo:
 
@@ -186,27 +186,29 @@ Estado dos increments:
 
 | Increment | Estado |
 | --- | --- |
-| B3.1 — Point2 / Point3 | PENDING |
-| B3.2 — Segment2 / Segment3 | PENDING |
-| B3.3 — Line2 / Line3 | PENDING |
-| B3.4 — Ray2 / Ray3 | PENDING |
-| B3.5 — Plane | PENDING |
-| B3.6 — Primitive Queries | PENDING |
-| B3.7 — Distance & Projection Operations | PENDING |
-| B3.8 — Geometric Integration Tests | PENDING |
-| B3.9 — Documentation & D3 Validation | PENDING |
+| B3.1 — Point2 / Point3 | COMPLETE |
+| B3.2 — Segment2 / Segment3 | COMPLETE |
+| B3.3 — Line2 / Line3 | COMPLETE |
+| B3.4 — Ray2 / Ray3 | COMPLETE |
+| B3.5 — Plane | COMPLETE |
+| B3.6 — Primitive Queries | COMPLETE |
+| B3.7 — Distance & Projection Operations | COMPLETE |
+| B3.8 — Geometric Integration Tests | COMPLETE |
+| B3.9 — Documentation & D3 Validation | CURRENT |
 | B3.10 — Baseline Validation | PENDING |
 | B3.FREEZE | PENDING |
 
-Direcção planeada: representação, invariants, basic queries, distance/projection
-e integração. Length, squaredLength, direction, midpoint, contains, closest point,
-distance, projection, isDegenerate e queries básicas de parallel/perpendicular
-são possibilidades; as APIs exactas dependem do incremento autorizado.
-Templates genéricos e framework geral de intersections ficam deferred.
-Uma intersection pontual futura exige um incremento explicitamente justificado.
+Implementado em B3.1–B3.8: Point2/3, Segment2/3, Line2/3, Ray2/3 e Plane;
+representações canónicas e invariants, queries de pertença e relações entre
+primitivas do mesmo tipo, métricas/projecções entre primitiva e Point.
+B3.8 validou 533/533 testes (31 novos de integração), 0 falhas, runtime smoke
+com fecho de código 0 e nenhum finding.
 
-B3.1 — Point2 / Point3 só pode começar após autorização explícita.
-Nenhum incremento está CURRENT; D3.FREEZE não inicia B3.
+B3.9 é o incremento documental CURRENT. B3.10 e B3.FREEZE permanecem PENDING;
+B3 não está FROZEN. Ambos exigem autorização explícita separada.
+Intersections, primitive equivalence, relações generalizadas entre tipos,
+métricas entre primitivas, Topology/CAD e Geometry rendering integration
+continuam não implementados. Nenhum trabalho futuro é autorizado por este estado.
 
 ---
 

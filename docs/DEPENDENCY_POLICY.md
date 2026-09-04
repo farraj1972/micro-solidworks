@@ -63,13 +63,16 @@ OpenGL 3.3 funcional.
   implementado em B2 conforme D2 (ADR-0010/0011): `OrbitCamera`,
   `viewMatrix`, `perspective`, `orthographic` e `ProjectionState`;
   sem GLM/Eigen.
-- Educational Geometry Kernel: `BUILD` com possível substituição futura,
-  ainda não implementado.
-- Geometric primitives/core: `BUILD`, aprovado por D3 (ADR-0013–0016),
-  PLANNED / NOT STARTED em B3. A futura Geometry depende de Math, nunca
-  de Viewer/Rendering/UI ou das camadas de domínio consumidoras. Preserva
-  o Educational Geometry Kernel de ADR-0006 e a possibilidade de substituição
-  futura controlada; não introduz kernel externo, CGAL ou OpenCascade em B3.
+- Geometry primitives/kernel foundation: `BUILD`, implementada em B3.1–B3.8
+  no target project-owned `microsw_geometry`, conforme D3 (ADR-0013–0016).
+  Depende apenas de `microsw_math` e da biblioteca standard C++; não depende
+  de Viewer, Rendering, UI, Windowing, Logging ou futuras camadas de domínio.
+  O executável principal ainda não consome Geometry.
+- Educational Geometry Kernel: a fundação de valores, queries e métricas
+  geométricas já existe; um kernel CAD completo, Topology e Modeling continuam
+  por implementar. Preserva-se a estratégia educacional BUILD com possível
+  substituição futura controlada de ADR-0006. CGAL, OpenCascade e outros
+  kernels externos não estão integrados em B3.
 
 `WorkspaceViewport`, navegação, `ReferenceGrid`, `ReferenceAxes`,
 `ShaderProgram` e `LineRenderer` são componentes/fronteiras project-owned,

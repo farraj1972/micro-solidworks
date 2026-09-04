@@ -16,7 +16,7 @@ Vector2, Vector3, Matrix3, Matrix4, Transformation Operations and mathematical
 integration tests, described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 B1.1–B1.10 are complete.
 
-## Current baseline
+## Latest stable baseline
 
 The current latest stable baseline is **B2 — 3D Viewer**, **STATUS: FROZEN**
 (tag: `b2-3d-viewer`). B2.1–B2.13 are COMPLETE; B2.FREEZE is FROZEN.
@@ -43,10 +43,25 @@ Its accepted decisions are
 [`ADR-0014`](docs/adr/ADR-0014-geometric-primitive-representation.md),
 [`ADR-0015`](docs/adr/ADR-0015-geometric-tolerance-and-degeneracy.md) and
 [`ADR-0016`](docs/adr/ADR-0016-geometry-topology-cad-boundaries.md).
-The next baseline is **B3 — Geometric Primitives**, **NOT STARTED**.
-Geometry is not implemented. B3.1 — Point2 / Point3 remains PENDING and
-requires explicit authorization before implementation. Every subsequent
-increment, Decision Gate, baseline or freeze also requires explicit authorization.
+
+## Current baseline
+
+**B3 — Geometric Primitives** is **IN PROGRESS**.
+B3.1–B3.8 are COMPLETE / ACCEPTED. The current increment is
+**B3.9 — Documentation & D3 Validation**.
+B3.10 — Baseline Validation and B3.FREEZE remain PENDING and each requires
+explicit authorization. B3 is not frozen.
+
+The project-owned `microsw_geometry` library provides Point2/3, Segment2/3,
+Line2/3, Ray2/3 and Plane, with geometric predicates and point-to-primitive
+distance/projection operations. It depends only on internal Math and the C++
+standard library. Geometry is tested but is not yet consumed by the application
+executable or rendered by the Viewer. Topology, CAD modelling, intersections,
+primitive equivalence and primitive-to-primitive metrics are not implemented.
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for APIs, tolerance and boundaries.
+
+Every subsequent increment, Decision Gate, baseline or freeze requires
+explicit authorization.
 
 The approved technology foundation is C++20, CMake, GoogleTest with CTest,
 GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment
@@ -60,9 +75,11 @@ cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
-B2.13 validation snapshot: **274/274 tests PASS**, plus manual runtime
-validation. Tests include real OpenGL contexts and require a working graphics
-environment; this count is a snapshot, not a fixed future total.
+B3.8 validation snapshot: **533 tests, 533 PASS, 0 FAIL**, including 31 geometric
+integration tests, plus application runtime smoke (startup, visible viewer,
+normal close, exit code 0). B2.13's frozen snapshot was 274/274 tests PASS.
+Tests include real OpenGL contexts and require a working graphics environment;
+these counts are snapshots, not fixed future totals.
 
 Project operating rules are defined in [`AGENTS.md`](AGENTS.md), with bootstrap
 guidance in [`BOOTSTRAP.md`](BOOTSTRAP.md). Architectural and project

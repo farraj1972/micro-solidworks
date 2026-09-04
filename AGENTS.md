@@ -807,17 +807,21 @@ STATUS: FROZEN
 
 D0, D1 and D2 remain FROZEN. ADR-0013 through ADR-0016 are ACCEPTED.
 
-Next baseline:
+Current baseline:
 
 ```text
 B3 — Geometric Primitives
-STATUS: NOT STARTED
-B3.1–B3.10: PENDING
+STATUS: IN PROGRESS
+B3.1–B3.8: COMPLETE / ACCEPTED
+B3.9 — Documentation & D3 Validation: CURRENT
+B3.10 — Baseline Validation: PENDING
 B3.FREEZE: PENDING
 ```
 
-B3 implementation may only begin with explicit B3.1 authorization.
-Next permitted increment: B3.1 — Point2 / Point3, only after that authorization.
+B3.8 validated 533/533 tests and runtime smoke, with no findings.
+B3.9 is documentation and D3 compliance only; it does not freeze B3.
+Next permitted increment: B3.10 — Baseline Validation, only after explicit
+authorization. B3.FREEZE requires separate explicit authorization.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

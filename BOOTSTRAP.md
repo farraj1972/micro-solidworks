@@ -20,12 +20,14 @@ B2 status: FROZEN
 B2.1–B2.13: COMPLETE
 B2.FREEZE: FROZEN
 Decision Gate D3 — Geometric Foundation: FROZEN
-Next baseline: B3 — Geometric Primitives
-B3 status: NOT STARTED
-B3.1–B3.10: PENDING
+Current baseline: B3 — Geometric Primitives
+B3 status: IN PROGRESS
+B3.1–B3.8: COMPLETE / ACCEPTED
+B3.9 — Documentation & D3 Validation: CURRENT
+B3.10 — Baseline Validation: PENDING
 B3.FREEZE: PENDING
-Next permitted increment: B3.1 — Point2 / Point3
-B3.1 requires explicit authorization before implementation
+Next permitted increment: B3.10 — Baseline Validation
+B3.10 and B3.FREEZE each require explicit authorization
 ```
 
 Every increment and baseline freeze requires explicit authorization.
