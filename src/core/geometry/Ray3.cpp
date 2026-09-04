@@ -72,4 +72,14 @@ bool isPerpendicular(const Ray3& a, const Ray3& b, math::Scalar tolerance)
     const auto second = b.direction();
     return detail::perpendicular(first, second, tolerance);
 }
+
+Point3 closestPoint(const Ray3& primitive, const Point3& point)
+{
+    return detail::nearestLine(primitive.origin(), primitive.direction(), point, true);
+}
+
+math::Scalar distance(const Ray3& primitive, const Point3& point)
+{
+    return detail::lineMetric(primitive.origin(), primitive.direction(), point, true);
+}
 }

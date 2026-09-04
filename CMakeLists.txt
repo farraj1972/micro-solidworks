@@ -227,6 +227,7 @@ if(BUILD_TESTING)
         tests/geometry/test_ray2.cpp
         tests/geometry/test_ray3.cpp
         tests/geometry/test_plane.cpp
+        tests/geometry/test_distance_projection.cpp
         tests/geometry/test_segment2_queries.cpp
         tests/geometry/test_segment3_queries.cpp
         tests/geometry/test_line2_queries.cpp

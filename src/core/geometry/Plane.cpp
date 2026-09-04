@@ -63,4 +63,19 @@ bool isPerpendicular(const Plane& a, const Plane& b, math::Scalar tolerance)
     const auto second = b.normal();
     return detail::perpendicular(first, second, tolerance);
 }
+
+Point3 closestPoint(const Plane& primitive, const Point3& point)
+{
+    return detail::nearestPlane(primitive.origin(), primitive.normal(), point);
+}
+
+math::Scalar distance(const Plane& primitive, const Point3& point)
+{
+    return std::abs(signedDistance(primitive, point));
+}
+
+math::Scalar signedDistance(const Plane& primitive, const Point3& point)
+{
+    return detail::planeSignedMetric(primitive.origin(), primitive.normal(), point);
+}
 }

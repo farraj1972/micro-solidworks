@@ -123,6 +123,24 @@ bool forward(const Components& displacement, const Components& direction,
     const auto along = inner(displacement, direction);
     return along.fraction >= 0 || within(along, tolerance);
 }
+
+math::Scalar scalarResult(Component value)
+{
+    const auto result = std::ldexp(value.fraction, value.exponent);
+    if (!std::isfinite(result))
+        throw std::overflow_error{"Geometric metric result is not representable"};
+    return result;
+}
+
+Point3 translated(const Point3& origin, const Components& vector, Component amount)
+{
+    // Do not materialize an overflowing parameter or displacement before
+    // cancellation with the finite origin has taken place.
+    return {
+        scalarResult(add(Component{origin.x()}, multiply(vector[0], amount))),
+        scalarResult(add(Component{origin.y()}, multiply(vector[1], amount))),
+        scalarResult(add(Component{origin.z()}, multiply(vector[2], amount)))};
+}
 }
 
 void validateTolerance(math::Scalar tolerance)
@@ -175,5 +193,63 @@ bool parallel(const math::Vector3& a, const math::Vector3& b, math::Scalar toler
 bool perpendicular(const math::Vector3& a, const math::Vector3& b, math::Scalar tolerance)
 {
     return within(inner(components(a), components(b)), tolerance);
+}
+
+Point3 nearestSegment(const Point3& a, const Point3& b, const Point3& point)
+{
+    const auto displacement = offset(b, a);
+    if (within(norm(displacement), defaultGeometricTolerance))
+        return a;
+    const auto numerator = inner(offset(point, a), displacement);
+    if (numerator.fraction <= 0) return a;
+    const auto denominator = inner(displacement, displacement);
+    const Component t{numerator.fraction / denominator.fraction,
+                      numerator.exponent - denominator.exponent};
+    if (!within(t, 1.0)) return b;
+    if (t.exponent == 1 && t.fraction == 0.5) return b;
+    // Reconstruct from the query point, not A + t*(B-A): cancellation with a
+    // huge A would otherwise erase small but representable projected coordinates.
+    const auto direction = unit(displacement);
+    const auto residual = outer(direction, outer(offset(point, a), direction));
+    return translated(point, residual, Component{-1});
+}
+
+Point3 nearestLine(const Point3& origin, const math::Vector3& direction,
+                   const Point3& point, bool forwardOnly)
+{
+    const auto vector = components(direction);
+    const auto t = inner(offset(point, origin), vector);
+    if (forwardOnly && t.fraction < 0) return origin;
+    const auto residual = outer(vector, outer(offset(point, origin), vector));
+    return translated(point, residual, Component{-1});
+}
+
+Point3 nearestPlane(const Point3& origin, const math::Vector3& normal, const Point3& point)
+{
+    const auto vector = components(normal);
+    return translated(point, vector, negate(inner(offset(point, origin), vector)));
+}
+
+math::Scalar pointMetric(const Point3& a, const Point3& b)
+{
+    return scalarResult(norm(offset(a, b)));
+}
+
+math::Scalar lineMetric(const Point3& origin, const math::Vector3& direction,
+                        const Point3& point, bool forwardOnly)
+{
+    const auto displacement = offset(point, origin);
+    const auto vector = components(direction);
+    if (forwardOnly && inner(displacement, vector).fraction < 0)
+        return scalarResult(norm(displacement));
+    // Evaluate the perpendicular residual directly: a distant projection
+    // need not be materialized merely to obtain a small representable distance.
+    return scalarResult(norm(outer(displacement, vector)));
+}
+
+math::Scalar planeSignedMetric(const Point3& origin, const math::Vector3& normal,
+                               const Point3& point)
+{
+    return scalarResult(inner(offset(point, origin), components(normal)));
 }
 }

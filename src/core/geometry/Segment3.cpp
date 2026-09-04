@@ -104,4 +104,15 @@ bool isPerpendicular(const Segment3& a, const Segment3& b, math::Scalar toleranc
     const auto second = b.direction();
     return detail::perpendicular(first, second, tolerance);
 }
+
+Point3 closestPoint(const Segment3& primitive, const Point3& point)
+{
+    return detail::nearestSegment(primitive.a(), primitive.b(), point);
+}
+
+math::Scalar distance(const Segment3& primitive, const Point3& point)
+{
+    const auto nearest = closestPoint(primitive, point);
+    return detail::pointMetric(point, nearest);
+}
 }

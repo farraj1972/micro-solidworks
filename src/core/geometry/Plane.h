@@ -27,6 +27,12 @@ private:
     math::Vector3 normal_;
 };
 
+// Metric operations do not snap results using geometric tolerance.
+// Non-representable results throw std::overflow_error.
+[[nodiscard]] Point3 closestPoint(const Plane& primitive, const Point3& point);
+[[nodiscard]] math::Scalar distance(const Plane& primitive, const Point3& point);
+[[nodiscard]] math::Scalar signedDistance(const Plane& primitive, const Point3& point);
+
 // Relations use dimensionless unit-vector residuals and the geometric default.
 [[nodiscard]] bool isParallel(const Plane& a, const Plane& b,
     math::Scalar tolerance = defaultGeometricTolerance);

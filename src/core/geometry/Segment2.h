@@ -38,6 +38,11 @@ private:
     Point2 b_{};
 };
 
+// Metric operations do not snap results using geometric tolerance.
+// Non-representable results throw std::overflow_error.
+[[nodiscard]] Point2 closestPoint(const Segment2& primitive, const Point2& point);
+[[nodiscard]] math::Scalar distance(const Segment2& primitive, const Point2& point);
+
 // Relations use dimensionless unit-vector residuals and the geometric default.
 [[nodiscard]] bool isParallel(const Segment2& a, const Segment2& b,
     math::Scalar tolerance = defaultGeometricTolerance);

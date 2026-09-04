@@ -30,6 +30,11 @@ private:
     math::Vector2 direction_;
 };
 
+// Metric operations do not snap results using geometric tolerance.
+// Non-representable results throw std::overflow_error.
+[[nodiscard]] Point2 closestPoint(const Ray2& primitive, const Point2& point);
+[[nodiscard]] math::Scalar distance(const Ray2& primitive, const Point2& point);
+
 // Relations use dimensionless unit-vector residuals and the geometric default.
 [[nodiscard]] bool isParallel(const Ray2& a, const Ray2& b,
     math::Scalar tolerance = defaultGeometricTolerance);
