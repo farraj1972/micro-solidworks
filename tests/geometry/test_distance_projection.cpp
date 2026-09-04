@@ -6,6 +6,7 @@
 #include "core/geometry/Ray3.h"
 #include "core/geometry/Plane.h"
 #include <gtest/gtest.h>
+#include <array>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -15,6 +16,286 @@ using namespace microsw::geometry;
 using microsw::math::Vector2;
 using microsw::math::Vector3;
 using microsw::math::Scalar;
+
+Scalar projectionSeparation(const Point2& a, const Point2& b)
+{
+    return std::hypot(a.x() - b.x(), a.y() - b.y());
+}
+
+Scalar projectionSeparation(const Point3& a, const Point3& b)
+{
+    return std::hypot(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
+}
+
+template<class Primitive, class Point>
+void expectProjection(const Primitive& primitive, const Point& query, const Point& expected)
+{
+    const auto closest = closestPoint(primitive, query);
+    EXPECT_TRUE(areCoincident(closest, expected, 0));
+    EXPECT_TRUE(primitive.contains(closest, 1e-12));
+    EXPECT_NEAR(distance(primitive, closest), 0, 1e-12);
+    const auto separation = projectionSeparation(query, closest);
+    ASSERT_GT(separation, 0);
+    EXPECT_NEAR(distance(primitive, query) / separation, 1, 1e-14);
+}
+
+TEST(Line2Metrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 2; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 2> a{}, b{}, p{}, c{}, d{};
+        a[axis] = b[axis] = c[axis] = small;
+        p[axis] = large;
+        const int along = (axis + 1) % 2;
+        b[along] = 2;
+        p[along] = c[along] = d[along] = 1;
+        const Point2 origin{a[0], a[1]};
+        const Line2 primitive{origin, Vector2{d[0], d[1]}};
+        expectProjection(primitive,
+            Point2{p[0], p[1]},
+            Point2{c[0], c[1]});
+    }
+}
+
+TEST(Line2Metrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Line2 primitive{Point2{0, -2 * sign},
+            Vector2{sign, sign}};
+        expectProjection(primitive, Point2{1e20 * sign, -1e20 * sign},
+            Point2{sign, -sign});
+    }
+}
+
+TEST(Ray2Metrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 2; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 2> a{}, b{}, p{}, c{}, d{};
+        a[axis] = b[axis] = c[axis] = small;
+        p[axis] = large;
+        const int along = (axis + 1) % 2;
+        b[along] = 2;
+        p[along] = c[along] = d[along] = 1;
+        const Point2 origin{a[0], a[1]};
+        const Ray2 primitive{origin, Vector2{d[0], d[1]}};
+        expectProjection(primitive,
+            Point2{p[0], p[1]},
+            Point2{c[0], c[1]});
+    }
+}
+
+TEST(Ray2Metrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Ray2 primitive{Point2{0, -2 * sign},
+            Vector2{sign, sign}};
+        expectProjection(primitive, Point2{1e20 * sign, -1e20 * sign},
+            Point2{sign, -sign});
+    }
+}
+
+TEST(Segment2Metrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 2; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 2> a{}, b{}, p{}, c{}, d{};
+        a[axis] = b[axis] = c[axis] = small;
+        p[axis] = large;
+        const int along = (axis + 1) % 2;
+        b[along] = 2;
+        p[along] = c[along] = d[along] = 1;
+        const Point2 origin{a[0], a[1]};
+        const Segment2 primitive{origin, Point2{b[0], b[1]}};
+        expectProjection(primitive,
+            Point2{p[0], p[1]},
+            Point2{c[0], c[1]});
+    }
+}
+
+TEST(Segment2Metrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Segment2 primitive{Point2{0, -2 * sign},
+            Point2{2 * sign, 0}};
+        expectProjection(primitive, Point2{1e20 * sign, -1e20 * sign},
+            Point2{sign, -sign});
+    }
+}
+
+TEST(Line3Metrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 3; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 3> a{}, b{}, p{}, c{}, d{};
+        a[axis] = b[axis] = c[axis] = small;
+        p[axis] = large;
+        const int along = (axis + 1) % 3;
+        b[along] = 2;
+        p[along] = c[along] = d[along] = 1;
+        const Point3 origin{a[0], a[1], a[2]};
+        const Line3 primitive{origin, Vector3{d[0], d[1], d[2]}};
+        expectProjection(primitive,
+            Point3{p[0], p[1], p[2]},
+            Point3{c[0], c[1], c[2]});
+    }
+}
+
+TEST(Line3Metrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Line3 primitive{Point3{0, -2 * sign, 1},
+            Vector3{sign, sign, 0}};
+        expectProjection(primitive, Point3{1e20 * sign, -1e20 * sign, -1e20},
+            Point3{sign, -sign, 1});
+    }
+}
+
+TEST(Ray3Metrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 3; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 3> a{}, b{}, p{}, c{}, d{};
+        a[axis] = b[axis] = c[axis] = small;
+        p[axis] = large;
+        const int along = (axis + 1) % 3;
+        b[along] = 2;
+        p[along] = c[along] = d[along] = 1;
+        const Point3 origin{a[0], a[1], a[2]};
+        const Ray3 primitive{origin, Vector3{d[0], d[1], d[2]}};
+        expectProjection(primitive,
+            Point3{p[0], p[1], p[2]},
+            Point3{c[0], c[1], c[2]});
+    }
+}
+
+TEST(Ray3Metrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Ray3 primitive{Point3{0, -2 * sign, 1},
+            Vector3{sign, sign, 0}};
+        expectProjection(primitive, Point3{1e20 * sign, -1e20 * sign, -1e20},
+            Point3{sign, -sign, 1});
+    }
+}
+
+TEST(Segment3Metrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 3; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 3> a{}, b{}, p{}, c{}, d{};
+        a[axis] = b[axis] = c[axis] = small;
+        p[axis] = large;
+        const int along = (axis + 1) % 3;
+        b[along] = 2;
+        p[along] = c[along] = d[along] = 1;
+        const Point3 origin{a[0], a[1], a[2]};
+        const Segment3 primitive{origin, Point3{b[0], b[1], b[2]}};
+        expectProjection(primitive,
+            Point3{p[0], p[1], p[2]},
+            Point3{c[0], c[1], c[2]});
+    }
+}
+
+TEST(Segment3Metrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Segment3 primitive{Point3{0, -2 * sign, 1},
+            Point3{2 * sign, 0, 1}};
+        expectProjection(primitive, Point3{1e20 * sign, -1e20 * sign, -1e20},
+            Point3{sign, -sign, 1});
+    }
+}
+
+TEST(PlaneMetrics, ReconstructionPreservesSmallOriginAcrossSignsAndAxes)
+{
+    for (int axis = 0; axis < 3; ++axis)
+    for (const Scalar small : {-1.0, 1.0})
+    for (const Scalar large : {-1e20, 1e20})
+    {
+        SCOPED_TRACE(::testing::Message() << "axis=" << axis << " origin=" << small << " query=" << large);
+        std::array<Scalar, 3> o{}, n{}, p{}, c{};
+        o[axis] = c[axis] = small;
+        n[axis] = 1;
+        p[axis] = large;
+        p[(axis + 1) % 3] = c[(axis + 1) % 3] = -large;
+        p[(axis + 2) % 3] = c[(axis + 2) % 3] = 1;
+        const Plane primitive{Point3{o[0], o[1], o[2]}, Vector3{n[0], n[1], n[2]}};
+        const Point3 query{p[0], p[1], p[2]}, expected{c[0], c[1], c[2]};
+        expectProjection(primitive, query, expected);
+        EXPECT_DOUBLE_EQ(signedDistance(primitive, closestPoint(primitive, query)), 0);
+    }
+}
+
+TEST(PlaneMetrics, DiagonalCancellationRetainsOriginContribution)
+{
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        const Plane primitive{Point3{sign, sign, 0}, Vector3{1, 1, 0}};
+        const Point3 query{sign * 1e20, sign * 1e20, 1}, expected{sign, sign, 1};
+        expectProjection(primitive, query, expected);
+        EXPECT_DOUBLE_EQ(signedDistance(primitive, closestPoint(primitive, query)), 0);
+    }
+}
+
+TEST(ProjectionMetrics, HugeOriginsPreserveTinyQueryCoordinatesAcrossAxes)
+{
+    const auto m = std::numeric_limits<Scalar>::max();
+    for (int axis = 0; axis < 3; ++axis)
+    for (const Scalar sign : {-1.0, 1.0})
+    {
+        std::array<Scalar, 3> a{}, b{}, d{}, p{}, c{};
+        a[axis] = -sign * m;
+        b[axis] = sign * m;
+        d[axis] = sign;
+        p[axis] = c[axis] = sign * 1e-100;
+        p[(axis + 1) % 3] = 5e-10;
+        const Point3 origin{a[0], a[1], a[2]}, end{b[0], b[1], b[2]};
+        const Vector3 direction{d[0], d[1], d[2]};
+        const Point3 query{p[0], p[1], p[2]}, expected{c[0], c[1], c[2]};
+        expectProjection(Line3{origin, direction}, query, expected);
+        expectProjection(Ray3{origin, direction}, query, expected);
+        expectProjection(Segment3{origin, end}, query, expected);
+    }
+}
+
+TEST(ProjectionMetrics, CancelledDiagonalParameterStillHonorsRayAndSegmentBounds)
+{
+    const Point2 query2{1e20, -1e20};
+    const Point3 query3{1e20, -1e20, 0};
+    const Ray2 ray2{Point2{0, 2}, Vector2{1, 1}};
+    const Ray3 ray3{Point3{0, 2, 0}, Vector3{1, 1, 0}};
+    expectProjection(ray2, query2, ray2.origin());
+    expectProjection(ray3, query3, ray3.origin());
+    const Segment2 segment2{Point2{0, -4}, Point2{1, -3}};
+    const Segment3 segment3{Point3{0, -4, 0}, Point3{1, -3, 0}};
+    expectProjection(segment2, query2, segment2.b());
+    expectProjection(segment3, query3, segment3.b());
+}
 
 TEST(Segment2Metrics, AxisProjectionDomainAndDistance)
 {

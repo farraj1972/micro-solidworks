@@ -132,14 +132,64 @@ math::Scalar scalarResult(Component value)
     return result;
 }
 
-Point3 translated(const Point3& origin, const Components& vector, Component amount)
+Component projectionSum(std::array<Component, 7> terms)
 {
-    // Do not materialize an overflowing parameter or displacement before
-    // cancellation with the finite origin has taken place.
-    return {
-        scalarResult(add(Component{origin.x()}, multiply(vector[0], amount))),
-        scalarResult(add(Component{origin.y()}, multiply(vector[1], amount))),
-        scalarResult(add(Component{origin.z()}, multiply(vector[2], amount)))};
+    std::sort(terms.begin(), terms.end(), [](Component a, Component b) {
+        if (a.fraction == 0) return false;
+        if (b.fraction == 0) return true;
+        return a.exponent > b.exponent;
+    });
+    Component result{};
+    for (const auto term : terms) result = add(result, term);
+    return result;
+}
+
+Component projectionNumerator(const Point3& origin, const Components& vector,
+                              const Point3& point)
+{
+    const Components p{Component{point.x()}, Component{point.y()}, Component{point.z()}};
+    const Components o{Component{origin.x()}, Component{origin.y()}, Component{origin.z()}};
+    std::array<Component, 7> terms{};
+    for (std::size_t i = 0; i < 3; ++i)
+    {
+        terms[2 * i] = multiply(p[i], vector[i]);
+        terms[2 * i + 1] = negate(multiply(o[i], vector[i]));
+    }
+    // Keep origin contributions until after cancellation between query axes.
+    return projectionSum(terms);
+}
+
+Point3 projected(const Point3& origin, const Components& vector,
+                 const Point3& point, bool ontoPlane = false)
+{
+    const Components p{Component{point.x()}, Component{point.y()}, Component{point.z()}};
+    const Components o{Component{origin.x()}, Component{origin.y()}, Component{origin.z()}};
+    const auto squaredLength = inner(vector, vector);
+    std::array<math::Scalar, 3> result{};
+    for (std::size_t i = 0; i < 3; ++i)
+    {
+        // Expand O + D*dot(P-O,D)/dot(D,D) BEFORE any subtraction.
+        // The diagonal origin coefficient is the sum of the other D[j]^2,
+        // not 1-D[i]^2. For a plane, exchange the origin/query coefficients.
+        // Thus neither a small origin nor a small query coordinate is first
+        // erased by forming P-O or P-residual. Scaled products also retain
+        // tiny parameters and intermediates outside Scalar's exponent range.
+        std::array<Component, 7> terms{};
+        terms[0] = multiply(ontoPlane ? o[i] : p[i], multiply(vector[i], vector[i]));
+        std::size_t next = 1;
+        for (std::size_t j = 0; j < 3; ++j)
+        {
+            if (j == i) continue;
+            const auto crossCoefficient = multiply(vector[i], vector[j]);
+            terms[next++] = multiply(ontoPlane ? p[i] : o[i], multiply(vector[j], vector[j]));
+            terms[next++] = multiply(ontoPlane ? o[j] : p[j], crossCoefficient);
+            terms[next++] = negate(multiply(ontoPlane ? p[j] : o[j], crossCoefficient));
+        }
+        const auto numerator = projectionSum(terms);
+        result[i] = scalarResult(Component{numerator.fraction / squaredLength.fraction,
+                                          numerator.exponent - squaredLength.exponent});
+    }
+    return {result[0], result[1], result[2]};
 }
 }
 
@@ -200,34 +250,29 @@ Point3 nearestSegment(const Point3& a, const Point3& b, const Point3& point)
     const auto displacement = offset(b, a);
     if (within(norm(displacement), defaultGeometricTolerance))
         return a;
-    const auto numerator = inner(offset(point, a), displacement);
+    const auto numerator = projectionNumerator(a, displacement, point);
     if (numerator.fraction <= 0) return a;
     const auto denominator = inner(displacement, displacement);
     const Component t{numerator.fraction / denominator.fraction,
                       numerator.exponent - denominator.exponent};
     if (!within(t, 1.0)) return b;
     if (t.exponent == 1 && t.fraction == 0.5) return b;
-    // Reconstruct from the query point, not A + t*(B-A): cancellation with a
-    // huge A would otherwise erase small but representable projected coordinates.
-    const auto direction = unit(displacement);
-    const auto residual = outer(direction, outer(offset(point, a), direction));
-    return translated(point, residual, Component{-1});
+    return projected(a, displacement, point);
 }
 
 Point3 nearestLine(const Point3& origin, const math::Vector3& direction,
                    const Point3& point, bool forwardOnly)
 {
     const auto vector = components(direction);
-    const auto t = inner(offset(point, origin), vector);
+    const auto t = projectionNumerator(origin, vector, point);
     if (forwardOnly && t.fraction < 0) return origin;
-    const auto residual = outer(vector, outer(offset(point, origin), vector));
-    return translated(point, residual, Component{-1});
+    return projected(origin, vector, point);
 }
 
 Point3 nearestPlane(const Point3& origin, const math::Vector3& normal, const Point3& point)
 {
     const auto vector = components(normal);
-    return translated(point, vector, negate(inner(offset(point, origin), vector)));
+    return projected(origin, vector, point, true);
 }
 
 math::Scalar pointMetric(const Point3& a, const Point3& b)
