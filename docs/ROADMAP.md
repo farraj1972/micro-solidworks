@@ -162,23 +162,51 @@ orbit/pan/zoom. Sem representação CAD, picking ou selection.
 
 ---
 
+# Decision Gate D3 — Geometric Foundation
+
+Status: FROZEN
+
+ADR-0013–0016 estão ACCEPTED: semântica Point/Vector, representação das
+primitivas, geometric/modeling tolerance e degenerescência, e fronteiras
+Geometry/Topology/CAD. D3 é documental: não implementa tipos nem targets.
+D0/D1/D2 e as baselines B0/B1/B2 permanecem FROZEN.
+
+---
+
 # B3 — Geometric Primitives
 
-Status: PLANNED / NOT STARTED (requires explicit authorization)
+Status: NOT STARTED
 
 Objectivo:
 
-Introduzir as primeiras entidades geométricas.
+Introduzir valores geométricos concretos sobre Math, conforme D3, sem
+identidade topológica, entidades CAD, dependências gráficas ou kernel externo.
 
-Possíveis capacidades:
+Estado dos increments:
 
-- Point;
-- Line;
-- Segment;
-- Plane;
-- Circle;
-- basic intersections;
-- tolerance handling.
+| Increment | Estado |
+| --- | --- |
+| B3.1 — Point2 / Point3 | PENDING |
+| B3.2 — Segment2 / Segment3 | PENDING |
+| B3.3 — Line2 / Line3 | PENDING |
+| B3.4 — Ray2 / Ray3 | PENDING |
+| B3.5 — Plane | PENDING |
+| B3.6 — Primitive Queries | PENDING |
+| B3.7 — Distance & Projection Operations | PENDING |
+| B3.8 — Geometric Integration Tests | PENDING |
+| B3.9 — Documentation & D3 Validation | PENDING |
+| B3.10 — Baseline Validation | PENDING |
+| B3.FREEZE | PENDING |
+
+Direcção planeada: representação, invariants, basic queries, distance/projection
+e integração. Length, squaredLength, direction, midpoint, contains, closest point,
+distance, projection, isDegenerate e queries básicas de parallel/perpendicular
+são possibilidades; as APIs exactas dependem do incremento autorizado.
+Templates genéricos e framework geral de intersections ficam deferred.
+Uma intersection pontual futura exige um incremento explicitamente justificado.
+
+B3.1 — Point2 / Point3 só pode começar após autorização explícita.
+Nenhum incremento está CURRENT; D3.FREEZE não inicia B3.
 
 ---
 

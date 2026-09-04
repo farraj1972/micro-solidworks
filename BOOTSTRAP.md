@@ -19,6 +19,13 @@ Current latest stable baseline: B2 — 3D Viewer
 B2 status: FROZEN
 B2.1–B2.13: COMPLETE
 B2.FREEZE: FROZEN
+Decision Gate D3 — Geometric Foundation: FROZEN
+Next baseline: B3 — Geometric Primitives
+B3 status: NOT STARTED
+B3.1–B3.10: PENDING
+B3.FREEZE: PENDING
+Next permitted increment: B3.1 — Point2 / Point3
+B3.1 requires explicit authorization before implementation
 ```
 
 Every increment and baseline freeze requires explicit authorization.
@@ -51,6 +58,10 @@ Before changing the repository, read the following documents in this order:
 15. docs/adr/ADR-0010-viewer-camera-and-navigation.md
 16. docs/adr/ADR-0011-view-and-projection-conventions.md
 17. docs/adr/ADR-0012-viewer-rendering-pipeline.md
+18. docs/adr/ADR-0013-geometric-point-and-vector-semantics.md
+19. docs/adr/ADR-0014-geometric-primitive-representation.md
+20. docs/adr/ADR-0015-geometric-tolerance-and-degeneracy.md
+21. docs/adr/ADR-0016-geometry-topology-cad-boundaries.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

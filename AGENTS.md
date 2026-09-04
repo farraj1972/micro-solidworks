@@ -801,11 +801,23 @@ STATUS: FROZEN
 Current decision gate:
 
 ```text
-D2 — 3D Viewer Conventions
+D3 — Geometric Foundation
 STATUS: FROZEN
 ```
 
-D0 and D1 remain FROZEN.
+D0, D1 and D2 remain FROZEN. ADR-0013 through ADR-0016 are ACCEPTED.
+
+Next baseline:
+
+```text
+B3 — Geometric Primitives
+STATUS: NOT STARTED
+B3.1–B3.10: PENDING
+B3.FREEZE: PENDING
+```
+
+B3 implementation may only begin with explicit B3.1 authorization.
+Next permitted increment: B3.1 — Point2 / Point3, only after that authorization.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

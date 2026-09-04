@@ -65,6 +65,11 @@ OpenGL 3.3 funcional.
   sem GLM/Eigen.
 - Educational Geometry Kernel: `BUILD` com possível substituição futura,
   ainda não implementado.
+- Geometric primitives/core: `BUILD`, aprovado por D3 (ADR-0013–0016),
+  PLANNED / NOT STARTED em B3. A futura Geometry depende de Math, nunca
+  de Viewer/Rendering/UI ou das camadas de domínio consumidoras. Preserva
+  o Educational Geometry Kernel de ADR-0006 e a possibilidade de substituição
+  futura controlada; não introduz kernel externo, CGAL ou OpenCascade em B3.
 
 `WorkspaceViewport`, navegação, `ReferenceGrid`, `ReferenceAxes`,
 `ShaderProgram` e `LineRenderer` são componentes/fronteiras project-owned,

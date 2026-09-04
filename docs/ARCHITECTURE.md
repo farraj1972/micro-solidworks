@@ -502,6 +502,47 @@ Os conceitos ainda não implementados estão separados em "Deferred after B1".
 
 ### core/geometry
 
+#### D3 FROZEN — future Geometry boundary (PLANNED / NOT STARTED)
+
+D3 freezes ADR-0013 through ADR-0016; all are ACCEPTED. The ADR inventory is
+now 16/16 ACCEPTED; the 12/12 statement above records the B2 validation snapshot.
+B3 remains NOT STARTED, with every B3 increment PENDING. No geometric type
+or `microsw_geometry` target exists yet.
+
+Foundation-to-consumer flow (not dependency arrows):
+
+```text
+microsw_math
+    |
+    v
+microsw_geometry (planned)
+```
+
+The planned dependency is `microsw_geometry -> microsw_math`, never the reverse.
+Geometry uses BUILD and is independent of Rendering, Viewer, UI, Document,
+Topology, Modeling and Persistence. It supplies value geometry to future
+Topology/Modeling/CAD consumers: Point3 is not Vertex, Segment3 is not Edge,
+and Plane is not Face. No IDs, selection, display properties, domain ownership,
+persistence metadata or GPU resources belong to these primitive values.
+Rendering remains derived; future Viewer consumption requires explicit boundaries.
+
+The approved direction is concrete Point2/Point3 distinct from Vector2/Vector3;
+endpoint-based Segment2/Segment3; origin plus normalized direction for
+Line2/Line3 and Ray2/Ray3; origin plus normalized normal for Plane (or an
+equivalent project-owned form). Geometric/modeling tolerance is initially
+1e-9 mm at the document/kernel scale, separate from B1's numeric tolerances
+of 1e-12 absolute and relative. Units are not embedded in geometric types.
+This is an approved future Geometry policy, not an implemented global Math
+tolerance or a physical accuracy guarantee. Earlier B1/B2 deferred statements
+describe their frozen implementation scope; D3 does not modify those APIs.
+
+See ADR-0013–0016 for point arithmetic, finite values, normalized invariants,
+degenerate segments, explicit exceptions and representation versus equivalence.
+Generic primitives and general intersections are not part of initial B3.
+B3.1 requires explicit authorization; D3 adds documentation only.
+
+#### Longer-term Geometry direction
+
 Representação matemática de entidades geométricas.
 
 Exemplos:

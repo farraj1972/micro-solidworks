@@ -30,13 +30,23 @@ Controls: MMB drag orbits, Shift+MMB pans, and the mouse wheel zooms.
 Use **View → Projection → Perspective / Orthographic** to change mode.
 Each mode preserves its independent zoom state.
 
-The current decision gate is **D2 — 3D Viewer Conventions**, with status
+The viewer decision gate **D2 — 3D Viewer Conventions** remains
 **FROZEN**. Its accepted decisions are recorded in
 [`ADR-0010`](docs/adr/ADR-0010-viewer-camera-and-navigation.md),
 [`ADR-0011`](docs/adr/ADR-0011-view-and-projection-conventions.md), and
 [`ADR-0012`](docs/adr/ADR-0012-viewer-rendering-pipeline.md).
-D0 and D1 remain FROZEN. Any subsequent increment, Decision Gate, baseline
-or freeze requires explicit authorization.
+D0 and D1 remain FROZEN.
+
+The current decision gate is **D3 — Geometric Foundation**, **FROZEN**.
+Its accepted decisions are
+[`ADR-0013`](docs/adr/ADR-0013-geometric-point-and-vector-semantics.md),
+[`ADR-0014`](docs/adr/ADR-0014-geometric-primitive-representation.md),
+[`ADR-0015`](docs/adr/ADR-0015-geometric-tolerance-and-degeneracy.md) and
+[`ADR-0016`](docs/adr/ADR-0016-geometry-topology-cad-boundaries.md).
+The next baseline is **B3 — Geometric Primitives**, **NOT STARTED**.
+Geometry is not implemented. B3.1 — Point2 / Point3 remains PENDING and
+requires explicit authorization before implementation. Every subsequent
+increment, Decision Gate, baseline or freeze also requires explicit authorization.
 
 The approved technology foundation is C++20, CMake, GoogleTest with CTest,
 GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment
