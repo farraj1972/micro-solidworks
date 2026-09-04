@@ -94,6 +94,18 @@ set_target_properties(microsw_math PROPERTIES
 )
 target_include_directories(microsw_math PUBLIC src)
 
+add_library(microsw_geometry STATIC
+    src/core/geometry/Point2.cpp
+    src/core/geometry/Point3.cpp
+)
+
+target_compile_features(microsw_geometry PUBLIC cxx_std_20)
+set_target_properties(microsw_geometry PROPERTIES
+    CXX_EXTENSIONS OFF
+)
+target_include_directories(microsw_geometry PUBLIC src)
+target_link_libraries(microsw_geometry PUBLIC microsw_math)
+
 add_library(microsw_viewer STATIC
     src/viewer/OrbitCamera.cpp
     src/viewer/OrbitNavigation.cpp
@@ -201,6 +213,8 @@ if(BUILD_TESTING)
     add_executable(micro_solidworks_tests
         tests/test_infrastructure.cpp
         tests/test_logging.cpp
+        tests/geometry/test_point2.cpp
+        tests/geometry/test_point3.cpp
         tests/math/test_math_integration.cpp
         tests/math/test_matrix3.cpp
         tests/math/test_matrix4.cpp
@@ -227,6 +241,7 @@ if(BUILD_TESTING)
     )
     target_link_libraries(micro_solidworks_tests PRIVATE
         GTest::gtest_main
+        microsw_geometry
         microsw_logging
         microsw_math
         microsw_viewer
