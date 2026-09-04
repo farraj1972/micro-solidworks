@@ -26,9 +26,22 @@ public:
     [[nodiscard]] bool isDegenerate(
         math::Scalar tolerance = defaultGeometricTolerance) const;
 
+    // Finite parameter required; outside the primitive domain throws domain_error.
+    // Non-representable results throw overflow_error.
+    [[nodiscard]] Point2 pointAt(math::Scalar t) const;
+    // Finite non-negative tolerance; zero uses the exact computed residual.
+    [[nodiscard]] bool contains(const Point2& point,
+        math::Scalar tolerance = defaultGeometricTolerance) const;
+
 private:
     Point2 a_{};
     Point2 b_{};
 };
+
+// Relations use dimensionless unit-vector residuals and the geometric default.
+[[nodiscard]] bool isParallel(const Segment2& a, const Segment2& b,
+    math::Scalar tolerance = defaultGeometricTolerance);
+[[nodiscard]] bool isPerpendicular(const Segment2& a, const Segment2& b,
+    math::Scalar tolerance = defaultGeometricTolerance);
 
 }

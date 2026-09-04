@@ -1,4 +1,5 @@
 #include "core/geometry/Line3.h"
+#include "core/geometry/GeometryQuerySupport.h"
 
 #include <algorithm>
 #include <cmath>
@@ -37,4 +38,36 @@ Line3::Line3(const Point3& origin, const math::Vector3& direction)
 {
 }
 
+}
+
+namespace microsw::geometry
+{
+Point3 Line3::pointAt(math::Scalar t) const
+{
+    detail::validateParameter(t);
+    if (t == 0) return origin_;
+    return origin_ + t * direction_;
+}
+
+bool Line3::contains(const Point3& point, math::Scalar tolerance) const
+{
+    detail::validateTolerance(tolerance);
+    return detail::onSupport(origin_, direction_, point, tolerance);
+}
+
+bool isParallel(const Line3& a, const Line3& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.direction();
+    const auto second = b.direction();
+    return detail::parallel(first, second, tolerance);
+}
+
+bool isPerpendicular(const Line3& a, const Line3& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.direction();
+    const auto second = b.direction();
+    return detail::perpendicular(first, second, tolerance);
+}
 }

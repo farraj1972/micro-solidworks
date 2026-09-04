@@ -1,4 +1,5 @@
 #include "core/geometry/Segment3.h"
+#include "core/geometry/GeometryQuerySupport.h"
 
 #include <algorithm>
 #include <cmath>
@@ -68,4 +69,39 @@ math::Vector3 Segment3::direction() const
     return {dx / magnitude, dy / magnitude, dz / magnitude};
 }
 
+}
+
+namespace microsw::geometry
+{
+Point3 Segment3::pointAt(math::Scalar t) const
+{
+    detail::validateParameter(t);
+    if (t < 0 || t > 1) throw std::domain_error{"Segment parameter must be in [0,1]"};
+    if (t == 0) return a_;
+    if (t == 1) return b_;
+    // lerp avoids an overflowing B-A while preserving finite convex interpolation.
+    return {checkedResult(std::lerp(a_.x(), b_.x(), t)), checkedResult(std::lerp(a_.y(), b_.y(), t)), checkedResult(std::lerp(a_.z(), b_.z(), t))};
+}
+
+bool Segment3::contains(const Point3& point, math::Scalar tolerance) const
+{
+    detail::validateTolerance(tolerance);
+    return detail::inSegment(a_, b_, point, tolerance);
+}
+
+bool isParallel(const Segment3& a, const Segment3& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.direction();
+    const auto second = b.direction();
+    return detail::parallel(first, second, tolerance);
+}
+
+bool isPerpendicular(const Segment3& a, const Segment3& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.direction();
+    const auto second = b.direction();
+    return detail::perpendicular(first, second, tolerance);
+}
 }

@@ -1,4 +1,5 @@
 #include "core/geometry/Ray2.h"
+#include "core/geometry/GeometryQuerySupport.h"
 
 #include <algorithm>
 #include <cmath>
@@ -36,4 +37,38 @@ Ray2::Ray2(const Point2& origin, const math::Vector2& direction)
 {
 }
 
+}
+
+namespace microsw::geometry
+{
+Point2 Ray2::pointAt(math::Scalar t) const
+{
+    detail::validateParameter(t);
+    if (t < 0) throw std::domain_error{"Ray parameter must be non-negative"};
+    if (t == 0) return origin_;
+    return origin_ + t * direction_;
+}
+
+bool Ray2::contains(const Point2& point, math::Scalar tolerance) const
+{
+    detail::validateTolerance(tolerance);
+    return detail::onSupport(Point3{origin_.x(), origin_.y(), 0}, math::Vector3{direction_.x(), direction_.y(), 0}, Point3{point.x(), point.y(), 0}, tolerance)
+        && detail::inForwardHalfSpace(Point3{origin_.x(), origin_.y(), 0}, math::Vector3{direction_.x(), direction_.y(), 0}, Point3{point.x(), point.y(), 0}, tolerance);
+}
+
+bool isParallel(const Ray2& a, const Ray2& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.direction();
+    const auto second = b.direction();
+    return detail::parallel(math::Vector3{first.x(), first.y(), 0}, math::Vector3{second.x(), second.y(), 0}, tolerance);
+}
+
+bool isPerpendicular(const Ray2& a, const Ray2& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.direction();
+    const auto second = b.direction();
+    return detail::perpendicular(math::Vector3{first.x(), first.y(), 0}, math::Vector3{second.x(), second.y(), 0}, tolerance);
+}
 }

@@ -95,6 +95,7 @@ set_target_properties(microsw_math PROPERTIES
 target_include_directories(microsw_math PUBLIC src)
 
 add_library(microsw_geometry STATIC
+    src/core/geometry/GeometryQuerySupport.cpp
     src/core/geometry/Line2.cpp
     src/core/geometry/Line3.cpp
     src/core/geometry/Ray2.cpp
@@ -226,6 +227,14 @@ if(BUILD_TESTING)
         tests/geometry/test_ray2.cpp
         tests/geometry/test_ray3.cpp
         tests/geometry/test_plane.cpp
+        tests/geometry/test_segment2_queries.cpp
+        tests/geometry/test_segment3_queries.cpp
+        tests/geometry/test_line2_queries.cpp
+        tests/geometry/test_line3_queries.cpp
+        tests/geometry/test_ray2_queries.cpp
+        tests/geometry/test_ray3_queries.cpp
+        tests/geometry/test_plane_queries.cpp
+        tests/geometry/test_query_extremes.cpp
         tests/geometry/test_point3.cpp
         tests/geometry/test_segment2.cpp
         tests/geometry/test_segment3.cpp

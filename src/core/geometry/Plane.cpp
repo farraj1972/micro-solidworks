@@ -1,4 +1,5 @@
 #include "core/geometry/Plane.h"
+#include "core/geometry/GeometryQuerySupport.h"
 
 #include <algorithm>
 #include <cmath>
@@ -37,4 +38,29 @@ Plane::Plane(const Point3& origin, const math::Vector3& normal)
 {
 }
 
+}
+
+namespace microsw::geometry
+{
+bool Plane::contains(const Point3& point, math::Scalar tolerance) const
+{
+    detail::validateTolerance(tolerance);
+    return detail::onPlane(origin_, normal_, point, tolerance);
+}
+
+bool isParallel(const Plane& a, const Plane& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.normal();
+    const auto second = b.normal();
+    return detail::parallel(first, second, tolerance);
+}
+
+bool isPerpendicular(const Plane& a, const Plane& b, math::Scalar tolerance)
+{
+    detail::validateTolerance(tolerance);
+    const auto first = a.normal();
+    const auto second = b.normal();
+    return detail::perpendicular(first, second, tolerance);
+}
 }
