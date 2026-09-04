@@ -27,7 +27,7 @@ int main()
                 // only its scissored Workspace region.
                 openGLContext.clear();
                 ui.beginFrame();
-                shell.draw();
+                shell.draw(workspace.projectionMode());
                 workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());
                 const auto framebuffer = window.framebufferSize();
                 workspace.render(shell.workspaceRect(), framebuffer.width, framebuffer.height);

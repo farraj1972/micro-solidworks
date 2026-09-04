@@ -199,6 +199,27 @@ TEST_F(WorkspaceViewportTest, PanZoomAndOrbitRenderWithoutErrors)
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
 }
 
+TEST_F(WorkspaceViewportTest, ProjectionSetterAndUICommandsRenderBothModes)
+{
+    WorkspaceViewport viewport;
+    EXPECT_EQ(viewport.projectionMode(), microsw::ProjectionMode::Perspective);
+    const WorkspaceLayout layout{16, 16, 96, 96, 128, 128};
+    for (auto mode : {microsw::ProjectionMode::Orthographic, microsw::ProjectionMode::Perspective})
+    {
+        microsw::WorkspaceInput command;
+        command.projectionRequest = mode;
+        viewport.updateNavigation(layout, command);
+        EXPECT_EQ(viewport.projectionMode(), mode);
+        viewport.setProjectionMode(mode);
+        EXPECT_EQ(viewport.projectionMode(), mode);
+        viewport.render(layout, 128, 128);
+        microsw::WorkspaceInput wheel{40, 40, false, false, false, true, true, true, false, 1};
+        viewport.updateNavigation(layout, wheel);
+        viewport.render(layout, 128, 128);
+        EXPECT_EQ(glGetError(), GL_NO_ERROR);
+    }
+}
+
 TEST_F(WorkspaceViewportTest, EmptyRenderDoesNotChangeState)
 {
     WorkspaceViewport viewport;

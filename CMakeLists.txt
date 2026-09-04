@@ -98,6 +98,7 @@ add_library(microsw_viewer STATIC
     src/viewer/OrbitCamera.cpp
     src/viewer/OrbitNavigation.cpp
     src/viewer/PanZoomNavigation.cpp
+    src/viewer/ProjectionState.cpp
     src/viewer/ReferenceAxes.cpp
     src/viewer/ReferenceGrid.cpp
     src/viewer/ViewProjection.cpp
@@ -210,6 +211,7 @@ if(BUILD_TESTING)
         tests/viewer/test_orbit_camera.cpp
         tests/viewer/test_orbit_navigation.cpp
         tests/viewer/test_pan_zoom_navigation.cpp
+        tests/viewer/test_projection_state.cpp
         tests/viewer/test_reference_axes.cpp
         tests/viewer/test_reference_grid.cpp
         tests/viewer/test_view_projection.cpp

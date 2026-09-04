@@ -36,6 +36,8 @@ public:
     // Empty/invalid surfaces are no-ops. Restores the OpenGL states changed by this pass.
     void render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight);
     void updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input);
+    [[nodiscard]] ProjectionMode projectionMode() const noexcept;
+    void setProjectionMode(ProjectionMode mode) noexcept;
 
 private:
     class Impl;

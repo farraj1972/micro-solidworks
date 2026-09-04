@@ -1,5 +1,8 @@
 #pragma once
 
+#include "app/ProjectionMode.h"
+#include <optional>
+
 namespace microsw
 {
 // Per-frame UI snapshot in the same logical coordinates as WorkspaceLayout.
@@ -15,5 +18,7 @@ struct WorkspaceInput
     bool workspaceHovered{};
     bool blocked{};
     double wheelDelta{};
+    // One-frame UI request; absence means preserve the viewer's current mode.
+    std::optional<ProjectionMode> projectionRequest{};
 };
 }

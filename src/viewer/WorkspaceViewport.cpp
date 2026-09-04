@@ -3,6 +3,7 @@
 #include "viewer/OrbitCamera.h"
 #include "viewer/OrbitNavigation.h"
 #include "viewer/PanZoomNavigation.h"
+#include "viewer/ProjectionState.h"
 #include "viewer/ReferenceAxes.h"
 #include "viewer/ReferenceGrid.h"
 #include "viewer/ViewProjection.h"
@@ -126,6 +127,7 @@ public:
     }
 
     OrbitCamera camera;
+    ProjectionState projection;
     OrbitNavigation navigation;
     PanZoomNavigation panZoomNavigation;
     const math::Scalar verticalFov = std::numbers::pi_v<math::Scalar> / 3.0;
@@ -142,10 +144,22 @@ public:
 WorkspaceViewport::WorkspaceViewport() : impl_{std::make_unique<Impl>()} {}
 WorkspaceViewport::~WorkspaceViewport() = default;
 
+ProjectionMode WorkspaceViewport::projectionMode() const noexcept
+{
+    return impl_->projection.mode();
+}
+
+void WorkspaceViewport::setProjectionMode(ProjectionMode mode) noexcept
+{
+    impl_->projection.setMode(mode);
+}
+
 void WorkspaceViewport::updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input)
 {
+    if (input.projectionRequest)
+        setProjectionMode(*input.projectionRequest);
     impl_->navigation.handle(layout, input, impl_->camera);
-    impl_->panZoomNavigation.handle(layout, input, impl_->camera);
+    impl_->panZoomNavigation.handle(layout, input, impl_->camera, impl_->projection);
 }
 
 void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight)
@@ -171,7 +185,7 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     impl_->shader.setMatrix4("uModel", math::Matrix4::identity());
     impl_->shader.setMatrix4("uView", viewMatrix(impl_->camera));
     impl_->shader.setMatrix4("uProjection",
-        perspective(impl_->verticalFov, rect.aspectRatio(), impl_->nearPlane, impl_->farPlane));
+        impl_->projection.matrix(impl_->verticalFov, rect.aspectRatio(), impl_->nearPlane, impl_->farPlane));
     // Same depth pass; central grid lines are omitted to preserve origin axes.
     impl_->shader.setVector3("uColor", {0.35, 0.35, 0.38});
     impl_->gridRenderer.draw();

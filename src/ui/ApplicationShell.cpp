@@ -33,10 +33,10 @@ ApplicationShell::ApplicationShell(ApplicationWindow& window)
     Logger::info("Application shell initialized");
 }
 
-void ApplicationShell::draw()
+void ApplicationShell::draw(ProjectionMode projectionMode)
 {
     input_ = {};
-    drawMainMenu();
+    drawMainMenu(projectionMode);
     drawModelPanel();
     drawWorkspace();
     drawStatusBar();
@@ -58,7 +58,7 @@ void ApplicationShell::draw()
         || (io.WantCaptureMouse && ImGui::IsAnyItemActive());
 }
 
-void ApplicationShell::drawMainMenu()
+void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
 {
     if (!ImGui::BeginMainMenuBar())
     {
@@ -92,6 +92,14 @@ void ApplicationShell::drawMainMenu()
 
     if (ImGui::BeginMenu("View"))
     {
+        if (ImGui::BeginMenu("Projection"))
+        {
+            if (ImGui::MenuItem("Perspective", nullptr, projectionMode == ProjectionMode::Perspective))
+                input_.projectionRequest = ProjectionMode::Perspective;
+            if (ImGui::MenuItem("Orthographic", nullptr, projectionMode == ProjectionMode::Orthographic))
+                input_.projectionRequest = ProjectionMode::Orthographic;
+            ImGui::EndMenu();
+        }
         ImGui::BeginDisabled();
         ImGui::MenuItem("Reset Layout");
         ImGui::EndDisabled();

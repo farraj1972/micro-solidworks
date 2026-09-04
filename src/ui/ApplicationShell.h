@@ -12,12 +12,12 @@ class ApplicationShell
 public:
     explicit ApplicationShell(ApplicationWindow& window);
 
-    void draw();
+    void draw(ProjectionMode projectionMode);
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
 
 private:
-    void drawMainMenu();
+    void drawMainMenu(ProjectionMode projectionMode);
     void drawModelPanel();
     void drawWorkspace();
     void drawStatusBar();
