@@ -39,7 +39,7 @@ Persistence serializa o Document através de uma fronteira própria.
 
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção (Document, Modeling, Topology e Geometry) continuam por implementar.
-As secções seguintes distinguem FROZEN FOUNDATIONS, CURRENT B2 IMPLEMENTATION
+As secções seguintes distinguem FROZEN FOUNDATIONS, FROZEN B2 IMPLEMENTATION
 e PLANNED / DEFERRED.
 
 ### FROZEN FOUNDATIONS — B1 Math Foundation (B1.1–B1.8)
@@ -198,11 +198,10 @@ Perspective/orthographic projection, absent from B1, are now implemented
 in B2's Viewer through `ViewProjection`; the remaining Math concepts above
 remain deferred.
 
-### CURRENT B2 IMPLEMENTATION — Viewer (D2 FROZEN)
+### FROZEN B2 IMPLEMENTATION — Viewer (D2 FROZEN)
 
-B2 is IN PROGRESS, not a frozen stable baseline. B2.1–B2.11 are COMPLETE;
-B2.12 — Documentation & D2 Validation is CURRENT. B2.13 and B2.FREEZE remain
-PENDING and require explicit authorization.
+B2 is FROZEN. B2.1–B2.13 are COMPLETE; B2.FREEZE is FROZEN.
+Any subsequent increment, Decision Gate or baseline requires explicit authorization.
 
 The Viewer observes the CAD world; it does not own CAD representation.
 Current composition in `src/app/main.cpp`:
@@ -563,7 +562,7 @@ Responsabilidades futuras:
 - feature tree;
 - rebuild.
 
-### viewer (CURRENT B2)
+### viewer (FROZEN B2)
 
 Observa o mundo CAD e gere camera, viewport/navigation state, orbit, pan,
 zoom e render aids. Camera usa `microsw_math`; desenho usa Rendering.

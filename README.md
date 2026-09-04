@@ -10,7 +10,7 @@ product.
 **B0 — Foundation** is FROZEN (tag: `b0-foundation`). The repository provides the executable B0
 foundation and application shell; CAD functionality is not implemented yet.
 
-The current stable baseline is **B1 — Mathematical Foundation**, **FROZEN**
+**B1 — Mathematical Foundation** is **FROZEN**
 (tag: `b1-mathematical-foundation`). It contains Scalar/numeric tolerance,
 Vector2, Vector3, Matrix3, Matrix4, Transformation Operations and mathematical
 integration tests, described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -18,14 +18,13 @@ B1.1–B1.10 are complete.
 
 ## Current baseline
 
-**B2 — 3D Viewer** is **IN PROGRESS**, not a frozen stable baseline.
-B2.1–B2.11 are complete. Current increment:
-**B2.12 — Documentation & D2 Validation**.
+The current latest stable baseline is **B2 — 3D Viewer**, **STATUS: FROZEN**
+(tag: `b2-3d-viewer`). B2.1–B2.13 are COMPLETE; B2.FREEZE is FROZEN.
 
-Implemented capabilities: a directly rendered 3D Workspace, Perspective and
+Stable capabilities: a HiDPI-aware directly rendered 3D Workspace, Perspective and
 Orthographic modes, a finite XY reference grid, RGB reference axes, and
 Orbit / Pan / Zoom navigation. These are viewer aids, not CAD entities;
-CAD modelling, picking and selection are not implemented.
+CAD modelling has not started; picking and selection are not implemented.
 
 Controls: MMB drag orbits, Shift+MMB pans, and the mouse wheel zooms.
 Use **View → Projection → Perspective / Orthographic** to change mode.
@@ -36,8 +35,8 @@ The current decision gate is **D2 — 3D Viewer Conventions**, with status
 [`ADR-0010`](docs/adr/ADR-0010-viewer-camera-and-navigation.md),
 [`ADR-0011`](docs/adr/ADR-0011-view-and-projection-conventions.md), and
 [`ADR-0012`](docs/adr/ADR-0012-viewer-rendering-pipeline.md).
-D0 and D1 remain FROZEN. B2.13 — Baseline Validation and B2.FREEZE are
-pending and require explicit authorization; no B2 tag has been created.
+D0 and D1 remain FROZEN. Any subsequent increment, Decision Gate, baseline
+or freeze requires explicit authorization.
 
 The approved technology foundation is C++20, CMake, GoogleTest with CTest,
 GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment
@@ -51,7 +50,7 @@ cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
-B2.11 validation snapshot: **274/274 tests PASS**, plus manual runtime
+B2.13 validation snapshot: **274/274 tests PASS**, plus manual runtime
 validation. Tests include real OpenGL contexts and require a working graphics
 environment; this count is a snapshot, not a fixed future total.
 

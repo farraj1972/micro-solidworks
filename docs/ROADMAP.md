@@ -108,7 +108,7 @@ Estado dos increments:
 | B1.FREEZE | FROZEN |
 
 B1 está FROZEN. Tag: `b1-mathematical-foundation`.
-B2 está IN PROGRESS; cada novo increment requer autorização explícita.
+B2 está FROZEN; cada novo increment requer autorização explícita.
 
 ---
 
@@ -124,7 +124,7 @@ D2 não autoriza implementação automática: cada increment B2 requer autoriza�
 
 # B2 — 3D Viewer
 
-Status: IN PROGRESS
+Status: FROZEN
 
 Objectivo:
 
@@ -145,15 +145,15 @@ Estado dos increments:
 | B2.9 — Pan & Zoom | COMPLETE |
 | B2.10 — Perspective / Orthographic Modes | COMPLETE |
 | B2.11 — Viewer Integration Tests & Runtime Validation | COMPLETE |
-| B2.12 — Documentation & D2 Validation | CURRENT |
-| B2.13 — Baseline Validation | PENDING |
-| B2.FREEZE | PENDING |
+| B2.12 — Documentation & D2 Validation | COMPLETE |
+| B2.13 — Baseline Validation | COMPLETE |
+| B2.FREEZE | FROZEN |
 
-B2.1–B2.11 estão materializados no código e histórico. B2.11 validou 274/274
+B2.1–B2.13 estão completos. B2.13 validou 274/274
 testes e os cenários manuais de runtime, sem findings.
-B2.12 é o incremento documental corrente. B2.13 — Baseline Validation é o
-próximo incremento possível após a sua conclusão e requer autorização explícita.
-B2.FREEZE continua pendente: B2 não está FROZEN e não possui tag de baseline.
+B2 está FROZEN. Tag: `b2-3d-viewer`.
+Nenhum increment, Decision Gate, baseline ou freeze posterior está autorizado
+automaticamente; cada um requer autorização explícita.
 
 Resultado implementado até B2.11:
 
@@ -163,6 +163,8 @@ orbit/pan/zoom. Sem representação CAD, picking ou selection.
 ---
 
 # B3 — Geometric Primitives
+
+Status: PLANNED / NOT STARTED (requires explicit authorization)
 
 Objectivo:
 

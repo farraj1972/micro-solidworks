@@ -775,7 +775,16 @@ STATUS: FROZEN
 
 # 31. Current Development Boundary
 
-Current stable baseline:
+Current latest stable baseline:
+
+```text
+B2 — 3D Viewer
+STATUS: FROZEN
+B2.1–B2.13: COMPLETE
+B2.FREEZE: FROZEN
+```
+
+Previous stable baselines:
 
 ```text
 B1 — Mathematical Foundation
@@ -783,8 +792,6 @@ STATUS: FROZEN
 B1.1–B1.10: COMPLETE
 B1.FREEZE: FROZEN
 ```
-
-Previous stable baseline:
 
 ```text
 B0 — Foundation
@@ -800,25 +807,9 @@ STATUS: FROZEN
 
 D0 and D1 remain FROZEN.
 
-Current baseline:
-
-```text
-B2 — 3D Viewer
-STATUS: IN PROGRESS (NOT FROZEN)
-B2.1–B2.11: COMPLETE
-B2.12 — Documentation & D2 Validation: CURRENT
-B2.13 — Baseline Validation: PENDING
-B2.FREEZE: PENDING
-```
-
-Next possible increment after B2.12 completion:
-
-```text
-B2.13 — Baseline Validation
-Requires explicit authorization.
-```
-
 No increment without explicit authorization.
+No new Decision Gate without explicit authorization.
+No new baseline without explicit authorization.
 No baseline freeze without explicit authorization.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
