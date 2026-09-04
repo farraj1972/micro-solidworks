@@ -95,6 +95,8 @@ set_target_properties(microsw_math PROPERTIES
 target_include_directories(microsw_math PUBLIC src)
 
 add_library(microsw_geometry STATIC
+    src/core/geometry/Line2.cpp
+    src/core/geometry/Line3.cpp
     src/core/geometry/Point2.cpp
     src/core/geometry/Point3.cpp
     src/core/geometry/Segment2.cpp
@@ -216,6 +218,8 @@ if(BUILD_TESTING)
         tests/test_infrastructure.cpp
         tests/test_logging.cpp
         tests/geometry/test_point2.cpp
+        tests/geometry/test_line2.cpp
+        tests/geometry/test_line3.cpp
         tests/geometry/test_point3.cpp
         tests/geometry/test_segment2.cpp
         tests/geometry/test_segment3.cpp
