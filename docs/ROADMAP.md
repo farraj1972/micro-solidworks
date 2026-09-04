@@ -85,9 +85,9 @@ Capacidades implementadas até B1.8:
 - affine Transformation Operations;
 - testes de integração matemática.
 
-Vector4, Ray, Plane, BoundingBox e as restantes capacidades listadas em
-"Deferred after B1" de ARCHITECTURE.md não estão implementadas nem fazem
-parte dos increments restantes de B1.
+Vector4, Ray, Plane, BoundingBox e os restantes conceitos Math listados em
+"Deferred after B1" de ARCHITECTURE.md continuam por implementar.
+View/projection math foi materializado no Viewer em B2, sem alterar B1.
 
 Todos os componentes matemáticos deverão possuir testes.
 
@@ -108,7 +108,7 @@ Estado dos increments:
 | B1.FREEZE | FROZEN |
 
 B1 está FROZEN. Tag: `b1-mathematical-foundation`.
-B2 permanece NOT STARTED; implementação requer autorização explícita por increment.
+B2 está IN PROGRESS; cada novo increment requer autorização explícita.
 
 ---
 
@@ -118,42 +118,47 @@ Status: FROZEN
 
 As decisões aprovadas de camera/navigation, view/projection e rendering
 estão materializadas em ADR-0010, ADR-0011 e ADR-0012.
-B2 está autorizado para planeamento, não para implementação automática.
+D2 não autoriza implementação automática: cada increment B2 requer autorização.
 
 ---
 
 # B2 — 3D Viewer
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 Objectivo:
 
 Criar um viewport tridimensional navegável.
 
-Estado dos increments planeados:
+Estado dos increments:
 
 | Increment | Estado |
 | --- | --- |
-| B2.1 — Camera Mathematical Foundation | PENDING |
-| B2.2 — View & Projection Matrices | PENDING |
-| B2.3 — Shader Infrastructure | PENDING |
-| B2.4 — GPU Buffer / Line Rendering | PENDING |
-| B2.5 — Workspace 3D Viewport | PENDING |
-| B2.6 — Reference Axes | PENDING |
-| B2.7 — XY Grid | PENDING |
-| B2.8 — Orbit Navigation | PENDING |
-| B2.9 — Pan & Zoom | PENDING |
-| B2.10 — Perspective / Orthographic Modes | PENDING |
-| B2.11 — Viewer Integration Tests & Runtime Validation | PENDING |
-| B2.12 — Documentation & D2 Validation | PENDING |
+| B2.1 — Camera Mathematical Foundation | COMPLETE |
+| B2.2 — View & Projection Matrices | COMPLETE |
+| B2.3 — Shader Infrastructure | COMPLETE |
+| B2.4 — GPU Buffer / Line Rendering | COMPLETE |
+| B2.5 — Workspace 3D Viewport | COMPLETE |
+| B2.6 — Reference Axes | COMPLETE |
+| B2.7 — XY Grid | COMPLETE |
+| B2.8 — Orbit Navigation | COMPLETE |
+| B2.9 — Pan & Zoom | COMPLETE |
+| B2.10 — Perspective / Orthographic Modes | COMPLETE |
+| B2.11 — Viewer Integration Tests & Runtime Validation | COMPLETE |
+| B2.12 — Documentation & D2 Validation | CURRENT |
 | B2.13 — Baseline Validation | PENDING |
 | B2.FREEZE | PENDING |
 
-B2.1 requer autorização explícita. D2 não implementa camera, viewer ou render aids.
+B2.1–B2.11 estão materializados no código e histórico. B2.11 validou 274/274
+testes e os cenários manuais de runtime, sem findings.
+B2.12 é o incremento documental corrente. B2.13 — Baseline Validation é o
+próximo incremento possível após a sua conclusão e requer autorização explícita.
+B2.FREEZE continua pendente: B2 não está FROZEN e não possui tag de baseline.
 
-Resultado:
+Resultado implementado até B2.11:
 
-viewport 3D interactivo.
+Workspace 3D com Perspective/Orthographic, grid XY finito, eixos RGB e
+orbit/pan/zoom. Sem representação CAD, picking ou selection.
 
 ---
 

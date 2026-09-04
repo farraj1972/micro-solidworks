@@ -10,18 +10,25 @@ The project is currently at:
 Decision Gate D0: FROZEN
 Baseline B0: FROZEN
 Decision Gate D1: FROZEN
-Current baseline: B1 — Mathematical Foundation
+Current stable baseline: B1 — Mathematical Foundation
 B1 status: FROZEN
 B1.1–B1.10: COMPLETE
 B1.FREEZE: FROZEN
 Decision Gate D2: FROZEN
-Next baseline: B2 — 3D Viewer
-B2 status: AUTHORIZED FOR PLANNING; NOT STARTED
-Next implementation increment: B2.1 — Camera Mathematical Foundation
-B2.1 requires explicit authorization
+Current baseline: B2 — 3D Viewer
+B2 status: IN PROGRESS (NOT FROZEN)
+B2.1–B2.11: COMPLETE
+B2.12 — Documentation & D2 Validation: CURRENT
+B2.13 — Baseline Validation: PENDING
+B2.FREEZE: PENDING
+Next possible increment after B2.12: B2.13 — Baseline Validation
+B2.13 requires explicit authorization
 ```
 
-B2 implementation requires explicit increment authorization.
+Every increment and baseline freeze requires explicit authorization.
+The B0 instructions below describe the historical foundation scope, not the
+current work authorization. Current viewer implementation is documented in
+`docs/ARCHITECTURE.md`.
 
 ---
 

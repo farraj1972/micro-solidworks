@@ -47,20 +47,30 @@ Uma nova dependência ou mudança de estratégia arquitectural requer aprovaçã
 | GoogleTest | INTEGRATE | target de testes separado, descoberto por CTest |
 | spdlog | INTEGRATE | `microsw_logging` e API project-owned `Logger` |
 | GLFW | INTEGRATE | `microsw_windowing` e `ApplicationWindow` |
-| GLAD | INTEGRATE | `microsw_rendering` e `OpenGLContext` |
+| OpenGL | INTEGRATE | OpenGL 3.3 Core; `OpenGLContext`, `ShaderProgram`, `LineRenderer` e pass do `WorkspaceViewport` |
+| GLAD | INTEGRATE | `glad_gl_core_33`, usado por Rendering e pelo pass do Viewer; sem tipos GL nas APIs públicas |
 | Dear ImGui | INTEGRATE | `microsw_ui`, `ImGuiLayer` e `ApplicationShell` |
 
-Estas dependências são adquiridas de forma reproduzível pelo CMake, sem exigir
-instalação global manual.
+As bibliotecas são adquiridas de forma reproduzível pelo CMake. OpenGL é
+fornecido pelo driver do sistema; execução e testes GPU exigem um contexto
+OpenGL 3.3 funcional.
 
 ## 5. Capacidades internas aprovadas
 
-- Math: `BUILD`, ainda não implementado em B0.
+- Math: `BUILD`, implementado em `src/core/math` na baseline B1 FROZEN;
+  independente de UI, Viewer, Rendering e bibliotecas gráficas.
 - Viewer camera/view/projection math: `BUILD` usando `microsw_math`,
-  conforme D2 (ADR-0010/0011); planeado para B2, ainda não implementado.
-  Inclui view matrix, perspective e orthographic projection; sem GLM/Eigen.
+  implementado em B2 conforme D2 (ADR-0010/0011): `OrbitCamera`,
+  `viewMatrix`, `perspective`, `orthographic` e `ProjectionState`;
+  sem GLM/Eigen.
 - Educational Geometry Kernel: `BUILD` com possível substituição futura,
-  ainda não implementado em B0.
+  ainda não implementado.
+
+`WorkspaceViewport`, navegação, `ReferenceGrid`, `ReferenceAxes`,
+`ShaderProgram` e `LineRenderer` são componentes/fronteiras project-owned,
+não dependências externas. Rendering não depende de Viewer. As dependências
+CMake concretas estão documentadas em `ARCHITECTURE.md`; B2.12 não altera
+targets, bibliotecas ou estratégias aprovadas.
 
 ## 6. Dependências deferred
 

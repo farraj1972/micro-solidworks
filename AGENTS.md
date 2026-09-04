@@ -800,22 +800,26 @@ STATUS: FROZEN
 
 D0 and D1 remain FROZEN.
 
-Next baseline:
+Current baseline:
 
 ```text
 B2 — 3D Viewer
-STATUS: NOT STARTED
+STATUS: IN PROGRESS (NOT FROZEN)
+B2.1–B2.11: COMPLETE
+B2.12 — Documentation & D2 Validation: CURRENT
+B2.13 — Baseline Validation: PENDING
+B2.FREEZE: PENDING
 ```
 
-Next permitted baseline:
+Next possible increment after B2.12 completion:
 
 ```text
-None until explicit authorization.
+B2.13 — Baseline Validation
+Requires explicit authorization.
 ```
 
-B2 is authorized for planning only; B2.1 — Camera Mathematical Foundation
-requires explicit authorization.
-No B2 implementation without explicit increment authorization.
+No increment without explicit authorization.
+No baseline freeze without explicit authorization.
 
 The next work item must always be taken from the project owner's explicitly permitted increment.
 
