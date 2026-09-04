@@ -215,6 +215,7 @@ if(BUILD_TESTING)
         tests/viewer/test_reference_axes.cpp
         tests/viewer/test_reference_grid.cpp
         tests/viewer/test_view_projection.cpp
+        tests/viewer/test_viewer_integration.cpp
         tests/viewer/test_workspace_viewport.cpp
         tests/rendering/test_shader_program.cpp
         tests/rendering/test_line_renderer.cpp
