@@ -6,6 +6,8 @@
 
 #include <memory>
 
+namespace microsw::presentation { class GeometryPresentation; }
+
 namespace microsw::viewer
 {
 
@@ -29,6 +31,7 @@ class WorkspaceViewport
 {
 public:
     WorkspaceViewport();
+    explicit WorkspaceViewport(const presentation::GeometryPresentation& presentation);
     ~WorkspaceViewport();
     WorkspaceViewport(const WorkspaceViewport&) = delete;
     WorkspaceViewport& operator=(const WorkspaceViewport&) = delete;

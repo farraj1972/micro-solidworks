@@ -7,8 +7,11 @@
 #include "viewer/ReferenceAxes.h"
 #include "viewer/ReferenceGrid.h"
 #include "viewer/ViewProjection.h"
+#include "viewer/PresentedPoints.h"
 #include "rendering/ShaderProgram.h"
 #include "rendering/LineRenderer.h"
+#include "rendering/PointRenderer.h"
+#include "presentation/GeometryPresentation.h"
 
 #include <glad/gl.h>
 
@@ -116,7 +119,8 @@ struct PassState
 class WorkspaceViewport::Impl
 {
 public:
-    Impl() : shader{vertexSource, fragmentSource}
+    explicit Impl(const presentation::GeometryPresentation* presentation)
+        : shader{vertexSource, fragmentSource}
     {
         const ReferenceAxes axes;
         const ReferenceGrid grid;
@@ -124,6 +128,8 @@ public:
         xAxis.setVertices(axes.xAxis());
         yAxis.setVertices(axes.yAxis());
         zAxis.setVertices(axes.zAxis());
+        if (presentation)
+            points.setVertices(presentedPointVertices(*presentation));
     }
 
     OrbitCamera camera;
@@ -139,9 +145,12 @@ public:
     rendering::LineRenderer xAxis;
     rendering::LineRenderer yAxis;
     rendering::LineRenderer zAxis;
+    rendering::PointRenderer points;
 };
 
-WorkspaceViewport::WorkspaceViewport() : impl_{std::make_unique<Impl>()} {}
+WorkspaceViewport::WorkspaceViewport() : impl_{std::make_unique<Impl>(nullptr)} {}
+WorkspaceViewport::WorkspaceViewport(const presentation::GeometryPresentation& presentation)
+    : impl_{std::make_unique<Impl>(&presentation)} {}
 WorkspaceViewport::~WorkspaceViewport() = default;
 
 ProjectionMode WorkspaceViewport::projectionMode() const noexcept
@@ -195,6 +204,8 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     impl_->yAxis.draw();
     impl_->shader.setVector3("uColor", {0.0, 0.0, 1.0});
     impl_->zAxis.draw();
+    impl_->shader.setVector3("uColor", {1.0, 0.85, 0.2});
+    impl_->points.draw();
 }
 
 }

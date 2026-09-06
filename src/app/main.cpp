@@ -1,6 +1,7 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
+#include "presentation/GeometryPresentation.h"
 #include "ui/ApplicationShell.h"
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
@@ -18,7 +19,11 @@ int main()
             microsw::OpenGLContext openGLContext{window};
             microsw::ImGuiLayer ui{window, openGLContext};
             microsw::ApplicationShell shell{window};
-            microsw::viewer::WorkspaceViewport workspace;
+            microsw::presentation::GeometryPresentation presentation;
+            (void)presentation.add(microsw::geometry::Point3{0, 0, 0});
+            (void)presentation.add(microsw::geometry::Point3{2, 2, 1});
+            (void)presentation.add(microsw::geometry::Point3{-2, 1, 2});
+            microsw::viewer::WorkspaceViewport workspace{presentation};
 
             while (!window.shouldClose())
             {

@@ -8,6 +8,7 @@
 #include "core/math/Tolerance.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
+#include "presentation/GeometryPresentation.h"
 
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
@@ -169,6 +170,23 @@ void main() { FragColor = vec4(uColor, 1.0); }
         glGetIntegerv(GL_DEPTH_FUNC, &depthFunction);
         EXPECT_EQ(depthFunction, GL_LESS);
     }
+}
+
+TEST_F(WorkspaceViewportTest, PresentedPointsCoexistWithGridAndAxesInWorkspacePass)
+{
+    microsw::presentation::GeometryPresentation presentation;
+    (void)presentation.add(microsw::geometry::Point3{0, 0, 0});
+    (void)presentation.add(microsw::geometry::Point3{2, 2, 1});
+    // Unsupported alternatives are intentionally ignored in B4.2.
+    (void)presentation.add(microsw::geometry::Segment3{
+        microsw::geometry::Point3{-1, 0, 0}, microsw::geometry::Point3{1, 0, 0}});
+    (void)presentation.add(microsw::geometry::Line3{
+        microsw::geometry::Point3{}, microsw::math::Vector3{1, 0, 0}});
+
+    WorkspaceViewport viewport{presentation};
+    viewport.render({16, 16, 96, 96, 128, 128}, 128, 128);
+    EXPECT_EQ(glGetError(), GL_NO_ERROR);
+    EXPECT_EQ(glIsEnabled(GL_DEPTH_TEST), GL_FALSE);
 }
 
 TEST_F(WorkspaceViewportTest, PanZoomAndOrbitRenderWithoutErrors)

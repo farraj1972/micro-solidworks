@@ -127,6 +127,7 @@ add_library(microsw_viewer STATIC
     src/viewer/OrbitNavigation.cpp
     src/viewer/PanZoomNavigation.cpp
     src/viewer/ProjectionState.cpp
+    src/viewer/PresentedPoints.cpp
     src/viewer/ReferenceAxes.cpp
     src/viewer/ReferenceGrid.cpp
     src/viewer/ViewProjection.cpp
@@ -157,6 +158,7 @@ target_link_libraries(microsw_windowing PRIVATE
 add_library(microsw_rendering STATIC
     src/rendering/LineRenderer.cpp
     src/rendering/OpenGLContext.cpp
+    src/rendering/PointRenderer.cpp
     src/rendering/ShaderProgram.cpp
 )
 
@@ -173,7 +175,7 @@ target_link_libraries(microsw_rendering PRIVATE
 )
 
 # Viewport integration depends on rendering, never the reverse.
-target_link_libraries(microsw_viewer PRIVATE microsw_rendering glad_gl_core_33)
+target_link_libraries(microsw_viewer PRIVATE microsw_presentation microsw_rendering glad_gl_core_33)
 
 add_library(microsw_ui STATIC
     src/ui/ApplicationShell.cpp
@@ -266,8 +268,10 @@ if(BUILD_TESTING)
         tests/viewer/test_workspace_viewport.cpp
         tests/rendering/test_shader_program.cpp
         tests/rendering/test_line_renderer.cpp
+        tests/rendering/test_point_renderer.cpp
         tests/presentation/test_geometry_presentation.cpp
         tests/presentation/test_visual_entity.cpp
+        tests/viewer/test_presented_points.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
