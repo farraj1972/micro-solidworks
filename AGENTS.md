@@ -778,13 +778,22 @@ STATUS: FROZEN
 Current latest stable baseline:
 
 ```text
+B3 — Geometric Primitives
+STATUS: FROZEN
+B3.1–B3.9: COMPLETE
+B3.10A: COMPLETE
+B3.10: COMPLETE
+B3.FREEZE: FROZEN
+```
+
+Previous stable baselines:
+
+```text
 B2 — 3D Viewer
 STATUS: FROZEN
 B2.1–B2.13: COMPLETE
 B2.FREEZE: FROZEN
 ```
-
-Previous stable baselines:
 
 ```text
 B1 — Mathematical Foundation
@@ -807,21 +816,11 @@ STATUS: FROZEN
 
 D0, D1 and D2 remain FROZEN. ADR-0013 through ADR-0016 are ACCEPTED.
 
-Current baseline:
+B3.10A corrected closest-point reconstruction robustness identified by the
+first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
+smoke with no findings. B3 is FROZEN.
 
-```text
-B3 — Geometric Primitives
-STATUS: IN PROGRESS
-B3.1–B3.8: COMPLETE / ACCEPTED
-B3.9 — Documentation & D3 Validation: CURRENT
-B3.10 — Baseline Validation: PENDING
-B3.FREEZE: PENDING
-```
-
-B3.8 validated 533/533 tests and runtime smoke, with no findings.
-B3.9 is documentation and D3 compliance only; it does not freeze B3.
-Next permitted increment: B3.10 — Baseline Validation, only after explicit
-authorization. B3.FREEZE requires separate explicit authorization.
+No subsequent Decision Gate, increment or baseline is currently authorized.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

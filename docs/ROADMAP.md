@@ -175,7 +175,7 @@ D0/D1/D2 e as baselines B0/B1/B2 permanecem FROZEN.
 
 # B3 — Geometric Primitives
 
-Status: IN PROGRESS
+Status: FROZEN
 
 Objectivo:
 
@@ -194,18 +194,18 @@ Estado dos increments:
 | B3.6 — Primitive Queries | COMPLETE |
 | B3.7 — Distance & Projection Operations | COMPLETE |
 | B3.8 — Geometric Integration Tests | COMPLETE |
-| B3.9 — Documentation & D3 Validation | CURRENT |
-| B3.10 — Baseline Validation | PENDING |
-| B3.FREEZE | PENDING |
+| B3.9 — Documentation & D3 Validation | COMPLETE |
+| B3.10A — Projection Reconstruction Robustness Fix | COMPLETE |
+| B3.10 — Baseline Validation | COMPLETE |
+| B3.FREEZE | FROZEN |
 
 Implementado em B3.1–B3.8: Point2/3, Segment2/3, Line2/3, Ray2/3 e Plane;
 representações canónicas e invariants, queries de pertença e relações entre
 primitivas do mesmo tipo, métricas/projecções entre primitiva e Point.
-B3.8 validou 533/533 testes (31 novos de integração), 0 falhas, runtime smoke
-com fecho de código 0 e nenhum finding.
+B3.10A corrigiu a robustez da reconstrução de closest-point identificada na
+primeira validação B3.10. A repetição de B3.10 validou 549/549 testes, 0 falhas,
+runtime smoke com fecho de código 0 e nenhum finding. B3 está FROZEN.
 
-B3.9 é o incremento documental CURRENT. B3.10 e B3.FREEZE permanecem PENDING;
-B3 não está FROZEN. Ambos exigem autorização explícita separada.
 Intersections, primitive equivalence, relações generalizadas entre tipos,
 métricas entre primitivas, Topology/CAD e Geometry rendering integration
 continuam não implementados. Nenhum trabalho futuro é autorizado por este estado.

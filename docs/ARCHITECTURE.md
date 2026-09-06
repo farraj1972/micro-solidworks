@@ -39,8 +39,8 @@ Persistence serializa o Document através de uma fronteira própria.
 
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção (Document, Modeling e Topology) continuam por implementar. Geometry já
-existe em B3.1–B3.8. As secções seguintes distinguem FROZEN FOUNDATIONS,
-FROZEN B2 IMPLEMENTATION, CURRENT B3 IMPLEMENTATION e PLANNED / DEFERRED.
+existe na baseline B3 FROZEN. As secções seguintes distinguem FROZEN
+FOUNDATIONS, FROZEN B2/B3 IMPLEMENTATION e PLANNED / DEFERRED.
 
 ### FROZEN FOUNDATIONS — B1 Math Foundation (B1.1–B1.8)
 
@@ -506,11 +506,11 @@ Os conceitos ainda não implementados estão separados em "Deferred after B1".
 
 ### core/geometry
 
-#### CURRENT B3 IMPLEMENTATION — Geometric Primitives (D3 FROZEN)
+#### FROZEN B3 IMPLEMENTATION — Geometric Primitives (D3 FROZEN)
 
-B3 is IN PROGRESS. B3.1–B3.8 are COMPLETE / ACCEPTED; B3.9 — Documentation &
-D3 Validation is CURRENT. B3.10 and B3.FREEZE are PENDING and each needs
-explicit authorization. No B3 freeze is declared.
+B3 is FROZEN. B3.1–B3.9, the corrective B3.10A and the repeated B3.10 are
+COMPLETE; B3.FREEZE is FROZEN. B3.10A corrected closest-point reconstruction
+robustness identified during the first B3.10 validation.
 
 Geometry is implemented in `src/core/geometry`, namespace
 `microsw::geometry`, using the project-owned `microsw_geometry` target.
@@ -683,13 +683,14 @@ sameSegment); cross-type relation matrices; primitive-primitive distances or
 closest points; Vertex/Edge/Face/Wire/Shell/Solid, Topology/BRep;
 Document/Sketch/Feature/constraints, extrude/revolve/booleans, selection,
 persistent IDs/history; Geometry rendering integration.
-No such future work is authorized by B3.9.
+No such future work is authorized by the B3 freeze.
 
 ##### Testing and D3 validation
 
-B3.8's validated snapshot is 533 tests, 533 PASS, 0 FAIL, with no findings.
-It includes primitive/unit, invariant, tolerance, query, metric/projection
-and extreme-coordinate tests. The 31 tests in
+B3.10's final validated snapshot is 549 tests, 549 PASS, 0 FAIL, with no
+findings. It includes primitive/unit, invariant, tolerance, query,
+metric/projection, B3.10A reconstruction regression and extreme-coordinate
+tests. The 31 tests in
 `tests/geometry/test_geometry_integration.cpp` cross Point/Vector semantics,
 Segment degeneracy, Line projection and origin invariance, Ray domain and
 predicate-vs-metric distinctions, Plane signed orientation and tangent-origin
@@ -705,8 +706,7 @@ unchanged B2 viewer, normal close and exit code 0, not rendering of Geometry.
 | ADR-0016 | CONFORMANT | Geometry -> Math only; no topology/CAD identity or rendering ownership; application/Viewer do not consume Geometry |
 
 ADR-0001 through ADR-0016 remain 16/16 ACCEPTED, unchanged. D0/D1/D2/D3
-remain FROZEN. B3 remains IN PROGRESS; B3.9 records compliance, not baseline
-validation or freeze. PROJECT_CHARTER remains consistent and unchanged.
+remain FROZEN. B3 is FROZEN. PROJECT_CHARTER remains consistent and unchanged.
 
 #### Longer-term Geometry direction
 
