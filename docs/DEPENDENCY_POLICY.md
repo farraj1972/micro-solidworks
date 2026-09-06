@@ -73,6 +73,11 @@ OpenGL 3.3 funcional.
   por implementar. Preserva-se a estratégia educacional BUILD com possível
   substituição futura controlada de ADR-0006. CGAL, OpenCascade e outros
   kernels externos não estão integrados em B3.
+- Geometry presentation/adaptation: `BUILD`, planeada para B4 através de uma
+  boundary project-owned que consome Geometry sem alterar o kernel e reutiliza
+  Viewer/Rendering quando adequado.
+- Picking/selection foundation: `BUILD`, planeada como interacção geométrica
+  project-owned, com tolerance de picking distinta da tolerance geométrica.
 
 `WorkspaceViewport`, navegação, `ReferenceGrid`, `ReferenceAxes`,
 `ShaderProgram` e `LineRenderer` são componentes/fronteiras project-owned,

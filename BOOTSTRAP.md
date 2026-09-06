@@ -26,7 +26,13 @@ B3.1–B3.9: COMPLETE
 B3.10A: COMPLETE
 B3.10: COMPLETE
 B3.FREEZE: FROZEN
-Next permitted work: none; explicit authorization is required
+Decision Gate D4 — Geometry Visualization & Selection: FROZEN
+Next baseline: B4 — Geometry Visualization & Selection
+B4 status: NOT STARTED
+B4.1–B4.12: PENDING
+B4.FREEZE: PENDING
+Next permitted increment: B4.1 — Geometry Presentation Model
+B4.1 requires explicit authorization
 ```
 
 Every increment and baseline freeze requires explicit authorization.
@@ -63,6 +69,10 @@ Before changing the repository, read the following documents in this order:
 19. docs/adr/ADR-0014-geometric-primitive-representation.md
 20. docs/adr/ADR-0015-geometric-tolerance-and-degeneracy.md
 21. docs/adr/ADR-0016-geometry-topology-cad-boundaries.md
+22. docs/adr/ADR-0017-geometry-presentation-boundary.md
+23. docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md
+24. docs/adr/ADR-0019-geometry-picking-strategy.md
+25. docs/adr/ADR-0020-geometry-visualization-scope.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

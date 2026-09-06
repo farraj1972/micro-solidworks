@@ -212,19 +212,47 @@ continuam não implementados. Nenhum trabalho futuro é autorizado por este esta
 
 ---
 
-# B4 — Scene & Object Model
+# Decision Gate D4 — Geometry Visualization & Selection
+
+Status: FROZEN
+
+ADR-0017–0020 estão ACCEPTED. D4 congela a boundary de apresentação derivada,
+identidade visual externa à Geometry, hover distinto de single-selection,
+picking geométrico com tolerance de interacção screen-space e o scope visual
+obrigatório Point3/Segment3/Line3. Geometry permanece model-only.
+
+---
+
+# B4 — Geometry Visualization & Selection
+
+Status: NOT STARTED
 
 Objectivo:
 
-Permitir representar múltiplos objectos numa cena/documento inicial.
+Provar o vertical slice Geometry → Presentation → Viewer rendering → Picking
+→ Hover → Selection → Highlight, sem alterar a baseline Geometry congelada.
 
-Capacidades:
+Estado dos increments:
 
-- object identity;
-- transforms;
-- scene registration;
-- visibility;
-- basic object lifecycle.
+| Increment | Estado |
+| --- | --- |
+| B4.1 — Geometry Presentation Model | PENDING |
+| B4.2 — Point Rendering | PENDING |
+| B4.3 — Segment Rendering | PENDING |
+| B4.4 — Line Visualization & View Clipping | PENDING |
+| B4.5 — Geometry Demo Scene | PENDING |
+| B4.6 — Picking Foundation | PENDING |
+| B4.7 — Hover State | PENDING |
+| B4.8 — Single Selection | PENDING |
+| B4.9 — Selection Highlighting | PENDING |
+| B4.10 — Viewer / Geometry Integration Tests | PENDING |
+| B4.11 — Documentation & D4 Validation | PENDING |
+| B4.12 — Baseline Validation | PENDING |
+| B4.FREEZE | PENDING |
+
+B4 has not started. B4.1 requires explicit authorization. Ray3/Plane mandatory
+visualization, framebuffer picking, multi-selection, generic scene graphs,
+Topology/BRep, Sketching, CAD Modeling and persistence remain deferred.
 
 ---
 

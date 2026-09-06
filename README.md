@@ -49,12 +49,27 @@ The viewer decision gate **D2 — 3D Viewer Conventions** remains
 [`ADR-0012`](docs/adr/ADR-0012-viewer-rendering-pipeline.md).
 D0 and D1 remain FROZEN.
 
-The current decision gate is **D3 — Geometric Foundation**, **FROZEN**.
+The previous decision gate **D3 — Geometric Foundation** remains **FROZEN**.
 Its accepted decisions are
 [`ADR-0013`](docs/adr/ADR-0013-geometric-point-and-vector-semantics.md),
 [`ADR-0014`](docs/adr/ADR-0014-geometric-primitive-representation.md),
 [`ADR-0015`](docs/adr/ADR-0015-geometric-tolerance-and-degeneracy.md) and
 [`ADR-0016`](docs/adr/ADR-0016-geometry-topology-cad-boundaries.md).
+
+The latest decision gate is **D4 — Geometry Visualization & Selection**,
+**FROZEN**. Its accepted decisions establish a project-owned derived
+presentation boundary, external visual identity and single-selection state,
+geometric picking with screen-space interaction tolerance, and mandatory B4
+visualization scope for Point3, Segment3 and Line3. See
+[`ADR-0017`](docs/adr/ADR-0017-geometry-presentation-boundary.md),
+[`ADR-0018`](docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md),
+[`ADR-0019`](docs/adr/ADR-0019-geometry-picking-strategy.md) and
+[`ADR-0020`](docs/adr/ADR-0020-geometry-visualization-scope.md).
+
+The next planned baseline is **B4 — Geometry Visualization & Selection**,
+**STATUS: NOT STARTED**. B4.1–B4.12 and B4.FREEZE are PENDING. The next
+permitted increment is **B4.1 — Geometry Presentation Model**, only after
+explicit authorization.
 
 Every subsequent increment, Decision Gate, baseline or freeze requires
 explicit authorization.

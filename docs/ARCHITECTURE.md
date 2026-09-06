@@ -708,6 +708,53 @@ unchanged B2 viewer, normal close and exit code 0, not rendering of Geometry.
 ADR-0001 through ADR-0016 remain 16/16 ACCEPTED, unchanged. D0/D1/D2/D3
 remain FROZEN. B3 is FROZEN. PROJECT_CHARTER remains consistent and unchanged.
 
+#### FROZEN D4 DECISIONS — Planned Geometry presentation and selection
+
+D4 is FROZEN; ADR-0017 through ADR-0020 are ACCEPTED. B4 — Geometry
+Visualization & Selection is PLANNED / NOT STARTED. No B4 target, class or
+runtime behaviour exists yet.
+
+The permitted conceptual flow is:
+
+```text
+Math -> Geometry -> Presentation / Adapter -> Viewer / Rendering
+```
+
+The arrows express allowed consumption and need not map one-to-one to physical
+targets. Frozen B3 Geometry remains model-only and never stores visual identity,
+color, visibility, hover, selection or GPU/render state. Presentation derives
+renderable data outside Geometry and keeps model and presentation lifetimes
+distinct. B4 shall use a small collection sufficient for its vertical slice,
+not a generic scene graph, transform hierarchy or ECS.
+
+Visual identity is project-owned and external to Geometry. Hover is transient;
+selection persists until changed and initially contains zero or one entity.
+Selection and highlighting do not mutate Geometry; normal/hovered/selected
+appearance belongs to Presentation/Rendering.
+
+Geometric picking is the primary B4 strategy. It derives a world-space query
+from mouse, viewport, camera and projection, reusing/adapting Geometry Ray3 when
+appropriate. Picking tolerance is a screen-space interaction policy, distinct
+from `defaultGeometricTolerance`; framebuffer color-ID picking is deferred.
+
+Mandatory B4 visualization is Point3, Segment3 and Line3. Line3 remains
+mathematically infinite; Presentation derives a finite view/context-clipped
+visual segment. Ray3 and Plane visualization are deferred from mandatory B4
+scope, and any later truncation/finite quad remains presentation-only.
+
+The planned vertical slice is:
+
+```text
+Geometry -> Presentation -> Viewer rendering -> Picking
+         -> Hover -> Selection -> Highlight
+```
+
+Existing ShaderProgram, LineRenderer, WorkspaceViewport, OrbitCamera and
+view/projection infrastructure should be reused where appropriate. Point
+rendering may justify only a minimal project-owned rendering capability.
+Topology/BRep, Sketching, CAD Modeling, persistent identity and persistence
+remain deferred.
+
 #### Longer-term Geometry direction
 
 Representação matemática de entidades geométricas.

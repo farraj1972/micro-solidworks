@@ -807,20 +807,30 @@ B0 — Foundation
 STATUS: FROZEN
 ```
 
-Current decision gate:
+Latest decision gate:
 
 ```text
-D3 — Geometric Foundation
+D4 — Geometry Visualization & Selection
 STATUS: FROZEN
 ```
 
-D0, D1 and D2 remain FROZEN. ADR-0013 through ADR-0016 are ACCEPTED.
+D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
 smoke with no findings. B3 is FROZEN.
 
-No subsequent Decision Gate, increment or baseline is currently authorized.
+Next planned baseline:
+
+```text
+B4 — Geometry Visualization & Selection
+STATUS: NOT STARTED
+B4.1–B4.12: PENDING
+B4.FREEZE: PENDING
+```
+
+Next permitted increment: B4.1 — Geometry Presentation Model, only after
+explicit authorization. B4 has not started.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.
