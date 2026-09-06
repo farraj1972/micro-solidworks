@@ -11,7 +11,8 @@ namespace microsw::viewer
 {
 std::vector<math::Vector3> presentedLineVertices(
     const presentation::GeometryPresentation& presentation,
-    const LinePresentationContext& context)
+    const LinePresentationContext& context,
+    std::optional<VisualStateFilter> filter)
 {
     if (!std::isfinite(context.visibleScale) || context.visibleScale <= 0)
         throw std::invalid_argument{"Line presentation scale must be positive and finite"};
@@ -25,6 +26,8 @@ std::vector<math::Vector3> presentedLineVertices(
     std::vector<math::Vector3> vertices;
     vertices.reserve(presentation.size() * 2);
     for (const auto& entity : presentation.entities())
+    {
+        if (filter && !filter->accepts(entity.id())) continue;
         if (const auto* line = std::get_if<geometry::Line3>(&entity.geometry()))
         {
             const geometry::Point3 center = geometry::closestPoint(*line, viewCenter);
@@ -33,6 +36,7 @@ std::vector<math::Vector3> presentedLineVertices(
             vertices.emplace_back(negative.x(), negative.y(), negative.z());
             vertices.emplace_back(positive.x(), positive.y(), positive.z());
         }
+    }
     return vertices;
 }
 }

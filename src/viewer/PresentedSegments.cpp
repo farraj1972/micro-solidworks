@@ -8,11 +8,14 @@
 namespace microsw::viewer
 {
 std::vector<math::Vector3> presentedSegmentVertices(
-    const presentation::GeometryPresentation& presentation)
+    const presentation::GeometryPresentation& presentation,
+    std::optional<VisualStateFilter> filter)
 {
     std::vector<math::Vector3> vertices;
     vertices.reserve(presentation.size() * 2);
     for (const auto& entity : presentation.entities())
+    {
+        if (filter && !filter->accepts(entity.id())) continue;
         if (const auto* segment = std::get_if<geometry::Segment3>(&entity.geometry()))
         {
             const auto& a = segment->a();
@@ -20,6 +23,7 @@ std::vector<math::Vector3> presentedSegmentVertices(
             vertices.emplace_back(a.x(), a.y(), a.z());
             vertices.emplace_back(b.x(), b.y(), b.z());
         }
+    }
     return vertices;
 }
 }

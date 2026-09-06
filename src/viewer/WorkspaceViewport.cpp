@@ -3,6 +3,7 @@
 #include "viewer/OrbitCamera.h"
 #include "viewer/HoverState.h"
 #include "viewer/SelectionState.h"
+#include "viewer/HighlightColors.h"
 #include "viewer/OrbitNavigation.h"
 #include "viewer/PanZoomNavigation.h"
 #include "viewer/ProjectionState.h"
@@ -133,11 +134,6 @@ public:
         xAxis.setVertices(axes.xAxis());
         yAxis.setVertices(axes.yAxis());
         zAxis.setVertices(axes.zAxis());
-        if (presentation)
-        {
-            points.setVertices(presentedPointVertices(*presentation));
-            segments.setVertices(presentedSegmentVertices(*presentation));
-        }
     }
 
     OrbitCamera camera;
@@ -298,30 +294,56 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     impl_->shader.setMatrix4("uView", viewMatrix(impl_->camera));
     impl_->shader.setMatrix4("uProjection",
         impl_->projection.matrix(impl_->verticalFov, rect.aspectRatio(), impl_->nearPlane, impl_->farPlane));
-    if (impl_->presentation)
+    const math::Scalar visibleHeight = impl_->projection.mode() == ProjectionMode::Perspective
+        ? 2.0 * impl_->camera.distance() * std::tan(impl_->verticalFov / 2.0)
+        : impl_->projection.visibleHeight();
+    const LinePresentationContext lineContext{impl_->camera.target(),
+        visibleHeight * std::max<math::Scalar>(1.0, rect.aspectRatio())};
+
+    // Reuse three generic GPU buffers for successive state batches. IDs stay on CPU.
+    const auto upload = [&](VisualState state)
     {
-        const math::Scalar visibleHeight = impl_->projection.mode() == ProjectionMode::Perspective
-            ? 2.0 * impl_->camera.distance() * std::tan(impl_->verticalFov / 2.0)
-            : impl_->projection.visibleHeight();
-        const math::Scalar visibleScale = visibleHeight * std::max<math::Scalar>(1.0, rect.aspectRatio());
-        impl_->lines.setVertices(presentedLineVertices(*impl_->presentation,
-            {impl_->camera.target(), visibleScale}));
-    }
-    // Same depth pass; central grid lines are omitted to preserve origin axes.
+        if (!impl_->presentation) return;
+        const VisualStateFilter filter{state, impl_->hover.hovered(), impl_->selection.selected()};
+        impl_->lines.setVertices(presentedLineVertices(*impl_->presentation, lineContext, filter));
+        impl_->segments.setVertices(presentedSegmentVertices(*impl_->presentation, filter));
+        impl_->points.setVertices(presentedPointVertices(*impl_->presentation, filter));
+    };
+    const auto drawLines = [&](VisualState state)
+    {
+        impl_->shader.setVector3("uColor", highlightColor(state, normalLineColor));
+        impl_->lines.draw();
+    };
+    const auto drawSegmentsAndPoints = [&](VisualState state)
+    {
+        impl_->shader.setVector3("uColor", highlightColor(state, normalSegmentColor));
+        impl_->segments.draw();
+        impl_->shader.setVector3("uColor", highlightColor(state, normalPointColor));
+        impl_->points.draw();
+    };
+
+    // Preserve B4.8's normal pass order and depth policy when no state is active.
     impl_->shader.setVector3("uColor", {0.35, 0.35, 0.38});
     impl_->gridRenderer.draw();
-    impl_->shader.setVector3("uColor", {0.2, 0.75, 0.85});
-    impl_->lines.draw();
+    upload(VisualState::Normal);
+    drawLines(VisualState::Normal);
     impl_->shader.setVector3("uColor", {1.0, 0.0, 0.0});
     impl_->xAxis.draw();
     impl_->shader.setVector3("uColor", {0.0, 1.0, 0.0});
     impl_->yAxis.draw();
     impl_->shader.setVector3("uColor", {0.0, 0.0, 1.0});
     impl_->zAxis.draw();
-    impl_->shader.setVector3("uColor", {0.8, 0.8, 0.85});
-    impl_->segments.draw();
-    impl_->shader.setVector3("uColor", {1.0, 0.85, 0.2});
-    impl_->points.draw();
+    drawSegmentsAndPoints(VisualState::Normal);
+
+    // Equal-depth fragments follow state precedence; nearer geometry still occludes.
+    // No depth offset, depth clear or duplicate entity is needed for highlighting.
+    glDepthFunc(GL_LEQUAL);
+    for (const auto state : {VisualState::Hovered, VisualState::Selected})
+    {
+        upload(state);
+        drawLines(state);
+        drawSegmentsAndPoints(state);
+    }
 }
 
 }
