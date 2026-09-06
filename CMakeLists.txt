@@ -199,6 +199,7 @@ target_link_libraries(microsw_ui PRIVATE
 
 add_executable(micro_solidworks
     src/app/main.cpp
+    src/app/demo/GeometryDemoScene.cpp
 )
 
 target_compile_features(micro_solidworks PRIVATE cxx_std_20)
@@ -231,6 +232,8 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(googletest)
 
     add_executable(micro_solidworks_tests
+        src/app/demo/GeometryDemoScene.cpp
+        tests/app/test_geometry_demo_scene.cpp
         tests/test_infrastructure.cpp
         tests/test_logging.cpp
         tests/geometry/test_point2.cpp

@@ -1,7 +1,7 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
-#include "presentation/GeometryPresentation.h"
+#include "app/demo/GeometryDemoScene.h"
 #include "ui/ApplicationShell.h"
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
@@ -19,25 +19,7 @@ int main()
             microsw::OpenGLContext openGLContext{window};
             microsw::ImGuiLayer ui{window, openGLContext};
             microsw::ApplicationShell shell{window};
-            microsw::presentation::GeometryPresentation presentation;
-            (void)presentation.add(microsw::geometry::Point3{0, 0, 0});
-            (void)presentation.add(microsw::geometry::Point3{2, 2, 1});
-            (void)presentation.add(microsw::geometry::Point3{-2, 1, 2});
-            (void)presentation.add(microsw::geometry::Segment3{
-                microsw::geometry::Point3{-3, -2, 0.5},
-                microsw::geometry::Point3{3, -2, 0.5}});
-            (void)presentation.add(microsw::geometry::Segment3{
-                microsw::geometry::Point3{-3, 2, 0.5},
-                microsw::geometry::Point3{-1, 4, 2.5}});
-            (void)presentation.add(microsw::geometry::Segment3{
-                microsw::geometry::Point3{3, 1, 0.5},
-                microsw::geometry::Point3{3, 2, 3.5}});
-            (void)presentation.add(microsw::geometry::Line3{
-                microsw::geometry::Point3{-2, 3, 1},
-                microsw::math::Vector3{1, 1, 0.25}});
-            (void)presentation.add(microsw::geometry::Line3{
-                microsw::geometry::Point3{2, -1, 2},
-                microsw::math::Vector3{-0.5, 1, 1.5}});
+            auto presentation = microsw::demo::createGeometryDemoScene();
             microsw::viewer::WorkspaceViewport workspace{presentation};
 
             while (!window.shouldClose())
