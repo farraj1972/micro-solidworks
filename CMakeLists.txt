@@ -123,6 +123,9 @@ target_include_directories(microsw_presentation PUBLIC src)
 target_link_libraries(microsw_presentation PUBLIC microsw_geometry)
 
 add_library(microsw_viewer STATIC
+    src/viewer/GeometryPicker.cpp
+    src/viewer/PickingContext.cpp
+    src/viewer/PickingRay.cpp
     src/viewer/OrbitCamera.cpp
     src/viewer/OrbitNavigation.cpp
     src/viewer/PanZoomNavigation.cpp
@@ -262,6 +265,8 @@ if(BUILD_TESTING)
         tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
+        tests/viewer/test_picking_ray.cpp
+        tests/viewer/test_geometry_picker.cpp
         tests/viewer/test_orbit_camera.cpp
         tests/viewer/test_orbit_navigation.cpp
         tests/viewer/test_pan_zoom_navigation.cpp

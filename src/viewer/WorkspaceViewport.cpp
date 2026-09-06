@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numbers>
+#include <stdexcept>
 
 namespace microsw::viewer
 {
@@ -169,6 +170,45 @@ ProjectionMode WorkspaceViewport::projectionMode() const noexcept
 void WorkspaceViewport::setProjectionMode(ProjectionMode mode) noexcept
 {
     impl_->projection.setMode(mode);
+}
+
+std::optional<PickHit> WorkspaceViewport::pick(
+    const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+    math::Scalar mouseX, math::Scalar mouseY) const
+{
+    for (const auto value : {layout.x, layout.y, layout.width, layout.height,
+                            layout.displayWidth, layout.displayHeight, mouseX, mouseY})
+        if (!std::isfinite(value))
+            throw std::invalid_argument{"Picking layout and mouse must be finite"};
+    if (layout.width <= 0 || layout.height <= 0
+        || layout.displayWidth <= 0 || layout.displayHeight <= 0)
+        throw std::invalid_argument{"Picking layout dimensions must be positive"};
+    if (framebufferWidth <= 0 || framebufferHeight <= 0)
+        throw std::invalid_argument{"Picking framebuffer dimensions must be positive"};
+    const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
+    if (rect.width <= 0 || rect.height <= 0)
+        return std::nullopt;
+    const auto logicalPerPixelX = layout.displayWidth / framebufferWidth;
+    const auto logicalPerPixelY = layout.displayHeight / framebufferHeight;
+
+    PickingContext context;
+    context.camera = impl_->camera;
+    context.projection = impl_->projection;
+    context.width = rect.width * logicalPerPixelX;
+    context.height = rect.height * logicalPerPixelY;
+    context.mouseX = mouseX - rect.x * logicalPerPixelX;
+    context.mouseY = mouseY - (framebufferHeight - rect.y - rect.height) * logicalPerPixelY;
+    context.projectionAspectRatio = rect.aspectRatio();
+    if (!std::isfinite(context.mouseX) || !std::isfinite(context.mouseY))
+        throw std::overflow_error{"Workspace-local mouse is not representable"};
+    context.verticalFov = impl_->verticalFov;
+    context.nearPlane = impl_->nearPlane;
+    context.farPlane = impl_->farPlane;
+    context.validate();
+    if (!impl_->presentation || mouseX < 0 || mouseX >= layout.displayWidth
+        || mouseY < 0 || mouseY >= layout.displayHeight)
+        return std::nullopt;
+    return pickGeometry(*impl_->presentation, context);
 }
 
 void WorkspaceViewport::updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input)

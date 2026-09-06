@@ -18,6 +18,8 @@
 #include <array>
 #include <limits>
 #include <memory>
+#include <numbers>
+#include <stdexcept>
 
 namespace
 {
@@ -325,5 +327,89 @@ TEST_F(WorkspaceViewportTest, RenderRestoresPassState)
     EXPECT_EQ(program, 0);
     EXPECT_EQ(vao, 0);
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+TEST_F(WorkspaceViewportTest, PickingUsesLogicalLayoutAndIsIndependentOfFramebufferDpi)
+{
+    microsw::presentation::GeometryPresentation presentation;
+    const auto id = presentation.add(microsw::geometry::Point3{});
+    const WorkspaceViewport viewport{presentation};
+    const WorkspaceLayout layout{16, 16, 96, 96, 128, 128};
+    const auto hit = viewport.pick(layout, 128, 128, 68, 64);
+    ASSERT_TRUE(hit);
+    EXPECT_EQ(hit->id, id);
+    EXPECT_NEAR(hit->screenDistance, 4, 1e-9);
+    EXPECT_FALSE(viewport.pick(layout, 128, 128, 71, 64));
+    EXPECT_FALSE(viewport.pick(layout, 128, 128, 15, 64));
+    EXPECT_FALSE(viewport.pick(layout, 128, 128, 112, 64));
+    EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
+TEST_F(WorkspaceViewportTest, PickingTracksProjectionAndZoomWithoutStoredHitState)
+{
+    microsw::presentation::GeometryPresentation presentation;
+    const auto id = presentation.add(microsw::geometry::Point3{});
+    WorkspaceViewport viewport{presentation};
+    const WorkspaceLayout layout{16, 16, 96, 96, 128, 128};
+    for (auto mode : {microsw::ProjectionMode::Perspective, microsw::ProjectionMode::Orthographic})
+    {
+        viewport.setProjectionMode(mode);
+        microsw::WorkspaceInput zoom{64, 64, false, false, false, true, true, true, false, 2};
+        viewport.updateNavigation(layout, zoom);
+        // Render at 1x and 2x framebuffer size; picking remains in logical pixels.
+        for (int framebuffer : {128, 256})
+        {
+            viewport.render(layout, framebuffer, framebuffer);
+            const auto hit = viewport.pick(layout, framebuffer, framebuffer, 68, 64);
+            ASSERT_TRUE(hit);
+            EXPECT_EQ(hit->id, id);
+            EXPECT_NEAR(hit->screenDistance, 4, 1e-9);
+            EXPECT_EQ(viewport.projectionMode(), mode);
+        }
+    }
+    EXPECT_EQ(presentation.size(), 1U);
+}
+
+TEST_F(WorkspaceViewportTest, PickingRejectsInvalidLayoutAndHandlesAbsentPresentation)
+{
+    const WorkspaceViewport viewport;
+    EXPECT_FALSE(viewport.pick({16, 16, 96, 96, 128, 128}, 128, 128, 64, 64));
+    EXPECT_THROW((void)viewport.pick({}, 128, 128, 0, 0), std::invalid_argument);
+    EXPECT_THROW((void)viewport.pick({16, 16, 96, 96, 128, 128}, 128, 128,
+        std::numeric_limits<double>::quiet_NaN(), 64), std::invalid_argument);
+}
+TEST_F(WorkspaceViewportTest, PickingMatchesRasterAspectClippingAndFractionalDpi)
+{
+    const microsw::viewer::OrbitCamera camera;
+    const auto sample = camera.target() + camera.right();
+    microsw::presentation::GeometryPresentation presentation;
+    const auto id = presentation.add(microsw::geometry::Point3{sample.x(), sample.y(), sample.z()});
+    WorkspaceViewport viewport{presentation};
+    for (const auto& layout : {
+             WorkspaceLayout{16.25, 16.25, 96.5, 96.5, 128, 128},
+             WorkspaceLayout{-20, 16, 120, 96, 128, 128}})
+        for (const auto& framebuffer : std::array{
+                 std::array{128, 128}, std::array{256, 192}, std::array{160, 160}})
+        {
+            const auto rect = framebufferRect(layout, framebuffer[0], framebuffer[1]);
+            const auto logicalWidth = rect.width * layout.displayWidth / framebuffer[0];
+            const auto logicalHeight = rect.height * layout.displayHeight / framebuffer[1];
+            const auto left = rect.x * layout.displayWidth / framebuffer[0];
+            const auto top = (framebuffer[1] - rect.y - rect.height) * layout.displayHeight / framebuffer[1];
+            // Existing render matrix is the independent oracle for the sample.
+            const auto matrix = microsw::viewer::perspective(
+                std::numbers::pi / 3, rect.aspectRatio(), 0.1, 1100) * viewMatrix(camera);
+            const std::array<double, 4> world{sample.x(), sample.y(), sample.z(), 1};
+            std::array<double, 4> clip{};
+            for (std::size_t row = 0; row < 4; ++row)
+                for (std::size_t column = 0; column < 4; ++column)
+                    clip[row] += matrix(row, column) * world[column];
+            const auto x = left + (clip[0] / clip[3] + 1) * logicalWidth / 2;
+            const auto y = top + (1 - clip[1] / clip[3]) * logicalHeight / 2;
+            const auto hit = viewport.pick(layout, framebuffer[0], framebuffer[1], x + 4, y);
+            ASSERT_TRUE(hit);
+            EXPECT_EQ(hit->id, id);
+            EXPECT_NEAR(hit->screenDistance, 4, 1e-9);
+            EXPECT_FALSE(viewport.pick(layout, framebuffer[0], framebuffer[1], x + 7, y));
+        }
 }
 }
