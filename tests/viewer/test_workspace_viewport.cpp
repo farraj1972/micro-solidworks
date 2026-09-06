@@ -180,6 +180,8 @@ TEST_F(WorkspaceViewportTest, PresentedPointsCoexistWithGridAndAxesInWorkspacePa
     // Unsupported alternatives are intentionally ignored in B4.2.
     (void)presentation.add(microsw::geometry::Segment3{
         microsw::geometry::Point3{-1, 0, 0}, microsw::geometry::Point3{1, 0, 0}});
+    (void)presentation.add(microsw::geometry::Segment3{
+        microsw::geometry::Point3{0, -1, 1}, microsw::geometry::Point3{0, 1, 2}});
     (void)presentation.add(microsw::geometry::Line3{
         microsw::geometry::Point3{}, microsw::math::Vector3{1, 0, 0}});
 

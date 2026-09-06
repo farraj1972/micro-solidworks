@@ -23,6 +23,15 @@ int main()
             (void)presentation.add(microsw::geometry::Point3{0, 0, 0});
             (void)presentation.add(microsw::geometry::Point3{2, 2, 1});
             (void)presentation.add(microsw::geometry::Point3{-2, 1, 2});
+            (void)presentation.add(microsw::geometry::Segment3{
+                microsw::geometry::Point3{-3, -2, 0.5},
+                microsw::geometry::Point3{3, -2, 0.5}});
+            (void)presentation.add(microsw::geometry::Segment3{
+                microsw::geometry::Point3{-3, 2, 0.5},
+                microsw::geometry::Point3{-1, 4, 2.5}});
+            (void)presentation.add(microsw::geometry::Segment3{
+                microsw::geometry::Point3{3, 1, 0.5},
+                microsw::geometry::Point3{3, 2, 3.5}});
             microsw::viewer::WorkspaceViewport workspace{presentation};
 
             while (!window.shouldClose())

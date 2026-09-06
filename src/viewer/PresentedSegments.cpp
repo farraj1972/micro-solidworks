@@ -1,0 +1,25 @@
+#include "viewer/PresentedSegments.h"
+
+#include "core/geometry/Segment3.h"
+#include "presentation/GeometryPresentation.h"
+
+#include <variant>
+
+namespace microsw::viewer
+{
+std::vector<math::Vector3> presentedSegmentVertices(
+    const presentation::GeometryPresentation& presentation)
+{
+    std::vector<math::Vector3> vertices;
+    vertices.reserve(presentation.size() * 2);
+    for (const auto& entity : presentation.entities())
+        if (const auto* segment = std::get_if<geometry::Segment3>(&entity.geometry()))
+        {
+            const auto& a = segment->a();
+            const auto& b = segment->b();
+            vertices.emplace_back(a.x(), a.y(), a.z());
+            vertices.emplace_back(b.x(), b.y(), b.z());
+        }
+    return vertices;
+}
+}

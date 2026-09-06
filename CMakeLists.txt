@@ -128,6 +128,7 @@ add_library(microsw_viewer STATIC
     src/viewer/PanZoomNavigation.cpp
     src/viewer/ProjectionState.cpp
     src/viewer/PresentedPoints.cpp
+    src/viewer/PresentedSegments.cpp
     src/viewer/ReferenceAxes.cpp
     src/viewer/ReferenceGrid.cpp
     src/viewer/ViewProjection.cpp
@@ -272,6 +273,7 @@ if(BUILD_TESTING)
         tests/presentation/test_geometry_presentation.cpp
         tests/presentation/test_visual_entity.cpp
         tests/viewer/test_presented_points.cpp
+        tests/viewer/test_presented_segments.cpp
     )
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
