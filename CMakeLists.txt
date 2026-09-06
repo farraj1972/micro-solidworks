@@ -265,6 +265,7 @@ if(BUILD_TESTING)
         tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
+        tests/viewer/test_geometry_viewer_integration.cpp
         tests/viewer/test_highlight_batching.cpp
         tests/viewer/test_workspace_highlight.cpp
         tests/viewer/test_selection_state.cpp
