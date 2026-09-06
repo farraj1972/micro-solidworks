@@ -47,7 +47,7 @@ Uma nova dependência ou mudança de estratégia arquitectural requer aprovaçã
 | GoogleTest | INTEGRATE | target de testes separado, descoberto por CTest |
 | spdlog | INTEGRATE | `microsw_logging` e API project-owned `Logger` |
 | GLFW | INTEGRATE | `microsw_windowing` e `ApplicationWindow` |
-| OpenGL | INTEGRATE | OpenGL 3.3 Core; `OpenGLContext`, `ShaderProgram`, `LineRenderer` e pass do `WorkspaceViewport` |
+| OpenGL | INTEGRATE | OpenGL 3.3 Core; `OpenGLContext`, `ShaderProgram`, `LineRenderer`, `PointRenderer` e pass do `WorkspaceViewport` |
 | GLAD | INTEGRATE | `glad_gl_core_33`, usado por Rendering e pelo pass do Viewer; sem tipos GL nas APIs públicas |
 | Dear ImGui | INTEGRATE | `microsw_ui`, `ImGuiLayer` e `ApplicationShell` |
 
@@ -67,22 +67,26 @@ OpenGL 3.3 funcional.
   no target project-owned `microsw_geometry`, conforme D3 (ADR-0013–0016).
   Depende apenas de `microsw_math` e da biblioteca standard C++; não depende
   de Viewer, Rendering, UI, Windowing, Logging ou futuras camadas de domínio.
-  O executável principal ainda não consome Geometry.
+  A aplicação consome Geometry através da Presentation e do Viewer em B4.
 - Educational Geometry Kernel: a fundação de valores, queries e métricas
   geométricas já existe; um kernel CAD completo, Topology e Modeling continuam
   por implementar. Preserva-se a estratégia educacional BUILD com possível
   substituição futura controlada de ADR-0006. CGAL, OpenCascade e outros
   kernels externos não estão integrados em B3.
-- Geometry presentation/adaptation: `BUILD`, planeada para B4 através de uma
-  boundary project-owned que consome Geometry sem alterar o kernel e reutiliza
-  Viewer/Rendering quando adequado.
-- Picking/selection foundation: `BUILD`, planeada como interacção geométrica
-  project-owned, com tolerance de picking distinta da tolerance geométrica.
+- Geometry presentation/adaptation: `BUILD`, implementada em B4.1–B4.4:
+  `microsw_presentation -> microsw_geometry -> microsw_math`; adapters no Viewer
+  derivam batches de Point/Segment/Line sem alterar Geometry. Presentation não
+  depende de Viewer ou Rendering.
+- Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
+  de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
+- Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no
+  Viewer; estados de identidade separados e batches exclusivos por estado visual.
+  B4.10 valida a integração; B4.11 documenta-a, sem novas dependências.
 
 `WorkspaceViewport`, navegação, `ReferenceGrid`, `ReferenceAxes`,
-`ShaderProgram` e `LineRenderer` são componentes/fronteiras project-owned,
+`ShaderProgram`, `LineRenderer` e `PointRenderer` são componentes/fronteiras project-owned,
 não dependências externas. Rendering não depende de Viewer. As dependências
-CMake concretas estão documentadas em `ARCHITECTURE.md`; B2.12 não altera
+CMake concretas estão documentadas em `ARCHITECTURE.md`; B4.11 não altera
 targets, bibliotecas ou estratégias aprovadas.
 
 ## 6. Dependências deferred

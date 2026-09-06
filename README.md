@@ -7,93 +7,107 @@ product.
 
 ## Stable baselines
 
-**B0 — Foundation** is FROZEN (tag: `b0-foundation`). The repository provides the executable B0
-foundation and application shell; CAD functionality is not implemented yet.
+| Baseline | Status | Tag |
+| --- | --- | --- |
+| B0 — Foundation | FROZEN | `b0-foundation` |
+| B1 — Mathematical Foundation | FROZEN | `b1-mathematical-foundation` |
+| B2 — 3D Viewer | FROZEN | `b2-3d-viewer` |
+| B3 — Geometric Primitives | FROZEN | `b3-geometric-primitives` |
 
-**B1 — Mathematical Foundation** is **FROZEN**
-(tag: `b1-mathematical-foundation`). It contains Scalar/numeric tolerance,
-Vector2, Vector3, Matrix3, Matrix4, Transformation Operations and mathematical
-integration tests, described in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
-B1.1–B1.10 are complete.
+B3 remains the latest stable baseline. It supplies Point2/3, Segment2/3,
+Line2/3, Ray2/3 and Plane, queries, metrics and geometric tolerance over internal
+Math. Geometry remains model-only, independent of graphics and UI.
+Point3 is not a Vertex, Segment3 is not an Edge, and Plane is not a Face.
 
-## Latest stable baseline
+## Current work — B4 Geometry Visualization & Selection
 
-The current latest stable baseline is **B3 — Geometric Primitives**,
-**STATUS: FROZEN** (tag: `b3-geometric-primitives`). B3.1–B3.9, the corrective
-B3.10A and B3.10 are COMPLETE; B3.FREEZE is FROZEN.
+**Status: IN PROGRESS**, not a stable or frozen baseline.
 
-B3 provides Point2/3, Segment2/3, Line2/3, Ray2/3 and Plane, geometric
-tolerance, primitive predicates, pointAt, closestPoint, distance, Plane
-signedDistance and robust extreme-coordinate support. Geometry depends only
-on internal Math and the C++ standard library.
+- B4.1–B4.10: COMPLETE.
+- B4.11 — Documentation & D4 Validation: CURRENT.
+- B4.12 — Baseline Validation: PENDING.
+- B4.FREEZE: PENDING.
 
-Geometry is not Topology. Geometry is not CAD. Geometry is not yet rendered
-by the Viewer.
+The application now demonstrates a deterministic temporary collection of
+3 Point3, 3 Segment3 and 2 Line3, with geometric picking, automatic hover,
+single selection and visual highlighting. Existing capabilities include a
+HiDPI-aware 3D Workspace, finite XY grid, RGB axes, orbit/pan/zoom and
+Perspective/Orthographic projection.
 
-The previous **B2 — 3D Viewer** baseline remains **FROZEN**
-(tag: `b2-3d-viewer`). B2.1–B2.13 are COMPLETE; B2.FREEZE is FROZEN.
+Normal points are yellow, segments light gray and lines cyan. Hover is light
+cyan; selection is orange and takes precedence over hover. Selection persists
+through cursor movement, navigation, projection changes and resize/minimize.
+Hover and selection can reference different entities simultaneously.
 
-Stable capabilities: a HiDPI-aware directly rendered 3D Workspace, Perspective and
-Orthographic modes, a finite XY reference grid, RGB reference axes, and
-Orbit / Pan / Zoom navigation. These are viewer aids, not CAD entities;
-CAD modelling has not started; picking and selection are not implemented.
+Line3 remains mathematically infinite; the Viewer derives a finite segment
+from the current view center and visible scale. Picking uses this same finite
+representation and a 6 logical-pixel tolerance. Exact occlusion/depth-buffer-aware
+picking is not implemented; highlight remains subject to normal depth occlusion.
 
-Controls: MMB drag orbits, Shift+MMB pans, and the mouse wheel zooms.
-Use **View → Projection → Perspective / Orthographic** to change mode.
-Each mode preserves its independent zoom state.
+The application owns GeometryPresentation; WorkspaceViewport observes it.
+Visual IDs are process-local, collection-scoped and non-persistent. This demo
+is not a CAD Document, scene graph or persistent model. Details of ownership,
+dependencies, adapters and interaction are in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-The viewer decision gate **D2 — 3D Viewer Conventions** remains
-**FROZEN**. Its accepted decisions are recorded in
-[`ADR-0010`](docs/adr/ADR-0010-viewer-camera-and-navigation.md),
-[`ADR-0011`](docs/adr/ADR-0011-view-and-projection-conventions.md), and
-[`ADR-0012`](docs/adr/ADR-0012-viewer-rendering-pipeline.md).
-D0 and D1 remain FROZEN.
+## Controls
 
-The previous decision gate **D3 — Geometric Foundation** remains **FROZEN**.
-Its accepted decisions are
-[`ADR-0013`](docs/adr/ADR-0013-geometric-point-and-vector-semantics.md),
-[`ADR-0014`](docs/adr/ADR-0014-geometric-primitive-representation.md),
-[`ADR-0015`](docs/adr/ADR-0015-geometric-tolerance-and-degeneracy.md) and
-[`ADR-0016`](docs/adr/ADR-0016-geometry-topology-cad-boundaries.md).
+| Input | Action |
+| --- | --- |
+| MMB drag | Orbit |
+| Shift + MMB drag | Pan |
+| Mouse wheel | Zoom |
+| Pointer over geometry | Automatic hover; suspended during MMB navigation |
+| Left click geometry | Select one entity; another click replaces it |
+| Left click empty Workspace | Clear selection |
+| View → Projection | Perspective / Orthographic; each preserves its zoom state |
+| Help → About | Application information |
+| File → Exit or native X | Close the application |
 
-The latest decision gate is **D4 — Geometry Visualization & Selection**,
-**FROZEN**. Its accepted decisions establish a project-owned derived
-presentation boundary, external visual identity and single-selection state,
-geometric picking with screen-space interaction tolerance, and mandatory B4
-visualization scope for Point3, Segment3 and Line3. See
-[`ADR-0017`](docs/adr/ADR-0017-geometry-presentation-boundary.md),
-[`ADR-0018`](docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md),
-[`ADR-0019`](docs/adr/ADR-0019-geometry-picking-strategy.md) and
-[`ADR-0020`](docs/adr/ADR-0020-geometry-visualization-scope.md).
+Re-clicking a selected entity preserves it. Clicks outside the Workspace or
+blocked by UI/modal interaction preserve selection. UI does not implement picking.
+The About caption retains its historical B0 foundation text.
 
-The next planned baseline is **B4 — Geometry Visualization & Selection**,
-**STATUS: NOT STARTED**. B4.1–B4.12 and B4.FREEZE are PENDING. The next
-permitted increment is **B4.1 — Geometry Presentation Model**, only after
-explicit authorization.
+## Decisions and deferred scope
 
-Every subsequent increment, Decision Gate, baseline or freeze requires
-explicit authorization.
+D0/D1/D2/D3/D4 remain **FROZEN**; ADR-0001–0020 remain **20/20 ACCEPTED**.
+The latest gate, D4, is documented in [ADR-0017](docs/adr/ADR-0017-geometry-presentation-boundary.md),
+[ADR-0018](docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md),
+[ADR-0019](docs/adr/ADR-0019-geometry-picking-strategy.md) and
+[ADR-0020](docs/adr/ADR-0020-geometry-visualization-scope.md).
 
-The approved technology foundation is C++20, CMake, GoogleTest with CTest,
-GLFW, OpenGL, and Dear ImGui. Dependencies are introduced only in the increment
-that requires them.
+Ray3/Plane visualization, multi-selection/box/lasso, framebuffer and exact
+occlusion-aware picking, scene graph/ECS, persistent IDs/serialization/Document,
+Topology/BRep, Sketching/constraints/dimensions and feature modeling
+(Extrude/Revolve/Boolean/history/regeneration) remain deferred.
 
-## Build
+Next permitted increment after B4.11: **B4.12 — Baseline Validation**, only with
+explicit authorization. No subsequent increment, Decision Gate, baseline or
+freeze is authorized automatically. B4.FREEZE and B5 have not started.
+
+## Build and validation
+
+The approved stack remains C++20, CMake, GoogleTest/CTest, GLFW, OpenGL and
+Dear ImGui, with internal Math and Geometry; B4 introduces no external dependency.
 
 ```sh
 cmake -S . -B build
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
+git diff --check
 ```
 
-B3.10 validation snapshot: **549 tests, 549 PASS, 0 FAIL**, including the B3.10A
-closest-point reconstruction regressions, plus application runtime smoke
-(startup, visible viewer, normal close, exit code 0). B2.13's frozen snapshot
-was 274/274 tests PASS.
-Tests include real OpenGL contexts and require a working graphics environment;
-these counts are snapshots, not fixed future totals.
+Latest validated snapshot (B4.10): **684/684 PASS, 0 FAIL**. Coverage includes
+Presentation, adapters, renderers, picking, hover, selection, highlight batching
+and 14 Viewer/Geometry integration tests with real OpenGL and no pixel assertions.
+Runtime smoke passed with native X and File → Exit both returning 0. HiDPI was
+validated automatically, not repeated manually during B4.10. Frozen historical
+snapshots remain B3.10: 549/549 and B2.13: 274/274.
 
-Project operating rules are defined in [`AGENTS.md`](AGENTS.md), with bootstrap
-guidance in [`BOOTSTRAP.md`](BOOTSTRAP.md). Architectural and project
-documentation is available under [`docs/`](docs/), including the accepted
-decision records in [`docs/adr/`](docs/adr/).
+B4.11 repeated configure, Debug build and the full suite: **684/684 PASS**.
+Its simple runtime smoke was confirmed manually, with normal shutdown and
+exit code 0. Production, tests, CMake and ADRs remain unchanged.
+
+Tests require a working OpenGL 3.3 graphics environment. Counts are validation
+snapshots, not permanent totals. See [AGENTS.md](AGENTS.md), [BOOTSTRAP.md](BOOTSTRAP.md),
+[ROADMAP.md](docs/ROADMAP.md) and [DEPENDENCY_POLICY.md](docs/DEPENDENCY_POLICY.md)
+for governance, increment state and dependency strategy.

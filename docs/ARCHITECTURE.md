@@ -40,7 +40,7 @@ Persistence serializa o Document através de uma fronteira própria.
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção (Document, Modeling e Topology) continuam por implementar. Geometry já
 existe na baseline B3 FROZEN. As secções seguintes distinguem FROZEN
-FOUNDATIONS, FROZEN B2/B3 IMPLEMENTATION e PLANNED / DEFERRED.
+FOUNDATIONS, FROZEN B2/B3 IMPLEMENTATION, B4 IN PROGRESS e PLANNED / DEFERRED.
 
 ### FROZEN FOUNDATIONS — B1 Math Foundation (B1.1–B1.8)
 
@@ -154,7 +154,7 @@ of every matrix element or a projective-transform API.
 
 Using a `Vector3` argument for `transformPoint` is a temporary semantic
 operation for a position, not a promotion of `Vector3` to a dedicated point
-type. `Point3` remains deferred; callers must preserve the explicit
+type. B3 now supplies `geometry::Point3`; callers must preserve the explicit
 point/direction distinction.
 
 #### B1.8 integration validation
@@ -195,10 +195,10 @@ Not implemented in B1:
 Deferred does not mean rejected forever. Each capability requires a future
 explicitly authorized scope. B1.9 and B1.10 are complete; B1 is FROZEN.
 Perspective/orthographic projection, absent from B1, are now implemented
-in B2's Viewer through `ViewProjection`; the remaining Math concepts above
+in B2's Viewer through `ViewProjection`. B3 supplies Point/Ray/Plane in Geometry; the remaining Math concepts above
 remain deferred.
 
-### FROZEN B2 IMPLEMENTATION — Viewer (D2 FROZEN)
+### Viewer foundation (B2 FROZEN) and current B4 composition
 
 B2 is FROZEN. B2.1–B2.13 are COMPLETE; B2.FREEZE is FROZEN.
 Any subsequent increment, Decision Gate or baseline requires explicit authorization.
@@ -211,16 +211,19 @@ Application
     +-- ApplicationWindow / OpenGLContext / ImGuiLayer
     +-- ApplicationShell
     |     +-- WorkspaceLayout / WorkspaceInput / ProjectionMode
-    +-- WorkspaceViewport
+    +-- GeometryDemoScene -> GeometryPresentation (owned by main)
+    +-- WorkspaceViewport (observes GeometryPresentation)
           +-- OrbitCamera / OrbitNavigation / PanZoomNavigation
           +-- ProjectionState
           +-- ReferenceGrid / ReferenceAxes (aid generation at construction)
-          +-- ShaderProgram / LineRenderer --> OpenGL / GLAD
+          +-- PresentedPoints / PresentedSegments / PresentedLines
+          +-- GeometryPicker / HoverState / SelectionState / VisualState
+          +-- ShaderProgram / LineRenderer / PointRenderer --> OpenGL / GLAD
 ```
 
 #### Actual CMake boundaries
 
-The table includes the current B3 Geometry boundary alongside frozen B2
+The table includes the current B4 Presentation boundary alongside frozen B0–B3
 targets and records direct `target_link_libraries` relationships in
 `CMakeLists.txt`, not an invented idealized graph. Standard C++ dependencies
 are implicit.
@@ -229,14 +232,15 @@ are implicit.
 | --- | --- | --- | --- |
 | `microsw_math` | Internal B1 mathematics | None | None |
 | `microsw_geometry` | B3 geometric values, predicates and point metrics | `microsw_math` | None |
+| `microsw_presentation` | Visual identity and Geometry value collection | `microsw_geometry` | None |
 | `microsw_logging` | Project-owned `Logger` | None | `spdlog::spdlog` |
 | `microsw_windowing` | `ApplicationWindow`, GLFW/window/context lifetime | None | `glfw`, `microsw_logging` |
-| `microsw_rendering` | `OpenGLContext`, `ShaderProgram`, `LineRenderer` | `microsw_math` | `glad_gl_core_33`, `microsw_logging`, `microsw_windowing` |
-| `microsw_viewer` | Camera, navigation, projection, aids and Workspace pass | `microsw_math` | `microsw_rendering`, `glad_gl_core_33` |
+| `microsw_rendering` | `OpenGLContext`, `ShaderProgram`, `LineRenderer`, `PointRenderer` | `microsw_math` | `glad_gl_core_33`, `microsw_logging`, `microsw_windowing` |
+| `microsw_viewer` | Camera, adapters, picking, interaction, aids and Workspace pass | `microsw_math` | `microsw_presentation`, `microsw_rendering`, `glad_gl_core_33` |
 | `microsw_imgui_backend` | Dear ImGui and GLFW/OpenGL3 backends | None | `glfw` |
 | `microsw_ui` | `ImGuiLayer` and `ApplicationShell` | None | `glfw`, `microsw_imgui_backend`, `microsw_logging`, `microsw_rendering`, `microsw_windowing` |
 | `micro_solidworks` | Application composition | None | `microsw_viewer`, `microsw_logging`, `microsw_rendering`, `microsw_ui`, `microsw_windowing` |
-| `micro_solidworks_tests` | GoogleTest/CTest, including real-context tests | None | `GTest::gtest_main`, `microsw_geometry`, `microsw_logging`, `microsw_math`, `microsw_viewer`, `microsw_rendering`, `microsw_windowing`, `glad_gl_core_33`, `glfw` |
+| `micro_solidworks_tests` | GoogleTest/CTest, including real-context tests | None | `GTest::gtest_main`, `microsw_geometry`, `microsw_logging`, `microsw_math`, `microsw_presentation`, `microsw_viewer`, `microsw_rendering`, `microsw_windowing`, `glad_gl_core_33`, `glfw` |
 
 `glad_gl_core_33` is the generated OpenGL 3.3 Core loader. OpenGL is supplied
 by the system driver. Rendering's Windowing dependency supports context
@@ -246,6 +250,9 @@ or CAD semantics. Math remains independent of every graphical layer.
 
 The shared headers under `src/app` are application contracts, not another
 library target. UI does not link to Viewer; no ImGui types cross that boundary.
+The executable also compiles GeometryDemoScene.cpp. It consumes Presentation
+through the static Viewer link closure; it has no direct Presentation link in
+target_link_libraries. The test target links Presentation explicitly.
 
 #### UI and Workspace contracts
 
@@ -257,7 +264,7 @@ state, render primitives or CAD model.
   to the main application viewport, plus logical display dimensions.
 - `WorkspaceInput`: per-frame pointer/button/modifier/wheel snapshot with
   focus, pointer-validity, Workspace-hover and UI-blocking decisions.
-  Its optional `projectionRequest` is a one-frame command.
+  `leftPressed` is a one-frame left-button edge; optional `projectionRequest` is a one-frame command.
 - `ProjectionMode`: shared project-owned enum in `src/app/ProjectionMode.h`,
   with `Perspective` and `Orthographic`. This location permits UI indication
   and requests without a UI-to-Viewer class dependency.
@@ -266,7 +273,9 @@ The menu is **View → Projection → Perspective / Orthographic**. Main passes
 `workspace.projectionMode()` into `shell.draw(...)` for checked indication;
 UI emits a request, consumed by `WorkspaceViewport::updateNavigation`.
 The only source of truth is WorkspaceViewport's `ProjectionState`, not a
-UI-owned mirror. Explicit projection requests apply independently of blocked
+UI-owned mirror. UI contains no picking/selection algorithm or visual IDs.
+About still displays the historical 'Baseline B0 - Foundation' caption; it is
+not a current baseline status display. Explicit projection requests apply independently of blocked
 pointer navigation, allowing menu commands while menus capture the mouse.
 
 #### Camera, view and projection
@@ -341,12 +350,16 @@ project-owned input semantics, not an ImGui-internals contract.
 #### Direct Workspace render pass and lifetime
 
 `WorkspaceViewport` owns camera, projection and navigation state, its shader
-and four LineRenderer batches. ReferenceGrid/ReferenceAxes generate CPU aid
-vertices during construction; the GPU batches persist. There is no CAD model,
-geometry ownership, selection, picking or scene graph.
+and GPU resources: four aid LineRenderers, two Geometry LineRenderers and one
+PointRenderer. The latter three are reused for successive visual-state batches.
+ReferenceGrid/ReferenceAxes generate and upload aids at construction; Geometry
+batches derive from the observed Presentation per frame. Hover and selection
+are Viewer identity states, not CAD ownership or a scene graph.
 
-Main clears the frame, composes Dear ImGui's UI, updates navigation, renders
-the Workspace, renders the ImGui chrome over it, then swaps buffers.
+Main clears the frame, composes the UI/input snapshot, updates navigation and
+projection, updates hover, updates selection, renders the Workspace, renders
+ImGui chrome over it, then swaps buffers. Interaction uses the updated view
+of the same frame, including simultaneous zoom or projection requests.
 Dear ImGui reserves a Workspace with no background covering the 3D pass.
 `framebufferRect()` clips logical bounds to the display, scales to framebuffer
 pixels (including HiDPI and independent horizontal/vertical scale), rounds
@@ -356,7 +369,7 @@ no-ops. Resize recomputes aspect/projection, not camera pose or aid geometry.
 Offscreen framebuffer / texture-backed viewport: NOT IMPLEMENTED / DEFERRED.
 
 The pass clears only Workspace color/depth, enables scissor and depth testing
-with GL_LESS, enables color/depth writes and disables blending. Its local RAII
+with GL_LESS for normal geometry and GL_LEQUAL for hovered/selected batches, enables color/depth writes and disables blending. Its local RAII
 guard restores viewport, scissor box, depth function, program, VAO,
 scissor/depth/blend enables, write masks and clear values, including exception
 paths. This is not a global state manager or render graph.
@@ -366,7 +379,7 @@ whole-frame background clearing. GPU objects require a current compatible
 context and loaded GLAD throughout their lifetime. Main destroys Workspace
 GPU resources before ImGui and before the GLFW window/context.
 
-#### ShaderProgram and LineRenderer
+#### ShaderProgram, LineRenderer and PointRenderer
 
 `ShaderProgram` is a project-owned PImpl, move-only RAII wrapper. It compiles
 vertex/fragment source strings, links, reports failures with driver logs,
@@ -391,6 +404,12 @@ projection and depth policy are caller responsibilities; LineRenderer has no
 grid or axis knowledge. Empty draws are no-ops. Construction/upload preserve
 the bindings they touch; the enclosing Workspace pass restores its draw state.
 
+`PointRenderer` follows the same move-only VAO/VBO RAII boundary and explicit
+Scalar/double-to-float conversion. It draws GL_POINTS with fixed MVP size 5.0,
+restoring the previous point size. LineRenderer serves grid, axes, Segments
+and finite Line visualizations. Neither renderer nor ShaderProgram knows
+VisualEntityId, GeometryPresentation, hover, selection or VisualState semantics.
+
 #### Reference aids
 
 `ReferenceGrid` is finite, uniform and static in XY at Z=0. Defaults
@@ -407,7 +426,7 @@ Grid, X, Y and Z draw in that order in the same depth pass, not as an
 artificial overlay. Both aids are visual references, not sketch entities,
 construction geometry or domain scene entities.
 
-#### Testing and D2 validation
+#### Historical B2 testing and D2 validation
 
 B2.11's validated snapshot is 274 tests, 274 PASS, 0 FAIL; it is not a
 permanent test-count promise. Coverage combines pure math/state, camera,
@@ -445,15 +464,14 @@ consistent and requires no change.
   EBO/indexed rendering and per-vertex colors for viewer content; lighting,
   materials, PBR and scene textures. Dear ImGui's own backend drawing/font
   resources do not constitute these Viewer capabilities.
-- CAD/domain: topology, scene graph, CAD tessellation, selection,
-  picking, ray casting, entity hover/highlighting. Value Geometry is now
-  implemented in B3, but not connected to Viewer rendering. Workspace hover
-  used for input gating is not CAD hover.
+- CAD/domain: topology, scene graph, CAD tessellation and persistent CAD
+  entity identity. B4 implements visual-entity picking, hover, single-selection
+  and highlighting of B3 values through Presentation; this is not CAD ownership.
 - Math: production Vector4, generic Vector/Matrix, Matrix4 determinant,
   matrix inverse, Quaternion, arbitrary-axis rotation, global geometric
   modelling tolerance inside Math, dedicated Direction types and BoundingBox.
   Point, Ray and Plane now exist in Geometry, not Math; B1 stays unchanged.
-  Local homogeneous helpers in tests do not add a production Vector4.
+  Local homogeneous helpers in Viewer/tests do not introduce a public Math Vector4.
 
 No B1 point/direction API is changed. Future CAD representation remains
 authoritative and will pass through tessellation to derived render
@@ -527,10 +545,9 @@ C++ standard library
 ```
 
 Math does not depend on Geometry. Geometry does not depend on Viewer,
-Rendering, UI, Windowing or Logging. The application executable
-`micro_solidworks` does not yet consume `microsw_geometry`; only the existing
-test executable links it. The B2 Viewer does not render Geometry primitives.
-Its grid and axes remain independent viewer aids.
+Rendering, UI, Windowing or Logging. B4 now consumes Geometry through
+microsw_presentation and Viewer adapters; the application owns the demo
+Presentation. Grid and axes remain independent viewer aids.
 
 The conceptual foundation-to-consumer flow is Math -> Geometry -> future
 Topology / Modeling / CAD. These are not reversed dependency arrows.
@@ -681,11 +698,11 @@ Not implemented: general or individual Line-Line/Ray-Ray/Segment-Segment/
 Plane-* intersections; primitive equivalence (sameLine/samePlane/sameRay/
 sameSegment); cross-type relation matrices; primitive-primitive distances or
 closest points; Vertex/Edge/Face/Wire/Shell/Solid, Topology/BRep;
-Document/Sketch/Feature/constraints, extrude/revolve/booleans, selection,
-persistent IDs/history; Geometry rendering integration.
-No such future work is authorized by the B3 freeze.
+Document/Sketch/Feature/constraints, extrude/revolve/booleans, CAD sub-selection,
+persistent CAD IDs/history. Geometry rendering integration now exists externally
+in B4; it does not change the B3 model. The B3 freeze authorizes no future work.
 
-##### Testing and D3 validation
+##### Historical B3 testing and D3 validation
 
 B3.10's final validated snapshot is 549 tests, 549 PASS, 0 FAIL, with no
 findings. It includes primitive/unit, invariant, tolerance, query,
@@ -708,54 +725,230 @@ unchanged B2 viewer, normal close and exit code 0, not rendering of Geometry.
 ADR-0001 through ADR-0016 remain 16/16 ACCEPTED, unchanged. D0/D1/D2/D3
 remain FROZEN. B3 is FROZEN. PROJECT_CHARTER remains consistent and unchanged.
 
-#### FROZEN D4 DECISIONS — Planned Geometry presentation and selection
+### B4 — Geometry Visualization & Selection (IN PROGRESS, D4 FROZEN)
 
-D4 is FROZEN; ADR-0017 through ADR-0020 are ACCEPTED. B4 — Geometry
-Visualization & Selection is PLANNED / NOT STARTED. No B4 target, class or
-runtime behaviour exists yet.
+B4.1–B4.10 are COMPLETE; B4.11 — Documentation & D4 Validation is CURRENT.
+B4.12 — Baseline Validation and B4.FREEZE are PENDING. B4 is not a stable or
+frozen baseline. B0/B1/B2/B3 and D0/D1/D2/D3/D4 remain FROZEN. The next
+increment after B4.11 is B4.12, requiring explicit authorization.
 
-The permitted conceptual flow is:
+#### Presentation, identity and ownership
 
-```text
-Math -> Geometry -> Presentation / Adapter -> Viewer / Rendering
-```
+`microsw_presentation` contains `VisualEntityId`, `PresentedGeometry`,
+`VisualEntity` and `GeometryPresentation` under `src/presentation`.
+`PresentedGeometry` is exactly `variant<Point3, Segment3, Line3>`.
+A VisualEntity owns an external visual identity plus a Geometry value;
+it is not a CAD entity. GeometryPresentation is an insertion-ordered value
+collection with add/find/read-only access, not a CAD Document or scene graph.
+It contains no rendering resources, colors or interaction state.
 
-The arrows express allowed consumption and need not map one-to-one to physical
-targets. Frozen B3 Geometry remains model-only and never stores visual identity,
-color, visibility, hover, selection or GPU/render state. Presentation derives
-renderable data outside Geometry and keeps model and presentation lifetimes
-distinct. B4 shall use a small collection sufficient for its vertical slice,
-not a generic scene graph, transform hierarchy or ECS.
+VisualEntityId is a strong `uint64_t` value type. Zero is reserved/invalid;
+explicit zero construction throws. The process-local generator starts at 1,
+increases monotonically within its collection/generator, never reuses generated
+IDs during that generator's lifetime and throws after exhaustion. It is not
+thread-safe. Identity is non-persistent, not globally unique and not cross-session;
+separate collections and copied values do not gain global uniqueness.
 
-Visual identity is project-owned and external to Geometry. Hover is transient;
-selection persists until changed and initially contains zero or one entity.
-Selection and highlighting do not mutate Geometry; normal/hovered/selected
-appearance belongs to Presentation/Rendering.
+`main.cpp` owns the GeometryPresentation returned by `createGeometryDemoScene()`.
+WorkspaceViewport observes it through a const pointer and must be destroyed
+before it. VisualEntity owns its Geometry value. Interaction IDs are valid
+for the lifetime of the observed presentation. There is no remove/update,
+orphan reconciliation, event system or persistence lifecycle.
 
-Geometric picking is the primary B4 strategy. It derives a world-space query
-from mouse, viewport, camera and projection, reusing/adapting Geometry Ray3 when
-appropriate. Picking tolerance is a screen-space interaction policy, distinct
-from `defaultGeometricTolerance`; framebuffer color-ID picking is deferred.
-
-Mandatory B4 visualization is Point3, Segment3 and Line3. Line3 remains
-mathematically infinite; Presentation derives a finite view/context-clipped
-visual segment. Ray3 and Plane visualization are deferred from mandatory B4
-scope, and any later truncation/finite quad remains presentation-only.
-
-The planned vertical slice is:
+The actual target dependency graph (`A -> B` means A consumes B) is:
 
 ```text
-Geometry -> Presentation -> Viewer rendering -> Picking
-         -> Hover -> Selection -> Highlight
+microsw_presentation -> microsw_geometry -> microsw_math
+microsw_viewer -> microsw_presentation
+              -> microsw_rendering -> microsw_math
+              -> microsw_math
 ```
 
-Existing ShaderProgram, LineRenderer, WorkspaceViewport, OrbitCamera and
-view/projection infrastructure should be reused where appropriate. Point
-rendering may justify only a minimal project-owned rendering capability.
-Topology/BRep, Sketching, CAD Modeling, persistent identity and persistence
-remain deferred.
+The complete infrastructure links are in the CMake table above. There are no
+cycles or reverse links: Geometry !-> Presentation; Presentation !-> Viewer;
+Presentation !-> Rendering; Rendering !-> Presentation. Rendering is generic.
+Geometry remains model-only: Point3/Segment3/Line3 have no visual identity,
+color, hover, selection, GPU state, render methods or screen/pixel semantics.
+Point3 != Vertex, Segment3 != Edge and Plane != Face remain true (ADR-0016).
 
-#### Longer-term Geometry direction
+The following is data/responsibility flow, not reverse target dependencies:
+
+```text
+Geometry values -> Presentation -> Viewer adaptation / interaction / orchestration
+                                      -> Rendering -> OpenGL
+Pointer + current view -> Picking -> Hover / eligible click Selection
+                                      -> VisualState -> Highlight batches
+```
+
+#### Viewer adapters and finite Line representation
+
+`PresentedPoints`, `PresentedSegments` and `PresentedLines` derive renderable
+Vector3 batches from Presentation, preserving insertion order within each batch:
+
+| Geometry value | Derived vertices |
+| --- | --- |
+| Point3 | One position |
+| Segment3 | A/B pair, including coincident endpoints |
+| Line3 | Finite view-derived pair |
+
+Line3 remains mathematically infinite. LinePresentationContext contains the
+current view center and positive finite visible scale. The adapter finds the
+support point nearest the view center, then generates endpoints at plus/minus
+three times visibleScale along the unit Line direction. Workspace supplies
+camera.target() and `visibleHeight * max(1, rasterAspect)`, where visibleHeight
+is `2 * camera.distance() * tan(verticalFov / 2)` in Perspective and the
+ProjectionState visible height in Orthographic. Batches regenerate every frame.
+This is view-derived truncation, not exact frustum clipping of the infinite Line;
+OpenGL subsequently clips its finite representation to the viewing frustum.
+Picking uses that same finite pair and clips projected segments before division.
+
+#### Temporary application demo
+
+GeometryDemoScene is a deterministic B4 composition in `src/app/demo`, with
+3 Point3, 3 Segment3 and 2 Line3, in that insertion order. The adapters produce
+3 point vertices, 6 segment vertices and 4 line vertices for a valid context.
+It is not a Document, scene graph, CAD model or persistent data. No style
+metadata or selection flags are stored in the demo or Presentation.
+
+#### Picking implementation and limits
+
+PickingContext holds camera/projection, dimensions, pointer coordinates,
+clipping parameters and interaction tolerance. Its coordinates are Workspace-local
+logical units: top-left origin, +X right, +Y down. WorkspaceViewport::pick takes
+main-viewport logical coordinates and maps them to the effective clipped,
+inward-rounded raster viewport using the actual framebuffer size. Nonuniform
+HiDPI scaling uses the raster aspect for projection while distances stay logical.
+
+PickingRay's `makePickingRay` reuses Geometry Ray3. Perspective rays originate
+at camera position and point through the cursor; Orthographic directions are
+parallel, with origins translated in the camera image plane. It uses camera
+basis vectors and projection parameters; no Matrix4 inverse was introduced.
+This helper is available independently: the current GeometryPicker hit algorithm
+projects world geometry to screen, rather than intersecting those rays.
+
+GeometryPicker provides `projectWorldToScreen` and `pickGeometry`. Point hits use
+mouse-to-projected-point distance. Segment hits use distance to the projected,
+frustum-clipped A/B segment. Line hits use its current finite visual pair.
+Clipping precedes perspective division. PickHit stores a VisualEntityId and
+screenDistance in logical pixels; it is a query result, not persistent state.
+
+`defaultPickingTolerancePixels = 6.0` logical pixels, independent of zoom/DPI.
+The three tolerance responsibilities stay separate:
+
+- Math: numerical comparisons (default absolute/relative 1e-12).
+- Geometry: geometric/model predicate tolerance (default 1e-9).
+- Picking: interaction/perceptual tolerance (6 logical pixels).
+
+Picking tolerance != geometric tolerance. Ranking uses smaller screen-space
+distance, camera-space depth for numerical distance ties (within 1e-7 pixels),
+then stable insertion order for numerically equal depths. There is no primitive
+priority. Perspective segment depth uses reciprocal-depth interpolation.
+
+Exact occlusion/depth-buffer-aware picking is not implemented. Depth tie-breaking
+does not make this visibility-perfect: candidates are not checked against the
+rendered depth buffer. Framebuffer/color-ID picking and glReadPixels picking
+remain deferred. Empty/default Workspaces safely return no hit; invalid query
+parameters fail explicitly rather than hiding numerical errors.
+
+#### Hover and single selection
+
+HoverState stores only an optional VisualEntityId. It is transient, recomputed
+from the pointer and current view. No hit, outside Workspace, blocked UI/modal,
+invalid focus/pointer or a degenerate viewport clears hover. MMB orbit/pan
+suspends it; release or view changes recompute it from the current query.
+
+SelectionState independently stores an optional VisualEntityId, initially none,
+with zero-or-one semantics. An eligible leftPressed edge inside the effective
+Workspace selects a hit or clears selection on empty space. Re-clicking the same
+entity preserves it; clicking another replaces it. Outside/blocked/invalid input
+and simultaneous MMB preserve selection. There is no toggle or additive modifier.
+
+Selection survives cursor movement, hover changes, orbit, pan, zoom, projection
+switch, resize and minimize. An offscreen selected entity remains selected even
+when its highlight is not visible. Hover is transient; selection persists until
+an eligible selection action changes it. They may reference different entities
+simultaneously. Neither stores Geometry, PickHit or a pointer to a Geometry value.
+
+Frame ordering is UI/input snapshot -> navigation/projection -> hover -> selection
+-> render. Selection queries the existing picker at the press location using the
+updated view; it does not require a cached hovered ID. The UI supplies mouse
+position, leftPressed, MMB/Shift/wheel, focus, pointer validity, capture/blocking,
+projection request and Workspace rectangle; picking and selection logic stay out
+of Dear ImGui/ApplicationShell.
+
+#### Visual state, batching and depth
+
+VisualState and visualStateFor live in the Viewer. Resolution is exclusive:
+`Selected > Hovered > Normal`; hover on the selected entity cannot replace its
+selected appearance. HighlightColors.h centralizes the fixed B4 implementation
+policy, not a style/material/theme framework:
+
+| State/type | RGB |
+| --- | --- |
+| Normal Point | (1.0, 0.85, 0.2) |
+| Normal Segment | (0.8, 0.8, 0.85) |
+| Normal Line | (0.2, 0.75, 0.85) |
+| Hovered, all three types | (0.65, 1.0, 1.0) |
+| Selected, all three types | (1.0, 0.4, 0.05) |
+
+VisualStateFilter partitions entities on the CPU. Each entity belongs to exactly
+one Normal/Hovered/Selected batch. An absent adapter filter retains its original
+all-entities contract. Workspace reuses three generic GPU buffers for successive
+state batches; IDs never reach the GPU. No entity is duplicated into an overlay.
+
+Actual draw order is grid -> normal Lines -> X/Y/Z axes -> normal Segments ->
+normal Points -> hovered Lines/Segments/Points -> selected Lines/Segments/Points
+-> UI. Normal drawing uses GL_LESS. Highlight drawing uses GL_LEQUAL so an
+equal-depth fragment can replace the same geometry location by draw order;
+nearer geometry still occludes farther highlighted geometry. There is no x-ray,
+always-on-top, depth bias or depth clear between state batches. The local
+Workspace pass guard restores its affected OpenGL state, including GL_DEPTH_FUNC,
+viewport/scissor, depth/blend enables, masks, current program/VAO and clear state.
+Without hover or selection, the B4.8 normal palette and geometry order remain.
+
+#### B4 testing and D4 validation
+
+Current validated snapshot from B4.10: **684/684 PASS, 0 FAIL**. Validation layers
+include Presentation unit tests, Viewer adapter tests, real OpenGL renderer tests,
+picking/ray tests, HoverState and Workspace hover tests, SelectionState and
+Workspace selection tests, highlight batching, Workspace tests and the 14
+end-to-end tests in `tests/viewer/test_geometry_viewer_integration.cpp`.
+
+B4.10 covers Point/Segment/Line vertical slices and ID continuity; Geometry and
+Presentation immutability (count, IDs, payload and order); screen-space tolerance;
+finite Line draw/pick coherence; hover/selection independence and precedence;
+exclusive batching; orbit/pan/zoom/projections; clipped viewport/HiDPI/resize and
+minimize/restore; UI blocking; default/empty Presentation; and OpenGL state
+restoration. Its scoped draw observer forwards real driver calls and checks
+vertices/colors/depth state without pixel assertions. Runtime confirmed visible
+geometry/highlights, navigation, projections, resize and UI/About; native X and
+File -> Exit each returned 0. HiDPI was covered automatically, not repeated
+manually during B4.10. Test counts are snapshots, not permanent totals.
+
+| Accepted ADR | B4.11 audit result | Source/CMake/test evidence |
+| --- | --- | --- |
+| ADR-0017 | CONFORMANT | Geometry -> Math; Presentation -> Geometry; Viewer consumes Presentation; no reverse dependencies or visual state in Geometry |
+| ADR-0018 | CONFORMANT | External VisualEntityId; separate optional-ID HoverState/SelectionState; zero-or-one selection; highlight resolved in Viewer; immutability tests |
+| ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
+| ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
+
+ADR-0001 through ADR-0020 remain **20/20 ACCEPTED**, with no ADR changes.
+Geometry/Presentation leakage searches found none; Rendering knows no visual
+identity or interaction semantics, UI only supplies input, and the actual target
+graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and
+B0–B3 validation tables are historical snapshots; D4 authorizes the explicitly
+scoped B4 slice without rewriting their accepted decisions.
+
+#### Deferred after the current B4 slice
+
+Ray3/Plane visualization; generic scene graph/ECS; multi-selection, selection box
+and lasso; framebuffer picking and exact occlusion-aware picking; persistent
+visual identity, serialization and Document; Topology/BRep; Sketching, constraints
+and dimensions; feature modeling, Extrude, Revolve, Boolean, history/regeneration
+remain deferred. No feature, gate, B4.12 validation or baseline freeze is started
+by B4.11 documentation.
+
+### Longer-term Geometry direction (deferred)
 
 Representação matemática de entidades geométricas.
 
@@ -817,17 +1010,17 @@ Responsabilidades futuras:
 - feature tree;
 - rebuild.
 
-### viewer (FROZEN B2)
+### viewer (B2 foundation, B4 IN PROGRESS)
 
 Observa o mundo CAD e gere camera, viewport/navigation state, orbit, pan,
-zoom e render aids. Camera usa `microsw_math`; desenho usa Rendering.
+zoom e render aids. B4 acrescenta adapters, picking, hover, single-selection e highlight. Camera usa `microsw_math`; desenho usa Rendering.
 Não possui geometria CAD, topology ou scene/domain ownership.
 
 ### rendering
 
 Representação visual.
 
-Actualmente fornece OpenGLContext, ShaderProgram e LineRenderer. O Viewer
+Actualmente fornece OpenGLContext, ShaderProgram, LineRenderer e PointRenderer. O Viewer
 coordena viewport/scissor, camera e composição de grid/axes com essa infraestrutura.
 Tessellation de entidades CAD e estilos visuais adicionais continuam planeados.
 
@@ -837,15 +1030,9 @@ O renderer não deverá tornar-se proprietário do modelo CAD.
 
 Interacção entre utilizador e viewport.
 
-Responsabilidades futuras:
-
-- picking;
-- selection;
-- hover;
-- manipulators;
-
-O encaminhamento actual de orbit/pan/zoom usa contratos em app, produzidos
-pela UI e consumidos pelo Viewer; não existe um módulo interaction separado.
+Picking, hover e single-selection estão implementados no Viewer. Manipulators
+continuam deferred. Input usa contratos em app, produzidos pela UI e consumidos
+pelo Viewer; não existe um módulo interaction separado.
 
 ### ui
 

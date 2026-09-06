@@ -207,8 +207,8 @@ primeira validação B3.10. A repetição de B3.10 validou 549/549 testes, 0 fal
 runtime smoke com fecho de código 0 e nenhum finding. B3 está FROZEN.
 
 Intersections, primitive equivalence, relações generalizadas entre tipos,
-métricas entre primitivas, Topology/CAD e Geometry rendering integration
-continuam não implementados. Nenhum trabalho futuro é autorizado por este estado.
+métricas entre primitivas e Topology/CAD continuam não implementados.
+Geometry rendering integration foi acrescentada externamente em B4.1–B4.10. Nenhum trabalho futuro é autorizado por este estado.
 
 ---
 
@@ -225,7 +225,7 @@ obrigatório Point3/Segment3/Line3. Geometry permanece model-only.
 
 # B4 — Geometry Visualization & Selection
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 Objectivo:
 
@@ -236,23 +236,33 @@ Estado dos increments:
 
 | Increment | Estado |
 | --- | --- |
-| B4.1 — Geometry Presentation Model | PENDING |
-| B4.2 — Point Rendering | PENDING |
-| B4.3 — Segment Rendering | PENDING |
-| B4.4 — Line Visualization & View Clipping | PENDING |
-| B4.5 — Geometry Demo Scene | PENDING |
-| B4.6 — Picking Foundation | PENDING |
-| B4.7 — Hover State | PENDING |
-| B4.8 — Single Selection | PENDING |
-| B4.9 — Selection Highlighting | PENDING |
-| B4.10 — Viewer / Geometry Integration Tests | PENDING |
-| B4.11 — Documentation & D4 Validation | PENDING |
+| B4.1 — Geometry Presentation Model | COMPLETE |
+| B4.2 — Point Rendering | COMPLETE |
+| B4.3 — Segment Rendering | COMPLETE |
+| B4.4 — Line Visualization & View Clipping | COMPLETE |
+| B4.5 — Geometry Demo Scene | COMPLETE |
+| B4.6 — Picking Foundation | COMPLETE |
+| B4.7 — Hover State | COMPLETE |
+| B4.8 — Single Selection | COMPLETE |
+| B4.9 — Selection Highlighting | COMPLETE |
+| B4.10 — Viewer / Geometry Integration Tests | COMPLETE |
+| B4.11 — Documentation & D4 Validation | CURRENT |
 | B4.12 — Baseline Validation | PENDING |
 | B4.FREEZE | PENDING |
 
-B4 has not started. B4.1 requires explicit authorization. Ray3/Plane mandatory
-visualization, framebuffer picking, multi-selection, generic scene graphs,
-Topology/BRep, Sketching, CAD Modeling and persistence remain deferred.
+B4.1–B4.10 estão completos: apresentação e visualização Point3/Segment3/Line3,
+picking geométrico, hover, single-selection e highlight. B4.10 validou 684/684
+testes, sem findings. B4.11 consolida documentação e valida D4; B4 permanece
+IN PROGRESS, não estável nem FROZEN. B4.12 e B4.FREEZE permanecem PENDING.
+
+Próximo incremento após B4.11: B4.12 — Baseline Validation, apenas mediante
+autorização explícita. Não há autorização para B4.FREEZE, B5 ou novo gate.
+Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
+multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
+serialization/Document, Topology/BRep, Sketching/constraints/dimensions e
+feature modeling (Extrude/Revolve/Boolean/history/regeneration) continuam deferred.
+As secções B5+ abaixo são planeamento histórico, não uma atribuição de trabalho;
+as capacidades B4 já implementadas estão descritas na secção actual.
 
 ---
 

@@ -820,17 +820,21 @@ B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
 smoke with no findings. B3 is FROZEN.
 
-Next planned baseline:
+Current baseline in progress:
 
 ```text
 B4 — Geometry Visualization & Selection
-STATUS: NOT STARTED
-B4.1–B4.12: PENDING
+STATUS: IN PROGRESS
+B4.1–B4.10: COMPLETE
+B4.11: CURRENT
+B4.12: PENDING
 B4.FREEZE: PENDING
 ```
 
-Next permitted increment: B4.1 — Geometry Presentation Model, only after
-explicit authorization. B4 has not started.
+B4.10 validated 684/684 tests and runtime smoke, with no findings.
+B4.11 — Documentation & D4 Validation is the current authorized increment.
+Next permitted increment after B4.11: B4.12 — Baseline Validation, only after
+explicit authorization. B4 is not stable or frozen; B4.FREEZE remains pending.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

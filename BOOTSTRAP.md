@@ -27,12 +27,16 @@ B3.10A: COMPLETE
 B3.10: COMPLETE
 B3.FREEZE: FROZEN
 Decision Gate D4 — Geometry Visualization & Selection: FROZEN
-Next baseline: B4 — Geometry Visualization & Selection
-B4 status: NOT STARTED
-B4.1–B4.12: PENDING
+Current baseline in progress: B4 — Geometry Visualization & Selection
+B4 status: IN PROGRESS
+B4.1–B4.10: COMPLETE
+B4.11: CURRENT
+B4.12: PENDING
 B4.FREEZE: PENDING
-Next permitted increment: B4.1 — Geometry Presentation Model
-B4.1 requires explicit authorization
+Current increment: B4.11 — Documentation & D4 Validation
+Next permitted increment after B4.11: B4.12 — Baseline Validation
+B4.12 requires explicit authorization
+Latest validated snapshot (B4.10): 684/684 tests PASS
 ```
 
 Every increment and baseline freeze requires explicit authorization.
