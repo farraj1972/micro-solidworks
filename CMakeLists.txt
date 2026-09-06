@@ -265,6 +265,8 @@ if(BUILD_TESTING)
         tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
+        tests/viewer/test_hover_state.cpp
+        tests/viewer/test_workspace_hover.cpp
         tests/viewer/test_picking_ray.cpp
         tests/viewer/test_geometry_picker.cpp
         tests/viewer/test_orbit_camera.cpp

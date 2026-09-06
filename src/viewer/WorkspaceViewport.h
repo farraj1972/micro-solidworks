@@ -40,13 +40,18 @@ public:
     // Empty/invalid surfaces are no-ops. Restores the OpenGL states changed by this pass.
     void render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight);
     void updateNavigation(const WorkspaceLayout& layout, const WorkspaceInput& input);
+    // Call after updateNavigation with the same frame's input and framebuffer.
+    // Suppress hover while MMB is held (orbit/pan), or interaction is unavailable.
+    void updateHover(const WorkspaceLayout& layout, const WorkspaceInput& input,
+        int framebufferWidth, int framebufferHeight);
+    [[nodiscard]] std::optional<presentation::VisualEntityId> hoveredEntity() const noexcept;
     [[nodiscard]] ProjectionMode projectionMode() const noexcept;
     void setProjectionMode(ProjectionMode mode) noexcept;
 
     // Read-only query. Mouse uses the main viewport's logical coordinates,
     // like WorkspaceInput; converted to the effective raster viewport in logical
     // units. Supply the same framebuffer size as render (including HiDPI).
-    // No event integration or stored hover/selection state. Invalid layout
+    // This query does not change interaction state. Invalid layout
     // or non-finite mouse throws invalid_argument; outside returns no hit.
     [[nodiscard]] std::optional<PickHit> pick(
         const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,

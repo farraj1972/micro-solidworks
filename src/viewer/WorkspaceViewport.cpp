@@ -1,6 +1,7 @@
 #include "viewer/WorkspaceViewport.h"
 
 #include "viewer/OrbitCamera.h"
+#include "viewer/HoverState.h"
 #include "viewer/OrbitNavigation.h"
 #include "viewer/PanZoomNavigation.h"
 #include "viewer/ProjectionState.h"
@@ -139,6 +140,7 @@ public:
     }
 
     OrbitCamera camera;
+    HoverState hover;
     const presentation::GeometryPresentation* presentation;
     ProjectionState projection;
     OrbitNavigation navigation;
@@ -217,6 +219,27 @@ void WorkspaceViewport::updateNavigation(const WorkspaceLayout& layout, const Wo
         setProjectionMode(*input.projectionRequest);
     impl_->navigation.handle(layout, input, impl_->camera);
     impl_->panZoomNavigation.handle(layout, input, impl_->camera, impl_->projection);
+}
+
+std::optional<presentation::VisualEntityId> WorkspaceViewport::hoveredEntity() const noexcept
+{
+    return impl_->hover.hovered();
+}
+
+void WorkspaceViewport::updateHover(const WorkspaceLayout& layout, const WorkspaceInput& input,
+    int framebufferWidth, int framebufferHeight)
+{
+    // Clear first so unavailable interaction or a failed query cannot leave a
+    // stale identity. PickHit and its distance never survive this update.
+    impl_->hover.clear();
+    if (!input.focused || !input.pointerValid || !input.workspaceHovered || input.blocked
+        || input.middleDown || input.middlePressed || !contains(layout, input.x, input.y))
+        return;
+    const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
+    if (rect.width <= 0 || rect.height <= 0)
+        return; // Normal minimize/resize frames must not call the strict picker.
+    if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
+        impl_->hover.update(hit->id);
 }
 
 void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight)
