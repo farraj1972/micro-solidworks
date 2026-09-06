@@ -32,6 +32,12 @@ int main()
             (void)presentation.add(microsw::geometry::Segment3{
                 microsw::geometry::Point3{3, 1, 0.5},
                 microsw::geometry::Point3{3, 2, 3.5}});
+            (void)presentation.add(microsw::geometry::Line3{
+                microsw::geometry::Point3{-2, 3, 1},
+                microsw::math::Vector3{1, 1, 0.25}});
+            (void)presentation.add(microsw::geometry::Line3{
+                microsw::geometry::Point3{2, -1, 2},
+                microsw::math::Vector3{-0.5, 1, 1.5}});
             microsw::viewer::WorkspaceViewport workspace{presentation};
 
             while (!window.shouldClose())

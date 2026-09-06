@@ -9,6 +9,7 @@
 #include "viewer/ViewProjection.h"
 #include "viewer/PresentedPoints.h"
 #include "viewer/PresentedSegments.h"
+#include "viewer/PresentedLines.h"
 #include "rendering/ShaderProgram.h"
 #include "rendering/LineRenderer.h"
 #include "rendering/PointRenderer.h"
@@ -120,8 +121,8 @@ struct PassState
 class WorkspaceViewport::Impl
 {
 public:
-    explicit Impl(const presentation::GeometryPresentation* presentation)
-        : shader{vertexSource, fragmentSource}
+    explicit Impl(const presentation::GeometryPresentation* sourcePresentation)
+        : presentation{sourcePresentation}, shader{vertexSource, fragmentSource}
     {
         const ReferenceAxes axes;
         const ReferenceGrid grid;
@@ -137,6 +138,7 @@ public:
     }
 
     OrbitCamera camera;
+    const presentation::GeometryPresentation* presentation;
     ProjectionState projection;
     OrbitNavigation navigation;
     PanZoomNavigation panZoomNavigation;
@@ -149,6 +151,7 @@ public:
     rendering::LineRenderer xAxis;
     rendering::LineRenderer yAxis;
     rendering::LineRenderer zAxis;
+    rendering::LineRenderer lines;
     rendering::LineRenderer segments;
     rendering::PointRenderer points;
 };
@@ -200,9 +203,20 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     impl_->shader.setMatrix4("uView", viewMatrix(impl_->camera));
     impl_->shader.setMatrix4("uProjection",
         impl_->projection.matrix(impl_->verticalFov, rect.aspectRatio(), impl_->nearPlane, impl_->farPlane));
+    if (impl_->presentation)
+    {
+        const math::Scalar visibleHeight = impl_->projection.mode() == ProjectionMode::Perspective
+            ? 2.0 * impl_->camera.distance() * std::tan(impl_->verticalFov / 2.0)
+            : impl_->projection.visibleHeight();
+        const math::Scalar visibleScale = visibleHeight * std::max<math::Scalar>(1.0, rect.aspectRatio());
+        impl_->lines.setVertices(presentedLineVertices(*impl_->presentation,
+            {impl_->camera.target(), visibleScale}));
+    }
     // Same depth pass; central grid lines are omitted to preserve origin axes.
     impl_->shader.setVector3("uColor", {0.35, 0.35, 0.38});
     impl_->gridRenderer.draw();
+    impl_->shader.setVector3("uColor", {0.2, 0.75, 0.85});
+    impl_->lines.draw();
     impl_->shader.setVector3("uColor", {1.0, 0.0, 0.0});
     impl_->xAxis.draw();
     impl_->shader.setVector3("uColor", {0.0, 1.0, 0.0});

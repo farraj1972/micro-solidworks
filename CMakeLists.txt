@@ -127,6 +127,7 @@ add_library(microsw_viewer STATIC
     src/viewer/OrbitNavigation.cpp
     src/viewer/PanZoomNavigation.cpp
     src/viewer/ProjectionState.cpp
+    src/viewer/PresentedLines.cpp
     src/viewer/PresentedPoints.cpp
     src/viewer/PresentedSegments.cpp
     src/viewer/ReferenceAxes.cpp
@@ -272,6 +273,7 @@ if(BUILD_TESTING)
         tests/rendering/test_point_renderer.cpp
         tests/presentation/test_geometry_presentation.cpp
         tests/presentation/test_visual_entity.cpp
+        tests/viewer/test_presented_lines.cpp
         tests/viewer/test_presented_points.cpp
         tests/viewer/test_presented_segments.cpp
     )

@@ -191,6 +191,31 @@ TEST_F(WorkspaceViewportTest, PresentedPointsCoexistWithGridAndAxesInWorkspacePa
     EXPECT_EQ(glIsEnabled(GL_DEPTH_TEST), GL_FALSE);
 }
 
+TEST_F(WorkspaceViewportTest, PresentedLinesRegenerateAcrossViewProjectionAndAspectChanges)
+{
+    microsw::presentation::GeometryPresentation presentation;
+    (void)presentation.add(microsw::geometry::Point3{1, 2, 3});
+    (void)presentation.add(microsw::geometry::Segment3{
+        microsw::geometry::Point3{-1, -1, 0}, microsw::geometry::Point3{1, 1, 1}});
+    (void)presentation.add(microsw::geometry::Line3{
+        microsw::geometry::Point3{2, 1, 0}, microsw::math::Vector3{1, 1, 0.5}});
+    WorkspaceViewport viewport{presentation};
+    const WorkspaceLayout layout{16, 16, 96, 96, 128, 128};
+
+    viewport.render(layout, 128, 128);
+    microsw::WorkspaceInput pan{40, 40, true, true, true, true, true, true, false, 0};
+    viewport.updateNavigation(layout, pan);
+    pan.middlePressed = false;
+    pan.x = 60;
+    viewport.updateNavigation(layout, pan);
+    viewport.render(layout, 128, 128);
+    viewport.setProjectionMode(microsw::ProjectionMode::Orthographic);
+    microsw::WorkspaceInput zoom{40, 40, false, false, false, true, true, true, false, 2};
+    viewport.updateNavigation(layout, zoom);
+    viewport.render({8, 8, 112, 80, 128, 128}, 256, 192);
+    EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
 TEST_F(WorkspaceViewportTest, PanZoomAndOrbitRenderWithoutErrors)
 {
     WorkspaceViewport viewport;
