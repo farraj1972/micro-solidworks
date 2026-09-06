@@ -20,5 +20,7 @@ struct WorkspaceInput
     double wheelDelta{};
     // One-frame UI request; absence means preserve the viewer's current mode.
     std::optional<ProjectionMode> projectionRequest{};
+    // One-frame left-button press; appended to preserve existing snapshots.
+    bool leftPressed{};
 };
 }

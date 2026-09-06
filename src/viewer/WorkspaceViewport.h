@@ -45,6 +45,10 @@ public:
     void updateHover(const WorkspaceLayout& layout, const WorkspaceInput& input,
         int framebufferWidth, int framebufferHeight);
     [[nodiscard]] std::optional<presentation::VisualEntityId> hoveredEntity() const noexcept;
+    // Call after navigation/hover. Only an eligible leftPressed changes selection.
+    void updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
+        int framebufferWidth, int framebufferHeight);
+    [[nodiscard]] std::optional<presentation::VisualEntityId> selectedEntity() const noexcept;
     [[nodiscard]] ProjectionMode projectionMode() const noexcept;
     void setProjectionMode(ProjectionMode mode) noexcept;
 

@@ -2,6 +2,7 @@
 
 #include "viewer/OrbitCamera.h"
 #include "viewer/HoverState.h"
+#include "viewer/SelectionState.h"
 #include "viewer/OrbitNavigation.h"
 #include "viewer/PanZoomNavigation.h"
 #include "viewer/ProjectionState.h"
@@ -141,6 +142,7 @@ public:
 
     OrbitCamera camera;
     HoverState hover;
+    SelectionState selection;
     const presentation::GeometryPresentation* presentation;
     ProjectionState projection;
     OrbitNavigation navigation;
@@ -240,6 +242,36 @@ void WorkspaceViewport::updateHover(const WorkspaceLayout& layout, const Workspa
         return; // Normal minimize/resize frames must not call the strict picker.
     if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
         impl_->hover.update(hit->id);
+}
+
+std::optional<presentation::VisualEntityId> WorkspaceViewport::selectedEntity() const noexcept
+{
+    return impl_->selection.selected();
+}
+
+void WorkspaceViewport::updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
+    int framebufferWidth, int framebufferHeight)
+{
+    if (!input.leftPressed || !input.focused || !input.pointerValid
+        || !input.workspaceHovered || input.blocked || input.middleDown || input.middlePressed
+        || !contains(layout, input.x, input.y))
+        return;
+    const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
+    if (rect.width <= 0 || rect.height <= 0)
+        return;
+
+    // Distinguish an empty hit from input outside the actual raster viewport,
+    // including the fractional strips excluded by inward HiDPI rounding.
+    const auto scaleX = layout.displayWidth / framebufferWidth;
+    const auto scaleY = layout.displayHeight / framebufferHeight;
+    const auto x = input.x - rect.x * scaleX;
+    const auto y = input.y - (framebufferHeight - rect.y - rect.height) * scaleY;
+    if (x < 0 || x >= rect.width * scaleX || y < 0 || y >= rect.height * scaleY)
+        return;
+    if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
+        impl_->selection.select(hit->id);
+    else
+        impl_->selection.clear();
 }
 
 void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight)

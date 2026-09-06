@@ -34,6 +34,8 @@ int main()
                 const auto framebuffer = window.framebufferSize();
                 workspace.updateHover(shell.workspaceRect(), shell.workspaceInput(),
                     framebuffer.width, framebuffer.height);
+                workspace.updateSelection(shell.workspaceRect(), shell.workspaceInput(),
+                    framebuffer.width, framebuffer.height);
                 workspace.render(shell.workspaceRect(), framebuffer.width, framebuffer.height);
                 ui.endFrame();
                 window.swapBuffers();

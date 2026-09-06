@@ -45,6 +45,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode)
     const auto* viewport = ImGui::GetMainViewport();
     input_.x = static_cast<double>(io.MousePos.x) - viewport->Pos.x;
     input_.y = static_cast<double>(io.MousePos.y) - viewport->Pos.y;
+    input_.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
     input_.middlePressed = ImGui::IsMouseClicked(ImGuiMouseButton_Middle);
     input_.middleDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
     input_.shiftDown = io.KeyShift;
