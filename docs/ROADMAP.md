@@ -1,5 +1,130 @@
 # Micro SolidWorks — Roadmap
 
+## Canonical MVP Roadmap
+
+Este é o roadmap funcional oficial até MVP. A numeração não muda com a
+organização dos increments ou das baselines técnicas históricas.
+
+| Fase canónica | Scope |
+| --- | --- |
+| B0 | Foundation |
+| B1 | Mathematical Foundation |
+| B2 | 3D Viewer |
+| B3 | Geometric Primitives |
+| B4 | Scene & Object Model |
+| B5 | Selection & Picking |
+| B6 | Transformations |
+| B7 | Topological Model |
+| B8 | Sketcher |
+| B9 | Constraint System |
+| B10 | Extrusion |
+| B11 | Boolean Operations |
+| B12 | Feature Tree |
+| B13 | Parametric Rebuild |
+| B14 | Persistence |
+| MVP FREEZE | Apenas quando o workflow MVP abaixo estiver funcional |
+
+## Vertical-Slice Development Strategy
+
+**Vertical Slice First**.
+
+```text
+Feature over performance.
+Working vertical slice over speculative completeness.
+Architecture boundaries over premature abstraction.
+Canonical roadmap phase != necessarily one historical implementation baseline.
+```
+
+Privilegiar increments com comportamento funcional observável; não completar
+antecipadamente subsistemas que ainda não bloqueiam o próximo slice. Preservar
+ADRs e fronteiras arquitecturais, aceitar distribuição de implementação por
+baselines diferente do plano original e registar explicitamente gaps/debt.
+Fechar gaps quando se tornarem pré-requisitos reais.
+
+Uma capability pode ser materializada antecipadamente num incremento
+explicitamente autorizado se respeitar os ADRs, não inverter dependências,
+não impedir evolução futura e ficar claramente mapeada. Exemplo realizado:
+a funcionalidade canónica B5 foi implementada na baseline técnica B4.
+
+B0–B4 técnicas permanecem FROZEN. Um gap canónico não reabre automaticamente
+uma baseline congelada: a capability será implementada num novo incremento ou
+baseline autorizado, preservando compatibilidade. Esta estratégia não substitui
+os gates de autorização nem permite trabalho especulativo.
+
+## Implementation Mapping
+
+| Fase canónica / scope | Realização funcional | Implementação técnica / gaps |
+| --- | --- | --- |
+| B0 Foundation | SATISFIED | COMPLETE / FROZEN; nenhum gap material |
+| B1 Mathematical Foundation | SATISFIED | COMPLETE / FROZEN; nenhum gap material para o roadmap actual |
+| B2 3D Viewer | SATISFIED | COMPLETE / FROZEN |
+| B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle/basic intersections são DEFERRED GAP — not currently blocking B6 |
+| B4 Scene & Object Model: identity, transforms, visibility, object lifecycle | PARTIALLY SATISFIED | B4 técnica FROZEN: Presentation identity, GeometryPresentation, visual ownership boundary, visualização Point/Segment/Line e o slice de picking/hover/single-selection/highlight |
+| B5 Selection & Picking: screen ray, intersections/picking, hover, click selection, selection state, highlighting | REALIZED / SATISFIED BY B4 | FUNCTIONALLY REALIZED BY FROZEN TECHNICAL B4; No duplicate B5 implementation is required |
+| B6 Transformations: translate, rotate, scale, local/world coordinates | NEXT ACTIVE FUNCTIONAL AREA | Não implementada como transformação de entidades; pré-requisito D5 — Transformation Semantics |
+
+A realização de B5 usa PickingRay e picking geométrico screen-space existentes;
+não implica um motor geral de intersecções nem picking com oclusão perfeita.
+As operações matemáticas B1 e a navegação B2 não realizam transforms de entidades B6.
+
+Detalhe do B4 canónico:
+
+| Capability | Mapping |
+| --- | --- |
+| identity | PARTIALLY REALIZED: identidade visual local, não identidade CAD persistente/global |
+| transforms | NOT YET REALIZED |
+| visibility | NOT YET REALIZED as explicit entity state |
+| object lifecycle | NOT YET REALIZED beyond construction/lookup |
+
+Logo, B4 técnico FROZEN não significa B4 canónico completamente realizado.
+Não existe freeze técnico B5 separado implícito neste mapping.
+
+## Canonical Roadmap Gaps
+
+Registo documental simples de Canonical Gaps; não cria tracker ou framework.
+
+| ID | Gap | Blocking now | Expected closure |
+| --- | --- | --- | --- |
+| GAP-GEO-001 | Circle primitive missing from canonical B3 scope | NO | Before/during B8, antes do slice Sketcher que necessite circles/arcs |
+| GAP-GEO-002 | Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
+| GAP-SCENE-001 | Entity transforms missing from canonical B4 scope | YES for next vertical slice | B6 after D5 |
+| GAP-SCENE-002 | Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
+
+Circle e basic intersections são gaps deferred, não bloqueiam actualmente B6
+e não serão implementados neste alignment. Cada fecho exige scope autorizado.
+
+## Next Functional Slice — B6, subject to D5
+
+```text
+Select entity
+→ edit transform
+→ entity moves/rotates/scales
+→ rendering updates
+→ picking follows transformed entity
+→ hover/selection/highlight remain coherent
+```
+
+Este é o primeiro objectivo pretendido para Point3, Segment3 e Line3, antes de
+qualquer Topology. Intenção MVP-first, sujeita a D5: translation, rotation,
+positive scale, local/world transform, render/pick coherence,
+selection/highlight coherence e minimal transform editing UI.
+
+Não exigir ainda gizmo, hierarchy, parent-child transforms, undo/redo,
+persistence, CAD Document ou Topology. Nenhuma semântica de transformação é
+aceite por este documento: D5 deve defini-la antes da implementação B6.
+
+Próximo trabalho de decisão designado após o alignment:
+**D5 — Transformation Semantics**. A sua execução requer autorização explícita
+separada. Este passo não inicia D5, B6 ou qualquer capability em falta.
+
+## Historical Technical Baselines and Canonical Phase Details
+
+As secções B0–B4 seguintes registam as baselines técnicas efectivamente
+congeladas, com nomes/commits/tags históricos preservados. B5–B14 conservam a
+sequência funcional canónica; a matriz acima determina o estado de realização.
+
+---
+
 ## Development Rule
 
 Cada baseline é dividida em increments pequenos.
@@ -223,7 +348,7 @@ obrigatório Point3/Segment3/Line3. Geometry permanece model-only.
 
 ---
 
-# B4 — Geometry Visualization & Selection
+# Technical B4 — Geometry Visualization & Selection
 
 Status: FROZEN
 
@@ -258,18 +383,23 @@ dependências ou linker. Runtime PASS: X nativo -> 0 e File -> Exit -> 0.
 HiDPI automatizado PASS; validação manual B4.12 indisponível/não repetida.
 O finding MINOR de estado documental está CLOSED por B4.FREEZE.
 
-Nenhum próximo incremento, baseline ou Decision Gate está autorizado.
+Próxima área funcional canónica: B6, após D5 — Transformation Semantics.
+D5 requer autorização explícita para execução; não é iniciado neste alignment.
 Alterações ao comportamento B4 congelado exigem autorização explícita.
 Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
 multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
 serialization/Document, Topology/BRep, Sketching/constraints/dimensions e
 feature modeling (Extrude/Revolve/Boolean/history/regeneration) continuam deferred.
-As secções B5+ abaixo são planeamento histórico, não uma atribuição de trabalho;
-as capacidades B4 já implementadas estão descritas na secção actual.
+As secções B5+ abaixo mantêm a sequência canónica, não autorizam execução;
+B5 já está satisfeito pela baseline técnica B4 descrita acima.
 
 ---
 
 # B5 — Selection & Picking
+
+Estado canónico: REALIZED / SATISFIED BY B4.
+No duplicate B5 implementation is required. A descrição abaixo é o scope
+funcional satisfeito, não um plano de implementação duplicada.
 
 Objectivo:
 
@@ -278,7 +408,7 @@ Permitir identificar entidades através do viewport.
 Capacidades:
 
 - screen ray;
-- ray/object intersection;
+- intersections/picking (realizado por picking geométrico screen-space);
 - hover;
 - click selection;
 - selection state;
@@ -287,6 +417,9 @@ Capacidades:
 ---
 
 # B6 — Transformations
+
+Estado: NEXT ACTIVE FUNCTIONAL AREA; pré-requisito D5 — Transformation Semantics.
+Intenção MVP-first e slice inicial definidos acima; execução ainda não iniciada.
 
 Capacidades:
 
@@ -313,7 +446,10 @@ Face
 Shell  
 Solid
 
-Esta baseline estabelece a fundação para modelação sólida.
+Esta baseline estabelece a fundação para modelação sólida. Antes de iniciar
+B7, executar prerequisite review: basic intersections, additional geometric
+predicates e possivelmente Circle, conforme o caminho Topology/Sketch.
+Não implementar estes pré-requisitos antecipadamente neste alignment.
 
 ---
 
@@ -333,6 +469,9 @@ Capacidades previstas:
 - selection;
 - editing;
 - dimensions iniciais.
+
+B3 Circle gap MUST be closed before the Sketcher slice that needs circles/arcs.
+Circle torna-se obrigatório antes/durante B8, em trabalho explicitamente autorizado.
 
 ---
 
@@ -459,7 +598,9 @@ New Document
 → Save
 → Open
 
-O repositório será marcado com uma baseline/tag MVP estável.
+MVP FREEZE apenas quando todo este workflow estiver funcional e validado,
+mediante autorização explícita. Só então o repositório poderá ser marcado
+com uma baseline/tag MVP estável.
 
 ---
 

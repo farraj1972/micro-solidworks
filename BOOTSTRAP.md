@@ -34,8 +34,17 @@ B4.FREEZE: FROZEN
 Latest validated snapshot (B4.12): 684/684 tests PASS, 0 failed
 20/20 ADRs ACCEPTED; ADR-0017–0020 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
-No next increment / Decision Gate / baseline has been authorized.
+Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
+Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
+Canonical B6: NEXT ACTIVE FUNCTIONAL AREA
+Next decision work: D5 — Transformation Semantics
+D5 requires explicit execution authorization; D5/B6 not started
 ```
+
+Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
+in `docs/ROADMAP.md`. Frozen technical baseline != complete canonical phase.
+Record gaps and close them only when required by an authorized slice; do not
+reopen B3/B4 for speculative completeness.
 
 Every increment and baseline freeze requires explicit authorization.
 Any next Decision Gate or baseline requires explicit authorization.

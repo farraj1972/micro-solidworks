@@ -8,6 +8,38 @@ A arquitectura deverá permitir evolução incremental e substituição controla
 
 ---
 
+## Roadmap realization and Vertical Slice First
+
+Canonical roadmap phase != necessarily one historical implementation baseline.
+The authoritative B0–B14 MVP sequence and gap register are in
+[ROADMAP.md](ROADMAP.md). Technical B0–B4 remain FROZEN; canonical B0/B1/B2
+are satisfied, B3/B4 partially satisfied, B5 satisfied by technical B4, and B6
+Transformations is the next functional area. This does not rename or reopen
+historical baselines and does not require duplicate B5 implementation.
+
+Feature over performance. Working vertical slice over speculative completeness.
+Architecture boundaries over premature abstraction. Prefer observable authorized
+slices, preserve ADRs/dependency direction, map early capabilities explicitly
+and defer subsystem completeness until it is a real prerequisite. Gaps are
+closed through new authorized work while preserving compatibility.
+
+Canonical B3 still lacks Circle and basic intersections. Canonical B4 identity
+is partially realized through visual IDs; entity transforms, explicit visibility
+state and lifecycle beyond construction/lookup remain incomplete. B4 FROZEN
+therefore describes its accepted technical slice, not full Scene & Object Model.
+
+Subject to D5, B6 first targets Point3/Segment3/Line3: select -> edit transform
+-> move/rotate/scale -> updated rendering -> picking follows -> coherent
+hover/selection/highlight. Translation, rotation, positive scale, local/world
+transforms and minimal editing UI are intentions, not accepted D5 decisions.
+Gizmo, hierarchy, parent-child transforms, undo/redo, persistence, CAD Document
+and Topology are not prerequisites for this initial slice. B7 needs prerequisite
+review; Circle must exist before the B8 slice requiring circles/arcs.
+
+D5 — Transformation Semantics is the next designated decision work, requiring
+explicit execution authorization. No D5 decisions or B6 implementation are
+introduced by this alignment.
+
 ## 2. Arquitectura planeada
 
 ```text
@@ -729,7 +761,8 @@ remain FROZEN. B3 is FROZEN. PROJECT_CHARTER remains consistent and unchanged.
 
 B4.1–B4.12 are COMPLETE; B4.FREEZE is FROZEN. B4 is the latest stable
 baseline. B0/B1/B2/B3 and D0/D1/D2/D3/D4 remain FROZEN.
-No next increment, Decision Gate or baseline has been authorized.
+Next functional area: canonical B6, subject to D5 — Transformation Semantics.
+D5 execution requires explicit authorization; it is not started by this alignment.
 The B4 boundaries and interaction contracts below are frozen; changes require
 explicit authorization.
 

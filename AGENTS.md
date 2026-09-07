@@ -266,6 +266,20 @@ For every increment:
 
 Scope discipline is mandatory.
 
+## Vertical Slice First
+
+Feature over performance.
+Working vertical slice over speculative completeness.
+Architecture boundaries over premature abstraction.
+
+Prefer authorized increments with observable functional behavior. Do not finish
+subsystems speculatively before they block the next slice. Preserve ADRs and
+module boundaries; record canonical gaps/debt and close them when they become
+real prerequisites. Canonical roadmap phase != necessarily one historical
+implementation baseline. Capabilities may be distributed across authorized
+baselines if mapped explicitly, with no dependency inversion or impediment to
+future evolution. A canonical gap never automatically reopens a frozen baseline.
+
 ---
 
 # 10. No Scope Creep
@@ -845,7 +859,14 @@ The B4.12 MINOR documentary state finding is CLOSED by B4.FREEZE.
 ADR-0017–0020 remain ACCEPTED / CONFORMANT; 20/20 ADRs are ACCEPTED.
 
 B4 is FROZEN. Changes to frozen B4 behavior require explicit authorization.
-No next baseline, Decision Gate or increment has been authorized.
+Canonical functional progress (see docs/ROADMAP.md): B0/B1/B2 satisfied;
+B3/B4 partially satisfied; B5 REALIZED / SATISFIED BY technical B4. No duplicate
+B5 implementation is required. Technical B0–B4 remain FROZEN.
+B6 Transformations is the NEXT ACTIVE FUNCTIONAL AREA, subject to prerequisite
+D5 — Transformation Semantics. D5 is the next designated decision work and
+requires explicit authorization to execute; this alignment starts neither D5
+nor B6. Circle/intersections and visibility/lifecycle gaps remain deferred;
+entity transforms are the blocking gap for the next authorized vertical slice.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

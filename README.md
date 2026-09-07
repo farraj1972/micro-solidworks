@@ -5,7 +5,7 @@ implementing the foundations of a small 3D parametric CAD application in C++.
 It is not intended to provide compatibility with the commercial SolidWorks
 product.
 
-## Stable baselines
+## Stable technical baselines
 
 | Baseline | Status | Tag |
 | --- | --- | --- |
@@ -49,6 +49,24 @@ Visual IDs are process-local, collection-scoped and non-persistent. This demo
 is not a CAD Document, scene graph or persistent model. Details of ownership,
 dependencies, adapters and interaction are in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+## Canonical roadmap and technical baselines
+
+Technical B0–B4 remain FROZEN. Canonical functional progress is distinct:
+B0/B1/B2 satisfied; B3/B4 partially satisfied; B5 realized/satisfied by technical
+B4; B6 Transformations is the next active functional area. No duplicate B5
+implementation is required. See [ROADMAP.md](docs/ROADMAP.md) for the fixed
+B0–B14 sequence, implementation mapping and Canonical Roadmap Gaps.
+
+**Vertical Slice First**: feature over performance; working vertical slice over
+speculative completeness; architecture boundaries over premature abstraction.
+Circle/intersections remain deferred B3 gaps; entity transforms block the next
+slice; explicit visibility/lifecycle semantics wait until required.
+
+The intended B6 slice is select Point/Segment/Line -> edit transform -> updated
+rendering/picking -> coherent hover/selection/highlight. D5 — Transformation
+Semantics is its prerequisite; D5 requires explicit execution authorization.
+This alignment starts neither D5 nor B6 and does not reopen frozen baselines.
+
 ## Controls
 
 | Input | Action |
@@ -80,8 +98,9 @@ occlusion-aware picking, scene graph/ECS, persistent IDs/serialization/Document,
 Topology/BRep, Sketching/constraints/dimensions and feature modeling
 (Extrude/Revolve/Boolean/history/regeneration) remain deferred.
 
-No next increment, Decision Gate or baseline has been authorized. Changes to
-frozen B4 behavior require explicit authorization. B5 has not started.
+Next decision work: D5 — Transformation Semantics, requiring explicit
+authorization to execute. Changes to frozen B4 behavior require explicit
+authorization. Canonical B5 functionality is already satisfied by technical B4.
 
 ## Build and validation
 
