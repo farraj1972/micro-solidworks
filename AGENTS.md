@@ -778,6 +778,15 @@ STATUS: FROZEN
 Current latest stable baseline:
 
 ```text
+B4 — Geometry Visualization & Selection
+STATUS: FROZEN
+B4.1–B4.12: COMPLETE
+B4.FREEZE: FROZEN
+```
+
+Previous stable baseline:
+
+```text
 B3 — Geometric Primitives
 STATUS: FROZEN
 B3.1–B3.9: COMPLETE
@@ -820,21 +829,23 @@ B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
 smoke with no findings. B3 is FROZEN.
 
-Current baseline in progress:
+Frozen B4 validation:
 
 ```text
 B4 — Geometry Visualization & Selection
-STATUS: IN PROGRESS
-B4.1–B4.10: COMPLETE
-B4.11: CURRENT
-B4.12: PENDING
-B4.FREEZE: PENDING
+STATUS: FROZEN
+B4.1–B4.12: COMPLETE
+B4.FREEZE: FROZEN
 ```
 
-B4.10 validated 684/684 tests and runtime smoke, with no findings.
-B4.11 — Documentation & D4 Validation is the current authorized increment.
-Next permitted increment after B4.11: B4.12 — Baseline Validation, only after
-explicit authorization. B4 is not stable or frozen; B4.FREEZE remains pending.
+B4.12 passed clean configure/Debug build and 684/684 tests, with zero project,
+dependency or linker warnings. Runtime passed; native X and File -> Exit
+returned 0. HiDPI automated validation passed; manual B4.12 HiDPI was unavailable.
+The B4.12 MINOR documentary state finding is CLOSED by B4.FREEZE.
+ADR-0017–0020 remain ACCEPTED / CONFORMANT; 20/20 ADRs are ACCEPTED.
+
+B4 is FROZEN. Changes to frozen B4 behavior require explicit authorization.
+No next baseline, Decision Gate or increment has been authorized.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

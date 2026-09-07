@@ -225,7 +225,7 @@ obrigatório Point3/Segment3/Line3. Geometry permanece model-only.
 
 # B4 — Geometry Visualization & Selection
 
-Status: IN PROGRESS
+Status: FROZEN
 
 Objectivo:
 
@@ -246,17 +246,20 @@ Estado dos increments:
 | B4.8 — Single Selection | COMPLETE |
 | B4.9 — Selection Highlighting | COMPLETE |
 | B4.10 — Viewer / Geometry Integration Tests | COMPLETE |
-| B4.11 — Documentation & D4 Validation | CURRENT |
-| B4.12 — Baseline Validation | PENDING |
-| B4.FREEZE | PENDING |
+| B4.11 — Documentation & D4 Validation | COMPLETE |
+| B4.12 — Baseline Validation | COMPLETE |
+| B4.FREEZE | FROZEN |
 
-B4.1–B4.10 estão completos: apresentação e visualização Point3/Segment3/Line3,
-picking geométrico, hover, single-selection e highlight. B4.10 validou 684/684
-testes, sem findings. B4.11 consolida documentação e valida D4; B4 permanece
-IN PROGRESS, não estável nem FROZEN. B4.12 e B4.FREEZE permanecem PENDING.
+B4.1–B4.12 estão COMPLETE; B4.FREEZE e B4 estão FROZEN. B4 é a baseline
+estável mais recente, com apresentação/visualização Point3/Segment3/Line3,
+picking geométrico, hover, single-selection e highlight. B4.12 passou clean
+configure/Debug build e 684/684 testes, 0 falhas e zero warnings de projecto,
+dependências ou linker. Runtime PASS: X nativo -> 0 e File -> Exit -> 0.
+HiDPI automatizado PASS; validação manual B4.12 indisponível/não repetida.
+O finding MINOR de estado documental está CLOSED por B4.FREEZE.
 
-Próximo incremento após B4.11: B4.12 — Baseline Validation, apenas mediante
-autorização explícita. Não há autorização para B4.FREEZE, B5 ou novo gate.
+Nenhum próximo incremento, baseline ou Decision Gate está autorizado.
+Alterações ao comportamento B4 congelado exigem autorização explícita.
 Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
 multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
 serialization/Document, Topology/BRep, Sketching/constraints/dimensions e

@@ -20,23 +20,21 @@ B2 status: FROZEN
 B2.1–B2.13: COMPLETE
 B2.FREEZE: FROZEN
 Decision Gate D3 — Geometric Foundation: FROZEN
-Current latest stable baseline: B3 — Geometric Primitives
+Previous stable baseline: B3 — Geometric Primitives
 B3 status: FROZEN
 B3.1–B3.9: COMPLETE
 B3.10A: COMPLETE
 B3.10: COMPLETE
 B3.FREEZE: FROZEN
 Decision Gate D4 — Geometry Visualization & Selection: FROZEN
-Current baseline in progress: B4 — Geometry Visualization & Selection
-B4 status: IN PROGRESS
-B4.1–B4.10: COMPLETE
-B4.11: CURRENT
-B4.12: PENDING
-B4.FREEZE: PENDING
-Current increment: B4.11 — Documentation & D4 Validation
-Next permitted increment after B4.11: B4.12 — Baseline Validation
-B4.12 requires explicit authorization
-Latest validated snapshot (B4.10): 684/684 tests PASS
+Current latest stable baseline: B4 — Geometry Visualization & Selection
+B4 status: FROZEN
+B4.1–B4.12: COMPLETE
+B4.FREEZE: FROZEN
+Latest validated snapshot (B4.12): 684/684 tests PASS, 0 failed
+20/20 ADRs ACCEPTED; ADR-0017–0020 CONFORMANT
+B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
+No next increment / Decision Gate / baseline has been authorized.
 ```
 
 Every increment and baseline freeze requires explicit authorization.

@@ -40,7 +40,7 @@ Persistence serializa o Document através de uma fronteira própria.
 Esta é a direcção lógica planeada. Os módulos de domínio apresentados nesta
 secção (Document, Modeling e Topology) continuam por implementar. Geometry já
 existe na baseline B3 FROZEN. As secções seguintes distinguem FROZEN
-FOUNDATIONS, FROZEN B2/B3 IMPLEMENTATION, B4 IN PROGRESS e PLANNED / DEFERRED.
+FOUNDATIONS, FROZEN B2/B3 IMPLEMENTATION, B4 FROZEN e PLANNED / DEFERRED.
 
 ### FROZEN FOUNDATIONS — B1 Math Foundation (B1.1–B1.8)
 
@@ -725,12 +725,13 @@ unchanged B2 viewer, normal close and exit code 0, not rendering of Geometry.
 ADR-0001 through ADR-0016 remain 16/16 ACCEPTED, unchanged. D0/D1/D2/D3
 remain FROZEN. B3 is FROZEN. PROJECT_CHARTER remains consistent and unchanged.
 
-### B4 — Geometry Visualization & Selection (IN PROGRESS, D4 FROZEN)
+### B4 — Geometry Visualization & Selection (FROZEN, D4 FROZEN)
 
-B4.1–B4.10 are COMPLETE; B4.11 — Documentation & D4 Validation is CURRENT.
-B4.12 — Baseline Validation and B4.FREEZE are PENDING. B4 is not a stable or
-frozen baseline. B0/B1/B2/B3 and D0/D1/D2/D3/D4 remain FROZEN. The next
-increment after B4.11 is B4.12, requiring explicit authorization.
+B4.1–B4.12 are COMPLETE; B4.FREEZE is FROZEN. B4 is the latest stable
+baseline. B0/B1/B2/B3 and D0/D1/D2/D3/D4 remain FROZEN.
+No next increment, Decision Gate or baseline has been authorized.
+The B4 boundaries and interaction contracts below are frozen; changes require
+explicit authorization.
 
 #### Presentation, identity and ownership
 
@@ -908,7 +909,7 @@ Without hover or selection, the B4.8 normal palette and geometry order remain.
 
 #### B4 testing and D4 validation
 
-Current validated snapshot from B4.10: **684/684 PASS, 0 FAIL**. Validation layers
+Frozen validated snapshot from B4.12: **684/684 PASS, 0 FAIL**. Validation layers
 include Presentation unit tests, Viewer adapter tests, real OpenGL renderer tests,
 picking/ray tests, HoverState and Workspace hover tests, SelectionState and
 Workspace selection tests, highlight batching, Workspace tests and the 14
@@ -939,14 +940,20 @@ graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and
 B0–B3 validation tables are historical snapshots; D4 authorizes the explicitly
 scoped B4 slice without rewriting their accepted decisions.
 
-#### Deferred after the current B4 slice
+B4.12 baseline validation PASS: clean configure/Debug build, 684/684 tests,
+0 failed and zero project, dependency or linker warnings. Runtime passed with
+ordered shutdown: native X -> 0 and File -> Exit -> 0. Automated HiDPI passed;
+manual B4.12 HiDPI was unavailable/not repeated. The MINOR documentary state
+synchronization finding is CLOSED by B4.FREEZE.
 
-Ray3/Plane visualization; generic scene graph/ECS; multi-selection, selection box
-and lasso; framebuffer picking and exact occlusion-aware picking; persistent
+#### Deferred after the frozen B4 slice
+
+Ray3/Plane visualization; generic scene graph/ECS; multi-selection (including
+Ctrl/Shift additive selection), selection box and lasso; framebuffer picking and exact occlusion-aware picking; persistent
 visual identity, serialization and Document; Topology/BRep; Sketching, constraints
 and dimensions; feature modeling, Extrude, Revolve, Boolean, history/regeneration
-remain deferred. No feature, gate, B4.12 validation or baseline freeze is started
-by B4.11 documentation.
+remain deferred. B4.FREEZE authorizes no new feature, increment, baseline
+or Decision Gate.
 
 ### Longer-term Geometry direction (deferred)
 
@@ -1010,7 +1017,7 @@ Responsabilidades futuras:
 - feature tree;
 - rebuild.
 
-### viewer (B2 foundation, B4 IN PROGRESS)
+### viewer (B2 foundation, B4 FROZEN)
 
 Observa o mundo CAD e gere camera, viewport/navigation state, orbit, pan,
 zoom e render aids. B4 acrescenta adapters, picking, hover, single-selection e highlight. Camera usa `microsw_math`; desenho usa Rendering.

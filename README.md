@@ -13,20 +13,20 @@ product.
 | B1 — Mathematical Foundation | FROZEN | `b1-mathematical-foundation` |
 | B2 — 3D Viewer | FROZEN | `b2-3d-viewer` |
 | B3 — Geometric Primitives | FROZEN | `b3-geometric-primitives` |
+| B4 — Geometry Visualization & Selection | FROZEN | — |
 
-B3 remains the latest stable baseline. It supplies Point2/3, Segment2/3,
+B4 is the latest stable baseline. B3 supplies Point2/3, Segment2/3,
 Line2/3, Ray2/3 and Plane, queries, metrics and geometric tolerance over internal
 Math. Geometry remains model-only, independent of graphics and UI.
 Point3 is not a Vertex, Segment3 is not an Edge, and Plane is not a Face.
 
-## Current work — B4 Geometry Visualization & Selection
+## Frozen B4 — Geometry Visualization & Selection
 
-**Status: IN PROGRESS**, not a stable or frozen baseline.
+**Status: FROZEN**.
 
-- B4.1–B4.10: COMPLETE.
-- B4.11 — Documentation & D4 Validation: CURRENT.
-- B4.12 — Baseline Validation: PENDING.
-- B4.FREEZE: PENDING.
+- B4.1–B4.12: COMPLETE.
+- B4.FREEZE: FROZEN.
+- B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE.
 
 The application now demonstrates a deterministic temporary collection of
 3 Point3, 3 Segment3 and 2 Line3, with geometric picking, automatic hover,
@@ -80,9 +80,8 @@ occlusion-aware picking, scene graph/ECS, persistent IDs/serialization/Document,
 Topology/BRep, Sketching/constraints/dimensions and feature modeling
 (Extrude/Revolve/Boolean/history/regeneration) remain deferred.
 
-Next permitted increment after B4.11: **B4.12 — Baseline Validation**, only with
-explicit authorization. No subsequent increment, Decision Gate, baseline or
-freeze is authorized automatically. B4.FREEZE and B5 have not started.
+No next increment, Decision Gate or baseline has been authorized. Changes to
+frozen B4 behavior require explicit authorization. B5 has not started.
 
 ## Build and validation
 
@@ -96,16 +95,16 @@ ctest --test-dir build -C Debug --output-on-failure
 git diff --check
 ```
 
-Latest validated snapshot (B4.10): **684/684 PASS, 0 FAIL**. Coverage includes
+Freeze validation snapshot (B4.12): **684/684 PASS, 0 FAIL**. Coverage includes
 Presentation, adapters, renderers, picking, hover, selection, highlight batching
 and 14 Viewer/Geometry integration tests with real OpenGL and no pixel assertions.
 Runtime smoke passed with native X and File → Exit both returning 0. HiDPI was
-validated automatically, not repeated manually during B4.10. Frozen historical
-snapshots remain B3.10: 549/549 and B2.13: 274/274.
+validated automatically; manual B4.12 HiDPI validation was unavailable/not
+repeated. Frozen historical snapshots remain B3.10: 549/549 and B2.13: 274/274.
 
-B4.11 repeated configure, Debug build and the full suite: **684/684 PASS**.
-Its simple runtime smoke was confirmed manually, with normal shutdown and
-exit code 0. Production, tests, CMake and ADRs remain unchanged.
+B4.12 clean configure and Debug build passed with zero project, dependency
+or linker warnings. ADR-0017–0020 are ACCEPTED / CONFORMANT. Freeze changes
+only documentation; production, tests, CMake, dependencies and ADRs are unchanged.
 
 Tests require a working OpenGL 3.3 graphics environment. Counts are validation
 snapshots, not permanent totals. See [AGENTS.md](AGENTS.md), [BOOTSTRAP.md](BOOTSTRAP.md),
