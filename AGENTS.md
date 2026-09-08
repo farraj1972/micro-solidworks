@@ -972,10 +972,10 @@ Canonical functional progress (see docs/ROADMAP.md): B0/B1/B2 satisfied;
 B3/B4 partially satisfied; B5 REALIZED / SATISFIED BY technical B4. No duplicate
 B5 implementation is required. Technical B0–B4 remain FROZEN.
 B6 Transformations is the NEXT ACTIVE FUNCTIONAL AREA after frozen D5 —
-Transformation Semantics. B6 is NOT STARTED and requires explicit execution
+Transformation Semantics. B6 is an implemented CANDIDATE under explicit execution
 authorization. Circle/intersections and
 visibility/lifecycle gaps remain deferred;
-entity transforms are the blocking gap for the next authorized vertical slice.
+entity transforms are implemented by the B6 candidate; baseline validation is pending.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

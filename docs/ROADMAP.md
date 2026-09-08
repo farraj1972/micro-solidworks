@@ -66,7 +66,7 @@ uses V0 rather than repeating V3.
 | B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle/basic intersections são DEFERRED GAP — not currently blocking B6 |
 | B4 Scene & Object Model: identity, transforms, visibility, object lifecycle | PARTIALLY SATISFIED | B4 técnica FROZEN: Presentation identity, GeometryPresentation, visual ownership boundary, visualização Point/Segment/Line e o slice de picking/hover/single-selection/highlight |
 | B5 Selection & Picking: screen ray, intersections/picking, hover, click selection, selection state, highlighting | REALIZED / SATISFIED BY B4 | FUNCTIONALLY REALIZED BY FROZEN TECHNICAL B4; No duplicate B5 implementation is required |
-| B6 Transformations: translate, rotate, scale, local/world coordinates | NEXT ACTIVE FUNCTIONAL AREA / NOT STARTED | Não implementada como transformação de entidades; D5 — Transformation Semantics está FROZEN |
+| B6 Transformations: translate, rotate, scale, local/world coordinates | CANDIDATE | Transformações de entidades implementadas em B6; validação baseline pendente; D5 FROZEN |
 
 A realização de B5 usa PickingRay e picking geométrico screen-space existentes;
 não implica um motor geral de intersecções nem picking com oclusão perfeita.
@@ -77,7 +77,7 @@ Detalhe do B4 canónico:
 | Capability | Mapping |
 | --- | --- |
 | identity | PARTIALLY REALIZED: identidade visual local, não identidade CAD persistente/global |
-| transforms | NOT YET REALIZED |
+| transforms | REALIZED BY B6 candidate |
 | visibility | NOT YET REALIZED as explicit entity state |
 | object lifecycle | NOT YET REALIZED beyond construction/lookup |
 
@@ -92,7 +92,7 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | --- | --- | --- | --- |
 | GAP-GEO-001 | Circle primitive missing from canonical B3 scope | NO | Before/during B8, antes do slice Sketcher que necessite circles/arcs |
 | GAP-GEO-002 | Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
-| GAP-SCENE-001 | OPEN — Entity transforms missing from canonical B4 scope | YES for next vertical slice | B6 after D5 |
+| GAP-SCENE-001 | IMPLEMENTED — Entity transforms in B6 candidate | NO | Closure after B6.10 PASS |
 | GAP-SCENE-002 | Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
 
 Circle e basic intersections são gaps deferred, não bloqueiam actualmente B6
@@ -119,7 +119,7 @@ persistence, CAD Document ou Topology. Estas semânticas estão FROZEN nos ADRs
 ADR-0021–0024, todos ACCEPTED.
 
 **D5 — Transformation Semantics: FROZEN.** ADR-0021–0024 estão ACCEPTED.
-B6 permanece NOT STARTED e não pode começar sem autorização explícita.
+B6 é um CANDIDATE autorizado; B6.10 e freeze permanecem pendentes.
 
 ## Historical Technical Baselines and Canonical Phase Details
 
@@ -388,7 +388,7 @@ HiDPI automatizado PASS; validação manual B4.12 indisponível/não repetida.
 O finding MINOR de estado documental está CLOSED por B4.FREEZE.
 
 Próxima área funcional canónica: B6, após D5 — Transformation Semantics FROZEN.
-B6 permanece NOT STARTED.
+B6 é um CANDIDATE autorizado; validação baseline pendente.
 Alterações ao comportamento B4 congelado exigem autorização explícita.
 Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
 multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
@@ -422,8 +422,8 @@ Capacidades:
 
 # B6 — Transformations
 
-Estado: NEXT ACTIVE FUNCTIONAL AREA / NOT STARTED; D5 — Transformation Semantics
-está FROZEN. O slice MVP-first está definido acima, mas a sua execução requer
+Estado: CANDIDATE; D5 — Transformation Semantics
+está FROZEN. O slice MVP-first está implementado sob
 autorização explícita.
 
 Capacidades:

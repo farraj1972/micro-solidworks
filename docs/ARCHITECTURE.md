@@ -24,7 +24,7 @@ and defer subsystem completeness until it is a real prerequisite. Gaps are
 closed through new authorized work while preserving compatibility.
 
 Canonical B3 still lacks Circle and basic intersections. Canonical B4 identity
-is partially realized through visual IDs; entity transforms, explicit visibility
+is partially realized through visual IDs; B6 supplies entity transforms. Explicit visibility
 state and lifecycle beyond construction/lookup remain incomplete. B4 FROZEN
 therefore describes its accepted technical slice, not full Scene & Object Model.
 
@@ -52,7 +52,20 @@ This remains acyclic. B6.1 provides the Math `Transform3` value. B6.2 gives each
 `const Transform3& transform() const noexcept` and `setTransform(const Transform3&)`.
 Replacing it preserves the visual ID and canonical local Geometry. Existing
 `GeometryPresentation::add()` overloads and read-only lookup remain unchanged.
-World-space derivation and rendering/picking integration await later increments.
+`worldGeometry()` derives Point, Segment and normalized Line values using TRS.
+Viewer adapters upload derived world vertices; `uModel` is identity because TRS
+has already been applied on CPU. Picking consumes the same world semantics,
+including view-derived finite Line endpoints. This accepted ADR-0024 option
+keeps Rendering generic and avoids duplicate transform application.
+
+`GeometryPresentation::setTransform()` validates world derivation before committing.
+The selected-entity UI edits translation, Euler degrees (converted to radians)
+and positive scale. Application preflights the edit against Viewer numeric limits
+before commit, then updates navigation, hover, selection and drawing in that order.
+Selection identity is retained; hover is recomputed every frame. Numeric failures
+are shown in the editor and leave the previous model intact. A float-range
+headroom check belongs to Viewer; Math/Geometry do not acquire GPU restrictions.
+See [B6_VALIDATION.md](B6_VALIDATION.md) for conformance and validation evidence.
 
 Validation and governance workflow are normative in `AGENTS.md`. Validation is
 selected by affected dependency closure: V0 documentation, V1 localized change,

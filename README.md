@@ -53,19 +53,19 @@ dependencies, adapters and interaction are in [ARCHITECTURE.md](docs/ARCHITECTUR
 
 Technical B0–B4 remain FROZEN. Canonical functional progress is distinct:
 B0/B1/B2 satisfied; B3/B4 partially satisfied; B5 realized/satisfied by technical
-B4; B6 Transformations is the next active functional area. No duplicate B5
+B4; B6 Transformations is the current functional candidate. No duplicate B5
 implementation is required. See [ROADMAP.md](docs/ROADMAP.md) for the fixed
 B0–B14 sequence, implementation mapping and Canonical Roadmap Gaps.
 
 **Vertical Slice First**: feature over performance; working vertical slice over
 speculative completeness; architecture boundaries over premature abstraction.
-Circle/intersections remain deferred B3 gaps; entity transforms block the next
-slice; explicit visibility/lifecycle semantics wait until required.
+Circle/intersections remain deferred B3 gaps; B6 supplies entity transforms;
+explicit visibility/lifecycle semantics wait until required.
 
-The intended B6 slice is select Point/Segment/Line -> edit transform -> updated
+The B6 slice is select Point/Segment/Line -> edit transform -> updated
 rendering/picking -> coherent hover/selection/highlight. D5 — Transformation
-Semantics is **FROZEN** in accepted ADR-0021–0024. B6 is **NOT STARTED**; the
-decision freeze neither implements B6 nor reopens frozen baselines.
+Semantics is **FROZEN** in accepted ADR-0021–0024. B6 is a **CANDIDATE** pending
+baseline validation. See [B6 validation](docs/B6_VALIDATION.md).
 
 ## Controls
 
@@ -77,6 +77,7 @@ decision freeze neither implements B6 nor reopens frozen baselines.
 | Pointer over geometry | Automatic hover; suspended during MMB navigation |
 | Left click geometry | Select one entity; another click replaces it |
 | Left click empty Workspace | Clear selection |
+| Selected entity Transform panel | Edit XYZ translation, rotation in degrees and positive scale; valid edits apply immediately |
 | View → Projection | Perspective / Orthographic; each preserves its zoom state |
 | Help → About | Application information |
 | File → Exit or native X | Close the application |
@@ -88,7 +89,7 @@ The About caption retains its historical B0 foundation text.
 ## Decisions and deferred scope
 
 D0/D1/D2/D3/D4/D5 are **FROZEN**; ADR-0001–0024 are **24/24 ACCEPTED**.
-The latest gate, D4, is documented in [ADR-0017](docs/adr/ADR-0017-geometry-presentation-boundary.md),
+The preceding gate, D4, is documented in [ADR-0017](docs/adr/ADR-0017-geometry-presentation-boundary.md),
 [ADR-0018](docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md),
 [ADR-0019](docs/adr/ADR-0019-geometry-picking-strategy.md) and
 [ADR-0020](docs/adr/ADR-0020-geometry-visualization-scope.md).
@@ -98,8 +99,8 @@ occlusion-aware picking, scene graph/ECS, persistent IDs/serialization/Document,
 Topology/BRep, Sketching/constraints/dimensions and feature modeling
 (Extrude/Revolve/Boolean/history/regeneration) remain deferred.
 
-D5 — Transformation Semantics is frozen in accepted ADR-0021–0024. B6 remains
-NOT STARTED and requires explicit authorization. Changes to frozen B4 behavior require
+D5 — Transformation Semantics is frozen in accepted ADR-0021–0024. B6 is an
+authorized functional candidate. Changes to frozen B4 behavior require
 explicit authorization. Canonical B5 functionality is already satisfied by
 technical B4.
 
