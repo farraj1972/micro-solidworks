@@ -25,6 +25,8 @@
 #include <tuple>
 #include <span>
 #include <type_traits>
+#include <limits>
+#include <stdexcept>
 
 namespace
 {
@@ -286,6 +288,60 @@ TEST_F(GeometryViewerIntegration, TransformedPrimitivesShareActualDrawAndPickPos
         }
         EXPECT_EQ(snapshot(presentation), before);
     }
+}
+
+TEST_F(GeometryViewerIntegration, TransformEditsKeepSelectionRecomputeHoverAndMoveHighlight)
+{
+    for (int kind = 0; kind < 3; ++kind)
+    {
+        GeometryPresentation presentation;
+        const auto id = kind == 0 ? presentation.add(Point3{})
+            : kind == 1 ? presentation.add(Segment3{point(camera.right() * -1), point(camera.right())})
+            : presentation.add(Line3{Point3{}, camera.right()});
+        const auto before = snapshot(presentation);
+        WorkspaceViewport workspace{presentation};
+        frame(workspace, at(Point3{}, true));
+        ASSERT_EQ(workspace.selectedEntity(), id);
+        const math::Transform3 transform{camera.up() * 4, Vector3{0.1, 0.2, 0.3}, Vector3{2, 0.5, 1.5}};
+        workspace.validateTransform(id, transform);
+        ASSERT_TRUE(presentation.setTransform(id, transform));
+        // The unchanged pointer must lose hover when the selected geometry moves.
+        frame(workspace, at(Point3{}));
+        EXPECT_FALSE(workspace.hoveredEntity());
+        EXPECT_EQ(workspace.selectedEntity(), id);
+        expectBatches(presentation, workspace);
+        const auto sample = point(transform.translation());
+        frame(workspace, at(sample));
+        EXPECT_EQ(workspace.hoveredEntity(), id);
+        EXPECT_EQ(workspace.selectedEntity(), id);
+        EXPECT_EQ(visualStateFor(id, workspace.hoveredEntity(), workspace.selectedEntity()), VisualState::Selected);
+        expectBatches(presentation, workspace);
+        for (auto mode : {ProjectionMode::Orthographic, ProjectionMode::Perspective})
+        {
+            projection.setMode(mode);
+            workspace.setProjectionMode(mode);
+            frame(workspace, at(sample));
+            EXPECT_EQ(workspace.hoveredEntity(), id);
+            EXPECT_EQ(workspace.selectedEntity(), id);
+            expectBatches(presentation, workspace);
+        }
+        EXPECT_EQ(snapshot(presentation), before);
+    }
+}
+
+TEST_F(GeometryViewerIntegration, EditorPreflightRejectsUnrepresentablePositionsWithoutMutation)
+{
+    GeometryPresentation presentation;
+    const auto id = presentation.add(Point3{2, 0, 0});
+    WorkspaceViewport workspace{presentation};
+    const auto before = snapshot(presentation);
+    EXPECT_THROW(workspace.validateTransform(id, math::Transform3(
+        Vector3{1e100, 0, 0}, Vector3{}, Vector3{1, 1, 1})), std::invalid_argument);
+    EXPECT_THROW(workspace.validateTransform(id, math::Transform3(
+        Vector3{}, Vector3{}, Vector3{std::numeric_limits<double>::max(), 1, 1})), std::overflow_error);
+    EXPECT_THROW(workspace.validateTransform(VisualEntityId{999}, math::Transform3{}), std::invalid_argument);
+    EXPECT_EQ(snapshot(presentation), before);
+    EXPECT_TRUE(math::almostEqual(presentation.find(id)->transform().matrix(), math::Matrix4::identity()));
 }
 
 TEST_F(GeometryViewerIntegration, DemoPointIdentityReachesActualSelectedDraw)
