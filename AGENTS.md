@@ -250,7 +250,8 @@ Core       -> GLFW
 
 # 9. Incremental Development
 
-All development must occur through explicitly authorized increments.
+All development must occur through explicitly authorized increments or through
+an explicitly approved baseline plan that names and scopes its increment sequence.
 
 Do not implement future roadmap functionality merely because it appears adjacent or convenient.
 
@@ -265,6 +266,12 @@ For every increment:
 7. report the result.
 
 Scope discipline is mandatory.
+
+An approved baseline plan may authorize its planned increments sequentially;
+do not require a separate administrative authorization ritual between them.
+Stop for steering when there is a MAJOR/BLOCKER finding, scope expansion, a new
+architectural decision, a change to a frozen contract/baseline, an unexpected
+external dependency or a destructive/repository-sensitive operation.
 
 ## Vertical Slice First
 
@@ -330,29 +337,74 @@ Prefer a smaller complete change over a larger partially completed change.
 
 ---
 
-# 12. Build Requirements
+# 12. Impact-Based Validation
 
-Unless explicitly stated otherwise, validation must include:
-
-```bash
-cmake -S . -B build
-cmake --build build
-ctest --test-dir build
-```
-
-Where applicable, also validate the application executable manually.
-
-Before reporting completion, run:
-
-```bash
-git diff --check
-```
-
-Expected result:
+Validate according to impact and risk. Do not repeatedly validate unaffected
+code without a concrete reason.
 
 ```text
-PASS
+Vertical Slice First.
+Targeted Validation First.
+Full Regression at meaningful integration/baseline gates.
 ```
+
+The absence of changes in a dependency-independent component is relevant
+evidence that its tests need not be repeated. Before testing, determine the
+changed modules, changed public contracts, direct consumers, transitive affected
+consumers and relevant test suites. Run the smallest test set that gives
+meaningful confidence for that changed dependency closure.
+
+## V0 — Documentation / Metadata
+
+Use for non-executable documentation, governance and metadata changes. Review
+changed files and documentation/state consistency, then run `git diff --check`
+and inspect `git status`. Do not run configure, build, CTest or runtime by
+default. Escalate only when documentation participates in executable generation
+or configuration, or when a concrete technical reason exists.
+
+## V1 — Targeted Validation
+
+Default for ordinary localized increments. Identify the smallest affected
+dependency closure, build affected targets, run directly relevant unit and
+contract tests, and run `git diff --check`. Do not run independent historical
+suites or perform a clean build by default.
+
+## V2 — Integration Validation
+
+Use when a change crosses layers or completes a vertical slice. Validate the
+affected dependency closure with relevant unit and integration tests, plus
+runtime validation only for affected observable behavior. V2 does not
+automatically imply a full repository regression.
+
+## V3 — Baseline Validation
+
+Reserve V3 for baseline validation/freeze, major dependency or toolchain change,
+substantial CMake restructuring, suspected stale-build contamination, or an
+explicitly requested full regression. Run clean configure/full build, full
+CTest, runtime validation, architecture/dependency audit, repository hygiene
+and `git diff --check`.
+
+An incremental build is the default. Do not remove `build/` or repeat
+`cmake -S . -B build` when CMake, dependencies and toolchain are unchanged and
+the existing configuration is valid. Clean builds require V3 or a concrete
+technical reason.
+
+Runtime validation is required when runtime-visible behavior changed,
+Viewer/Rendering/UI/App changed materially, cross-layer integration needs it,
+or V3 applies. It is not required for docs-only work, an isolated Math value, or
+an isolated non-runtime contract covered by sufficient tests.
+
+Validation may escalate V0 -> V1 -> V2 -> V3 only for a concrete reason, such
+as wider public API impact, a changed CMake dependency graph, a targeted test
+revealing cross-layer regression, or stale/inconsistent incremental output.
+Report `Validation escalated from Vx to Vy because: ...`. Do not escalate by
+habit. If targeted validation fails, first classify and investigate it as local,
+contract, integration or environment failure before broadening the test scope.
+An explicit full-regression/V3 request must still be respected.
+
+Do not spend compute, test time, context, or model tokens revalidating unaffected
+components without a concrete risk-based reason. Efficiency is part of correct
+engineering practice.
 
 ---
 
@@ -375,6 +427,13 @@ As the project evolves, the following components are expected to have particular
 Avoid trivial tests written only to increase test counts.
 
 Do not mock pure mathematical or geometric behavior unnecessarily.
+
+For B6 examples: an isolated `Transform3` increment normally uses V1 with the
+Math target, Transform3 tests and directly affected transformation/matrix tests;
+Viewer/OpenGL/runtime tests are omitted unless dependency analysis requires
+them. A transform-aware rendering/picking vertical slice uses V2 across Math,
+Presentation, Viewer and Rendering/Picking with relevant integration tests and
+runtime behavior. B6 baseline validation uses V3.
 
 ---
 
@@ -483,6 +542,20 @@ Status: PROPOSED
 ```
 
 Codex MUST NOT mark a self-proposed architectural decision as `ACCEPTED` without explicit authorization.
+
+Decision Gates are reserved for material architectural choices: module/layer
+boundaries, ownership, identity, coordinate/math conventions, persistence
+contracts, dependency direction, difficult-to-reverse semantics and changes to
+frozen architecture. ADRs are reserved for decisions that are architecturally
+significant, long-lived, cross-cutting or expensive to reverse. Do not create a
+Decision Gate or ADR for each class, helper, test or reversible implementation
+detail.
+
+When an existing decision proposal is explicitly approved, that approval
+authorizes its documentary completion: PROPOSED -> ACCEPTED, Decision Gate ->
+FROZEN, documentation synchronization and the authorized commit. If executable
+HEAD is unchanged, this normally uses V0 and does not repeat full regression.
+A documentary Decision Gate alone does not justify V3.
 
 ---
 
@@ -644,7 +717,9 @@ should not be committed.
 
 # 27. Git Discipline
 
-Codex should not commit unless explicitly instructed to do so.
+Codex should not commit unless the prompt or an approved plan authorizes it. A
+PASS increment may be committed under that authorization without a separate
+permission cycle. Tags remain reserved for baseline/release freezes.
 
 When reporting a completed increment, propose a commit message.
 
@@ -670,7 +745,33 @@ For baseline closure:
 
 # 28. Increment Completion Report
 
-Every completed increment must report:
+Reports must be proportional. A normal increment reports Result, Files,
+Behavior, Validation, architecture deviations/findings and Commit. Do not repeat
+the full project history. Reserve extensive reports for Decision Gates, V3
+baseline validation, baseline freeze and major findings.
+
+V1/V2 reports include:
+
+```text
+Validation level: V1 | V2
+Changed dependency closure: ...
+Tests run: ...
+Tests intentionally not run: ... — reason
+Build: affected targets PASS | FAIL
+Escalation: none | reason
+```
+
+V0 reports include:
+
+```text
+Validation level: V0
+Files reviewed: ...
+git diff --check: PASS | FAIL
+Executable validation: intentionally not run — no executable impact
+```
+
+The established detailed completion shape remains available when scope or risk
+requires it:
 
 ```text
 Increment:
@@ -756,6 +857,12 @@ Do not modify architecture outside the authorized scope merely to make tests gre
 # 30. Baseline Freeze
 
 A baseline may only be considered frozen after all required increments have passed.
+
+The normal lifecycle is small V1 increments, V2 vertical integration increments,
+V3 baseline validation, then baseline freeze. If V3 passed and only documentary
+state changes occur before freeze, do not repeat V3: use V0, confirm the
+validated executable HEAD is unchanged, then commit/tag as authorized. If the
+executable HEAD changed, V3 is required again.
 
 For B0, baseline validation requires at minimum:
 
@@ -884,3 +991,8 @@ The next work item must always be taken from the project owner's explicitly perm
 When uncertain whether a change belongs to the current increment:
 
 > Do less, preserve stability, and report the question rather than silently expanding scope.
+
+Repository governance and accepted ADRs are authoritative. Future prompts
+should reference them instead of restating them. Prefer compact prompts covering
+increment, scope, expected behavior, affected layers, validation level,
+acceptance criteria, stop conditions and commit policy.

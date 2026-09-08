@@ -51,6 +51,11 @@ uma baseline congelada: a capability será implementada num novo incremento ou
 baseline autorizado, preservando compatibilidade. Esta estratégia não substitui
 os gates de autorização nem permite trabalho especulativo.
 
+Validation follows the normative impact-based policy in `AGENTS.md`: normal
+localized increments use V1, cross-layer vertical slices use V2, and baseline
+validation uses V3. A documentary freeze after an unchanged validated executable
+uses V0 rather than repeating V3.
+
 ## Implementation Mapping
 
 | Fase canónica / scope | Realização funcional | Implementação técnica / gaps |

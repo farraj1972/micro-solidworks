@@ -47,7 +47,12 @@ in `docs/ROADMAP.md`. Frozen technical baseline != complete canonical phase.
 Record gaps and close them only when required by an authorized slice; do not
 reopen B3/B4 for speculative completeness.
 
-Every increment and baseline freeze requires explicit authorization.
+Validation follows the impact-based V0/V1/V2/V3 policy in `AGENTS.md`:
+targeted validation is the default, while full regression is reserved for
+meaningful integration/baseline risk. Documentation-only work normally uses V0.
+
+Every increment and baseline freeze requires explicit authorization, either
+directly or through an explicitly approved plan containing that increment.
 Any next Decision Gate or baseline requires explicit authorization.
 The B0 instructions below describe the historical foundation scope, not the
 current work authorization. Current viewer implementation is documented in

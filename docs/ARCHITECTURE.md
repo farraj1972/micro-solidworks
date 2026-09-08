@@ -49,6 +49,11 @@ Viewer -> Rendering
 
 This remains acyclic. B6 is NOT STARTED and requires explicit authorization.
 
+Validation and governance workflow are normative in `AGENTS.md`. Validation is
+selected by affected dependency closure: V0 documentation, V1 localized change,
+V2 cross-layer integration and V3 baseline/full-regression risk. This workflow
+does not alter module boundaries or accepted ADRs.
+
 ## 2. Arquitectura planeada
 
 ```text
