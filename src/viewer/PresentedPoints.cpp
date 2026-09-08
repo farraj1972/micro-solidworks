@@ -2,6 +2,7 @@
 
 #include "core/geometry/Point3.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/WorldGeometry.h"
 
 #include <variant>
 
@@ -16,7 +17,9 @@ std::vector<math::Vector3> presentedPointVertices(
     for (const auto& entity : presentation.entities())
     {
         if (filter && !filter->accepts(entity.id())) continue;
-        if (const auto* point = std::get_if<geometry::Point3>(&entity.geometry()))
+        if (!std::holds_alternative<geometry::Point3>(entity.geometry())) continue;
+        const auto world = presentation::worldGeometry(entity);
+        if (const auto* point = std::get_if<geometry::Point3>(&world))
             vertices.emplace_back(point->x(), point->y(), point->z());
     }
     return vertices;

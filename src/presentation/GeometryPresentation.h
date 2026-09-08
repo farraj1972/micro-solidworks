@@ -17,6 +17,9 @@ public:
     [[nodiscard]] std::size_t size() const noexcept { return entities_.size(); }
     [[nodiscard]] bool empty() const noexcept { return entities_.empty(); }
     [[nodiscard]] const VisualEntity* find(VisualEntityId id) const noexcept;
+    // Unknown ID returns false. Validate derived Geometry before committing;
+    // non-representable results throw, preserving the previous entity value.
+    bool setTransform(VisualEntityId id, const math::Transform3& transform);
 private:
     [[nodiscard]] VisualEntityId add(PresentedGeometry geometry);
     VisualEntityIdGenerator idGenerator_;

@@ -2,6 +2,7 @@
 
 #include "core/geometry/Line3.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/WorldGeometry.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -28,7 +29,9 @@ std::vector<math::Vector3> presentedLineVertices(
     for (const auto& entity : presentation.entities())
     {
         if (filter && !filter->accepts(entity.id())) continue;
-        if (const auto* line = std::get_if<geometry::Line3>(&entity.geometry()))
+        if (!std::holds_alternative<geometry::Line3>(entity.geometry())) continue;
+        const auto world = presentation::worldGeometry(entity);
+        if (const auto* line = std::get_if<geometry::Line3>(&world))
         {
             const geometry::Point3 center = geometry::closestPoint(*line, viewCenter);
             const geometry::Point3 negative = center - line->direction() * extent;

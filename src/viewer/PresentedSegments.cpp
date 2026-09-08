@@ -2,6 +2,7 @@
 
 #include "core/geometry/Segment3.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/WorldGeometry.h"
 
 #include <variant>
 
@@ -16,7 +17,9 @@ std::vector<math::Vector3> presentedSegmentVertices(
     for (const auto& entity : presentation.entities())
     {
         if (filter && !filter->accepts(entity.id())) continue;
-        if (const auto* segment = std::get_if<geometry::Segment3>(&entity.geometry()))
+        if (!std::holds_alternative<geometry::Segment3>(entity.geometry())) continue;
+        const auto world = presentation::worldGeometry(entity);
+        if (const auto* segment = std::get_if<geometry::Segment3>(&world))
         {
             const auto& a = segment->a();
             const auto& b = segment->b();

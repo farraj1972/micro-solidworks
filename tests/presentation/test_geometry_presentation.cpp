@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 
 #include <variant>
+#include <limits>
+#include <stdexcept>
 
 namespace
 {
@@ -12,6 +14,24 @@ using microsw::geometry::Segment3;
 using microsw::geometry::areCoincident;
 using microsw::math::Vector3;
 using microsw::presentation::GeometryPresentation;
+
+TEST(GeometryPresentation, TransformUpdateIsAtomicAndPreservesCollection)
+{
+    GeometryPresentation presentation;
+    const auto id = presentation.add(Point3{2, 0, 0});
+    const auto other = presentation.add(Point3{3, 0, 0});
+    const microsw::math::Transform3 transform{Vector3{1, 2, 3}, Vector3{0.1, 0.2, 0.3}, Vector3{2, 3, 4}};
+    EXPECT_TRUE(presentation.setTransform(id, transform));
+    EXPECT_TRUE(microsw::math::almostEqual(presentation.find(id)->transform().matrix(), transform.matrix()));
+    EXPECT_FALSE(presentation.setTransform(microsw::presentation::VisualEntityId{999}, transform));
+    EXPECT_THROW(presentation.setTransform(id, microsw::math::Transform3(
+        Vector3{}, Vector3{}, Vector3{std::numeric_limits<double>::max(), 1, 1})), std::overflow_error);
+    EXPECT_TRUE(microsw::math::almostEqual(presentation.find(id)->transform().matrix(), transform.matrix()));
+    EXPECT_TRUE(areCoincident(std::get<Point3>(presentation.find(id)->geometry()), Point3{2, 0, 0}, 0));
+    EXPECT_TRUE(microsw::math::almostEqual(presentation.find(other)->transform().matrix(), microsw::math::Matrix4::identity()));
+    EXPECT_EQ(presentation.entities()[0].id(), id);
+    EXPECT_EQ(presentation.entities()[1].id(), other);
+}
 
 TEST(GeometryPresentation, DefaultsToEmptyReadOnlyCollection)
 {

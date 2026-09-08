@@ -1,4 +1,5 @@
 #include "app/demo/GeometryDemoScene.h"
+#include "core/math/Transformations.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
 #include "rendering/ShaderProgram.h"
@@ -249,6 +250,43 @@ protected:
     std::unique_ptr<ApplicationWindow> window;
     std::unique_ptr<OpenGLContext> context;
 };
+
+TEST_F(GeometryViewerIntegration, TransformedPrimitivesShareActualDrawAndPickPositions)
+{
+    for (const auto mode : {ProjectionMode::Perspective, ProjectionMode::Orthographic})
+    for (int kind = 0; kind < 3; ++kind)
+    {
+        GeometryPresentation presentation;
+        const Point3 local{1, 0, 0};
+        const auto id = kind == 0 ? presentation.add(local)
+            : kind == 1 ? presentation.add(Segment3{Point3{0, 0, 0}, Point3{2, 0, 0}})
+            : presentation.add(Line3{local, Vector3{1, 0, 0}});
+        const auto before = snapshot(presentation);
+        WorkspaceViewport workspace{presentation};
+        projection.setMode(mode);
+        workspace.setProjectionMode(mode);
+        const math::Transform3 transform{camera.up() * 3 + camera.right() * 2,
+            Vector3{0.2, 0.4, 0.7}, Vector3{2, 0.5, 1.5}};
+        ASSERT_TRUE(presentation.setTransform(id, transform));
+        const auto expected = math::transformPoint(transform.matrix(), {local.x(), local.y(), local.z()});
+        const auto world = point(expected);
+        const auto input = at(world);
+        const auto hit = workspace.pick(layout, width, height, input.x, input.y);
+        ASSERT_TRUE(hit);
+        EXPECT_EQ(hit->id, id);
+        frame(workspace, input);
+        expectBatches(presentation, workspace);
+        EXPECT_EQ(workspace.hoveredEntity(), id);
+        if (kind == 0)
+            EXPECT_TRUE(math::almostEqual(presentedPointVertices(presentation).front(), expected));
+        if (kind == 1)
+        {
+            const auto vertices = presentedSegmentVertices(presentation);
+            EXPECT_TRUE(math::almostEqual((vertices[0] + vertices[1]) * 0.5, expected));
+        }
+        EXPECT_EQ(snapshot(presentation), before);
+    }
+}
 
 TEST_F(GeometryViewerIntegration, DemoPointIdentityReachesActualSelectedDraw)
 { demoSlice(1, {2, 2, 1}); }

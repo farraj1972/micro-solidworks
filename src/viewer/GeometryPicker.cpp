@@ -1,4 +1,5 @@
 #include "viewer/GeometryPicker.h"
+#include "presentation/WorldGeometry.h"
 
 #include "presentation/GeometryPresentation.h"
 #include "viewer/PresentedLines.h"
@@ -195,13 +196,14 @@ std::optional<PickHit> pickGeometry(
     for (const auto& entity : presentation.entities())
     {
         std::optional<Candidate> candidate;
-        if (const auto* point = std::get_if<geometry::Point3>(&entity.geometry()))
+        const auto world = presentation::worldGeometry(entity);
+        if (const auto* point = std::get_if<geometry::Point3>(&world))
         {
             const auto vertex = projection.vertex(*point);
             if (inside(vertex))
                 candidate = pointCandidate(projection.screen(vertex), context);
         }
-        else if (const auto* segment = std::get_if<geometry::Segment3>(&entity.geometry()))
+        else if (const auto* segment = std::get_if<geometry::Segment3>(&world))
             candidate = segmentCandidate(segment->a(), segment->b(), projection, context);
         else if (std::holds_alternative<geometry::Line3>(entity.geometry()))
         {
