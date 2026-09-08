@@ -195,6 +195,7 @@ set_target_properties(microsw_ui PROPERTIES
 )
 target_include_directories(microsw_ui PUBLIC src)
 target_link_libraries(microsw_ui PRIVATE
+    microsw_presentation
     glfw
     microsw_imgui_backend
     microsw_logging
@@ -240,6 +241,7 @@ if(BUILD_TESTING)
         src/app/demo/GeometryDemoScene.cpp
         tests/app/test_geometry_demo_scene.cpp
         tests/test_infrastructure.cpp
+        tests/ui/test_transform_editor.cpp
         tests/test_logging.cpp
         tests/geometry/test_point2.cpp
         tests/geometry/test_line2.cpp
@@ -302,6 +304,7 @@ if(BUILD_TESTING)
     )
     target_link_libraries(micro_solidworks_tests PRIVATE
         GTest::gtest_main
+        microsw_ui
         microsw_geometry
         microsw_logging
         microsw_math

@@ -17,6 +17,9 @@
 #include "rendering/LineRenderer.h"
 #include "rendering/PointRenderer.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/WorldGeometry.h"
+#include <limits>
+#include <type_traits>
 
 #include <glad/gl.h>
 
@@ -268,6 +271,29 @@ void WorkspaceViewport::updateSelection(const WorkspaceLayout& layout, const Wor
         impl_->selection.select(hit->id);
     else
         impl_->selection.clear();
+}
+
+void WorkspaceViewport::validateTransform(presentation::VisualEntityId id, const math::Transform3& transform) const
+{
+    const auto* entity = impl_->presentation ? impl_->presentation->find(id) : nullptr;
+    if (!entity) throw std::invalid_argument{"Unknown visual entity"};
+    auto candidate = *entity;
+    candidate.setTransform(transform);
+    const auto world = presentation::worldGeometry(candidate);
+    const auto check = [](const geometry::Point3& point)
+    {
+        // Reserve headroom for view-derived line endpoints and GPU arithmetic.
+        for (const auto value : {point.x(), point.y(), point.z()})
+            if (std::abs(value) > std::numeric_limits<float>::max() / 4.0)
+                throw std::invalid_argument{"Position exceeds the viewer's numeric range"};
+    };
+    std::visit([&](const auto& value)
+    {
+        using Geometry = std::decay_t<decltype(value)>;
+        if constexpr (std::is_same_v<Geometry, geometry::Point3>) check(value);
+        else if constexpr (std::is_same_v<Geometry, geometry::Segment3>) { check(value.a()); check(value.b()); }
+        else check(value.origin());
+    }, world);
 }
 
 void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight)

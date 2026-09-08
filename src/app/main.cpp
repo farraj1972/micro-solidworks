@@ -7,6 +7,7 @@
 #include "viewer/WorkspaceViewport.h"
 
 #include <exception>
+#include <stdexcept>
 
 int main()
 {
@@ -29,7 +30,18 @@ int main()
                 // only its scissored Workspace region.
                 openGLContext.clear();
                 ui.beginFrame();
-                shell.draw(workspace.projectionMode());
+                const auto selected = workspace.selectedEntity();
+                shell.draw(workspace.projectionMode(), selected ? presentation.find(*selected) : nullptr);
+                if (selected && shell.transformRequest())
+                {
+                    try
+                    {
+                        workspace.validateTransform(*selected, *shell.transformRequest());
+                        presentation.setTransform(*selected, *shell.transformRequest());
+                    }
+                    catch (const std::invalid_argument& error) { shell.reportTransformError(error.what()); }
+                    catch (const std::overflow_error& error) { shell.reportTransformError(error.what()); }
+                }
                 workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());
                 const auto framebuffer = window.framebufferSize();
                 workspace.updateHover(shell.workspaceRect(), shell.workspaceInput(),

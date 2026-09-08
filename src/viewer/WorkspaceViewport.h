@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace microsw::presentation { class GeometryPresentation; }
+namespace microsw::math { class Transform3; }
 
 namespace microsw::viewer
 {
@@ -49,6 +50,9 @@ public:
     void updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
         int framebufferWidth, int framebufferHeight);
     [[nodiscard]] std::optional<presentation::VisualEntityId> selectedEntity() const noexcept;
+    // Preflight a UI edit against world Geometry and the renderer's numeric range.
+    // Does not mutate Presentation or interaction state.
+    void validateTransform(presentation::VisualEntityId id, const math::Transform3& transform) const;
     [[nodiscard]] ProjectionMode projectionMode() const noexcept;
     void setProjectionMode(ProjectionMode mode) noexcept;
 

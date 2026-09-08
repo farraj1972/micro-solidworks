@@ -4,6 +4,8 @@
 #include "app/window/ApplicationWindow.h"
 
 #include <imgui.h>
+#include <numbers>
+#include <stdexcept>
 
 namespace
 {
@@ -33,11 +35,12 @@ ApplicationShell::ApplicationShell(ApplicationWindow& window)
     Logger::info("Application shell initialized");
 }
 
-void ApplicationShell::draw(ProjectionMode projectionMode)
+void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected)
 {
     input_ = {};
+    transformRequest_.reset();
     drawMainMenu(projectionMode);
-    drawModelPanel();
+    drawModelPanel(selected);
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
@@ -120,7 +123,7 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
     ImGui::EndMainMenuBar();
 }
 
-void ApplicationShell::drawModelPanel()
+void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 contentSize{
@@ -134,6 +137,55 @@ void ApplicationShell::drawModelPanel()
     ImGui::TextUnformatted("Model");
     ImGui::Separator();
     ImGui::TextDisabled("No document");
+    ImGui::Separator();
+    const auto selectedId = selected ? std::optional{selected->id()} : std::nullopt;
+    if (selectedId != editorEntity_)
+    {
+        editorEntity_ = selectedId;
+        transformError_.clear();
+    }
+    if (!selected)
+        ImGui::TextWrapped("Select a Point, Segment or Line to edit its transform.");
+    else
+    {
+        ImGui::TextUnformatted("Transform");
+        constexpr double degreesPerRadian = 180.0 / std::numbers::pi;
+        const auto& transform = selected->transform();
+        double translation[]{transform.translation().x(), transform.translation().y(), transform.translation().z()};
+        double rotation[]{transform.rotation().x() * degreesPerRadian,
+            transform.rotation().y() * degreesPerRadian, transform.rotation().z() * degreesPerRadian};
+        double scale[]{transform.scale().x(), transform.scale().y(), transform.scale().z()};
+        ImGui::TextDisabled("X                  Y                  Z");
+        ImGui::TextUnformatted("Translation");
+        ImGui::SetNextItemWidth(-1);
+        const bool translationChanged = ImGui::InputScalarN("##Translation", ImGuiDataType_Double, translation, 3,
+            nullptr, nullptr, "%.6g");
+        ImGui::TextUnformatted("Rotation (degrees)");
+        ImGui::SetNextItemWidth(-1);
+        const bool rotationChanged = ImGui::InputScalarN("##Rotation", ImGuiDataType_Double, rotation, 3,
+            nullptr, nullptr, "%.6g");
+        ImGui::TextUnformatted("Scale");
+        ImGui::SetNextItemWidth(-1);
+        const bool scaleChanged = ImGui::InputScalarN("##Scale", ImGuiDataType_Double, scale, 3,
+            nullptr, nullptr, "%.6g");
+        ImGui::TextWrapped("Valid edits apply immediately. Scale must be positive.");
+        if (translationChanged || rotationChanged || scaleChanged)
+        {
+            try
+            {
+                auto candidate = transform;
+                if (translationChanged) candidate.setTranslation({translation[0], translation[1], translation[2]});
+                if (rotationChanged) candidate.setRotation({rotation[0] / degreesPerRadian,
+                    rotation[1] / degreesPerRadian, rotation[2] / degreesPerRadian});
+                if (scaleChanged) candidate.setScale({scale[0], scale[1], scale[2]});
+                transformRequest_ = candidate;
+                transformError_.clear();
+            }
+            catch (const std::invalid_argument& error) { transformError_ = error.what(); }
+        }
+        if (!transformError_.empty())
+            ImGui::TextWrapped("Edit rejected: %s", transformError_.c_str());
+    }
     ImGui::End();
 }
 
