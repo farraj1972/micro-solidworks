@@ -1,8 +1,11 @@
 #include "presentation/VisualEntity.h"
+#include "presentation/WorldGeometry.h"
+#include "core/math/Transformations.h"
 
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -136,6 +139,62 @@ TEST(VisualEntity, SeparateEntitiesMaintainIndependentTransforms)
     expectTransform(first.transform(), firstTransform);
     first.setTransform(Transform3{});
     expectTransform(second.transform(), secondTransform);
+}
+
+TEST(WorldGeometry, DerivesPointSegmentAndLineFromCompleteTrs)
+{
+    const Point3 origin{1, 2, 3};
+    const Point3 end{4, 6, 8};
+    const Transform3 transform{Vector3{4, -2, 1}, Vector3{0.3, -0.4, 0.5}, Vector3{2, 3, 4}};
+    auto expectedPoint = [&](const Point3& point)
+    {
+        const auto value = microsw::math::transformPoint(transform.matrix(), {point.x(), point.y(), point.z()});
+        return Point3{value.x(), value.y(), value.z()};
+    };
+    const PresentedGeometry values[]{origin, Segment3{origin, end}, Line3{origin, end - origin}};
+    for (const auto& local : values)
+    {
+        VisualEntity entity{VisualEntityId{1}, local};
+        entity.setTransform(transform);
+        const auto world = microsw::presentation::worldGeometry(entity);
+        ASSERT_EQ(world.index(), local.index());
+        if (const auto* point = std::get_if<Point3>(&world))
+            EXPECT_TRUE(areCoincident(*point, expectedPoint(origin)));
+        else if (const auto* segment = std::get_if<Segment3>(&world))
+        {
+            EXPECT_TRUE(areCoincident(segment->a(), expectedPoint(origin)));
+            EXPECT_TRUE(areCoincident(segment->b(), expectedPoint(end)));
+        }
+        else
+        {
+            const auto& line = std::get<Line3>(world);
+            EXPECT_TRUE(areCoincident(line.origin(), expectedPoint(origin)));
+            EXPECT_TRUE(line.contains(expectedPoint(end)));
+            EXPECT_NEAR(line.direction().length(), 1.0, 1e-12);
+        }
+        EXPECT_EQ(entity.id(), VisualEntityId{1});
+        expectTransform(entity.transform(), transform);
+    }
+}
+
+TEST(WorldGeometry, NormalizesLineAcrossTinyAndLargePositiveScale)
+{
+    for (double scale : {1e-200, 1e200})
+    {
+        VisualEntity entity{VisualEntityId{1}, Line3{Point3{}, Vector3{1, 2, 3}}};
+        entity.setTransform(Transform3{Vector3{}, Vector3{}, Vector3{scale, scale, scale}});
+        const auto world = microsw::presentation::worldGeometry(entity);
+        EXPECT_TRUE(almostEqual(std::get<Line3>(world).direction(),
+            std::get<Line3>(entity.geometry()).direction()));
+    }
+}
+
+TEST(WorldGeometry, NonRepresentableWorldValueThrowsWithoutChangingLocalGeometry)
+{
+    VisualEntity entity{VisualEntityId{1}, Point3{2, 0, 0}};
+    entity.setTransform(Transform3{Vector3{}, Vector3{}, Vector3{std::numeric_limits<double>::max(), 1, 1}});
+    EXPECT_THROW((void)microsw::presentation::worldGeometry(entity), std::overflow_error);
+    EXPECT_TRUE(areCoincident(std::get<Point3>(entity.geometry()), Point3{2, 0, 0}, 0));
 }
 
 TEST(VisualEntityId, ValidValuesCompareAndZeroIsRejected)

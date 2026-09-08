@@ -117,6 +117,7 @@ target_link_libraries(microsw_geometry PUBLIC microsw_math)
 
 add_library(microsw_presentation STATIC
     src/presentation/GeometryPresentation.cpp
+    src/presentation/WorldGeometry.cpp
 )
 target_compile_features(microsw_presentation PUBLIC cxx_std_20)
 set_target_properties(microsw_presentation PROPERTIES CXX_EXTENSIONS OFF)
