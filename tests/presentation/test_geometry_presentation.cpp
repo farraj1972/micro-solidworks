@@ -41,6 +41,15 @@ TEST(GeometryPresentation, AddsSupportedPrimitivesWithUniqueIdsInInsertionOrder)
     EXPECT_TRUE(std::holds_alternative<Point3>(presentation.entities()[0].geometry()));
     EXPECT_TRUE(std::holds_alternative<Segment3>(presentation.entities()[1].geometry()));
     EXPECT_TRUE(std::holds_alternative<Line3>(presentation.entities()[2].geometry()));
+    for (const auto& entity : presentation.entities())
+    {
+        EXPECT_EQ(presentation.find(entity.id()), &entity);
+        EXPECT_TRUE(microsw::math::almostEqual(entity.transform().translation(), Vector3{}));
+        EXPECT_TRUE(microsw::math::almostEqual(entity.transform().rotation(), Vector3{}));
+        EXPECT_TRUE(microsw::math::almostEqual(entity.transform().scale(), Vector3{1, 1, 1}));
+        EXPECT_TRUE(microsw::math::almostEqual(
+            entity.transform().matrix(), microsw::math::Matrix4::identity()));
+    }
 }
 
 TEST(GeometryPresentation, OwnsCopiedGeometryValues)

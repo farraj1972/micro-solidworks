@@ -47,7 +47,12 @@ Viewer -> Presentation
 Viewer -> Rendering
 ```
 
-This remains acyclic. B6 is NOT STARTED and requires explicit authorization.
+This remains acyclic. B6.1 provides the Math `Transform3` value. B6.2 gives each
+`VisualEntity` an identity transform by default, owned by value and exposed by
+`const Transform3& transform() const noexcept` and `setTransform(const Transform3&)`.
+Replacing it preserves the visual ID and canonical local Geometry. Existing
+`GeometryPresentation::add()` overloads and read-only lookup remain unchanged.
+World-space derivation and rendering/picking integration await later increments.
 
 Validation and governance workflow are normative in `AGENTS.md`. Validation is
 selected by affected dependency closure: V0 documentation, V1 localized change,
