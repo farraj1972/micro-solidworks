@@ -838,6 +838,8 @@ STATUS: FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
+ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
+FROZEN. The complete inventory is 24/24 ADRs ACCEPTED.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -856,16 +858,16 @@ B4.12 passed clean configure/Debug build and 684/684 tests, with zero project,
 dependency or linker warnings. Runtime passed; native X and File -> Exit
 returned 0. HiDPI automated validation passed; manual B4.12 HiDPI was unavailable.
 The B4.12 MINOR documentary state finding is CLOSED by B4.FREEZE.
-ADR-0017–0020 remain ACCEPTED / CONFORMANT; 20/20 ADRs are ACCEPTED.
+ADR-0017–0020 remain ACCEPTED / CONFORMANT; ADR-0001–0024 are 24/24 ACCEPTED.
 
 B4 is FROZEN. Changes to frozen B4 behavior require explicit authorization.
 Canonical functional progress (see docs/ROADMAP.md): B0/B1/B2 satisfied;
 B3/B4 partially satisfied; B5 REALIZED / SATISFIED BY technical B4. No duplicate
 B5 implementation is required. Technical B0–B4 remain FROZEN.
-B6 Transformations is the NEXT ACTIVE FUNCTIONAL AREA, subject to prerequisite
-D5 — Transformation Semantics. D5 is the next designated decision work and
-requires explicit authorization to execute; this alignment starts neither D5
-nor B6. Circle/intersections and visibility/lifecycle gaps remain deferred;
+B6 Transformations is the NEXT ACTIVE FUNCTIONAL AREA after frozen D5 —
+Transformation Semantics. B6 is NOT STARTED and requires explicit execution
+authorization. Circle/intersections and
+visibility/lifecycle gaps remain deferred;
 entity transforms are the blocking gap for the next authorized vertical slice.
 
 No increment without explicit authorization.

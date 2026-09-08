@@ -61,7 +61,7 @@ os gates de autorização nem permite trabalho especulativo.
 | B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle/basic intersections são DEFERRED GAP — not currently blocking B6 |
 | B4 Scene & Object Model: identity, transforms, visibility, object lifecycle | PARTIALLY SATISFIED | B4 técnica FROZEN: Presentation identity, GeometryPresentation, visual ownership boundary, visualização Point/Segment/Line e o slice de picking/hover/single-selection/highlight |
 | B5 Selection & Picking: screen ray, intersections/picking, hover, click selection, selection state, highlighting | REALIZED / SATISFIED BY B4 | FUNCTIONALLY REALIZED BY FROZEN TECHNICAL B4; No duplicate B5 implementation is required |
-| B6 Transformations: translate, rotate, scale, local/world coordinates | NEXT ACTIVE FUNCTIONAL AREA | Não implementada como transformação de entidades; pré-requisito D5 — Transformation Semantics |
+| B6 Transformations: translate, rotate, scale, local/world coordinates | NEXT ACTIVE FUNCTIONAL AREA / NOT STARTED | Não implementada como transformação de entidades; D5 — Transformation Semantics está FROZEN |
 
 A realização de B5 usa PickingRay e picking geométrico screen-space existentes;
 não implica um motor geral de intersecções nem picking com oclusão perfeita.
@@ -87,13 +87,13 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | --- | --- | --- | --- |
 | GAP-GEO-001 | Circle primitive missing from canonical B3 scope | NO | Before/during B8, antes do slice Sketcher que necessite circles/arcs |
 | GAP-GEO-002 | Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
-| GAP-SCENE-001 | Entity transforms missing from canonical B4 scope | YES for next vertical slice | B6 after D5 |
+| GAP-SCENE-001 | OPEN — Entity transforms missing from canonical B4 scope | YES for next vertical slice | B6 after D5 |
 | GAP-SCENE-002 | Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
 
 Circle e basic intersections são gaps deferred, não bloqueiam actualmente B6
 e não serão implementados neste alignment. Cada fecho exige scope autorizado.
 
-## Next Functional Slice — B6, subject to D5
+## Next Functional Slice — B6, after D5 freeze
 
 ```text
 Select entity
@@ -104,18 +104,17 @@ Select entity
 → hover/selection/highlight remain coherent
 ```
 
-Este é o primeiro objectivo pretendido para Point3, Segment3 e Line3, antes de
-qualquer Topology. Intenção MVP-first, sujeita a D5: translation, rotation,
+Este é o primeiro objectivo decidido para Point3, Segment3 e Line3, antes de
+qualquer Topology. D5 define: translation, rotation,
 positive scale, local/world transform, render/pick coherence,
 selection/highlight coherence e minimal transform editing UI.
 
 Não exigir ainda gizmo, hierarchy, parent-child transforms, undo/redo,
-persistence, CAD Document ou Topology. Nenhuma semântica de transformação é
-aceite por este documento: D5 deve defini-la antes da implementação B6.
+persistence, CAD Document ou Topology. Estas semânticas estão FROZEN nos ADRs
+ADR-0021–0024, todos ACCEPTED.
 
-Próximo trabalho de decisão designado após o alignment:
-**D5 — Transformation Semantics**. A sua execução requer autorização explícita
-separada. Este passo não inicia D5, B6 ou qualquer capability em falta.
+**D5 — Transformation Semantics: FROZEN.** ADR-0021–0024 estão ACCEPTED.
+B6 permanece NOT STARTED e não pode começar sem autorização explícita.
 
 ## Historical Technical Baselines and Canonical Phase Details
 
@@ -383,8 +382,8 @@ dependências ou linker. Runtime PASS: X nativo -> 0 e File -> Exit -> 0.
 HiDPI automatizado PASS; validação manual B4.12 indisponível/não repetida.
 O finding MINOR de estado documental está CLOSED por B4.FREEZE.
 
-Próxima área funcional canónica: B6, após D5 — Transformation Semantics.
-D5 requer autorização explícita para execução; não é iniciado neste alignment.
+Próxima área funcional canónica: B6, após D5 — Transformation Semantics FROZEN.
+B6 permanece NOT STARTED.
 Alterações ao comportamento B4 congelado exigem autorização explícita.
 Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
 multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
@@ -418,8 +417,9 @@ Capacidades:
 
 # B6 — Transformations
 
-Estado: NEXT ACTIVE FUNCTIONAL AREA; pré-requisito D5 — Transformation Semantics.
-Intenção MVP-first e slice inicial definidos acima; execução ainda não iniciada.
+Estado: NEXT ACTIVE FUNCTIONAL AREA / NOT STARTED; D5 — Transformation Semantics
+está FROZEN. O slice MVP-first está definido acima, mas a sua execução requer
+autorização explícita.
 
 Capacidades:
 

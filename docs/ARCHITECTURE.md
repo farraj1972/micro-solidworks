@@ -28,17 +28,26 @@ is partially realized through visual IDs; entity transforms, explicit visibility
 state and lifecycle beyond construction/lookup remain incomplete. B4 FROZEN
 therefore describes its accepted technical slice, not full Scene & Object Model.
 
-Subject to D5, B6 first targets Point3/Segment3/Line3: select -> edit transform
+D5 targets Point3/Segment3/Line3 first: select -> edit transform
 -> move/rotate/scale -> updated rendering -> picking follows -> coherent
 hover/selection/highlight. Translation, rotation, positive scale, local/world
-transforms and minimal editing UI are intentions, not accepted D5 decisions.
+transforms and minimal editing UI are frozen D5 decisions.
 Gizmo, hierarchy, parent-child transforms, undo/redo, persistence, CAD Document
 and Topology are not prerequisites for this initial slice. B7 needs prerequisite
 review; Circle must exist before the B8 slice requiring circles/arcs.
 
-D5 — Transformation Semantics is the next designated decision work, requiring
-explicit execution authorization. No D5 decisions or B6 implementation are
-introduced by this alignment.
+D5 — Transformation Semantics is FROZEN in accepted ADR-0021–0024.
+Geometry remains transform-free; local Geometry plus a Presentation-owned
+`Transform3` derives world representation. The proposed flat dependency graph is:
+
+```text
+Presentation -> Geometry -> Math
+Presentation ------------> Math
+Viewer -> Presentation
+Viewer -> Rendering
+```
+
+This remains acyclic. B6 is NOT STARTED and requires explicit authorization.
 
 ## 2. Arquitectura planeada
 
@@ -761,8 +770,8 @@ remain FROZEN. B3 is FROZEN. PROJECT_CHARTER remains consistent and unchanged.
 
 B4.1–B4.12 are COMPLETE; B4.FREEZE is FROZEN. B4 is the latest stable
 baseline. B0/B1/B2/B3 and D0/D1/D2/D3/D4 remain FROZEN.
-Next functional area: canonical B6, subject to D5 — Transformation Semantics.
-D5 execution requires explicit authorization; it is not started by this alignment.
+Next functional area: canonical B6 after frozen D5 — Transformation Semantics.
+B6 is NOT STARTED.
 The B4 boundaries and interaction contracts below are frozen; changes require
 explicit authorization.
 
@@ -966,7 +975,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0020 remain **20/20 ACCEPTED**, with no ADR changes.
+ADR-0001 through ADR-0024 are **24/24 ACCEPTED**. ADR-0001–0020 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

@@ -64,8 +64,8 @@ slice; explicit visibility/lifecycle semantics wait until required.
 
 The intended B6 slice is select Point/Segment/Line -> edit transform -> updated
 rendering/picking -> coherent hover/selection/highlight. D5 — Transformation
-Semantics is its prerequisite; D5 requires explicit execution authorization.
-This alignment starts neither D5 nor B6 and does not reopen frozen baselines.
+Semantics is **FROZEN** in accepted ADR-0021–0024. B6 is **NOT STARTED**; the
+decision freeze neither implements B6 nor reopens frozen baselines.
 
 ## Controls
 
@@ -87,7 +87,7 @@ The About caption retains its historical B0 foundation text.
 
 ## Decisions and deferred scope
 
-D0/D1/D2/D3/D4 remain **FROZEN**; ADR-0001–0020 remain **20/20 ACCEPTED**.
+D0/D1/D2/D3/D4/D5 are **FROZEN**; ADR-0001–0024 are **24/24 ACCEPTED**.
 The latest gate, D4, is documented in [ADR-0017](docs/adr/ADR-0017-geometry-presentation-boundary.md),
 [ADR-0018](docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md),
 [ADR-0019](docs/adr/ADR-0019-geometry-picking-strategy.md) and
@@ -98,9 +98,10 @@ occlusion-aware picking, scene graph/ECS, persistent IDs/serialization/Document,
 Topology/BRep, Sketching/constraints/dimensions and feature modeling
 (Extrude/Revolve/Boolean/history/regeneration) remain deferred.
 
-Next decision work: D5 — Transformation Semantics, requiring explicit
-authorization to execute. Changes to frozen B4 behavior require explicit
-authorization. Canonical B5 functionality is already satisfied by technical B4.
+D5 — Transformation Semantics is frozen in accepted ADR-0021–0024. B6 remains
+NOT STARTED and requires explicit authorization. Changes to frozen B4 behavior require
+explicit authorization. Canonical B5 functionality is already satisfied by
+technical B4.
 
 ## Build and validation
 

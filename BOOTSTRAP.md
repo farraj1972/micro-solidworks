@@ -32,13 +32,14 @@ B4 status: FROZEN
 B4.1–B4.12: COMPLETE
 B4.FREEZE: FROZEN
 Latest validated snapshot (B4.12): 684/684 tests PASS, 0 failed
-20/20 ADRs ACCEPTED; ADR-0017–0020 CONFORMANT
+24/24 ADRs ACCEPTED; ADR-0017–0020 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
 Canonical B6: NEXT ACTIVE FUNCTIONAL AREA
-Next decision work: D5 — Transformation Semantics
-D5 requires explicit execution authorization; D5/B6 not started
+D5 — Transformation Semantics: FROZEN
+ADR-0021–0024: ACCEPTED
+B6 — Transformations: NOT STARTED
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -84,6 +85,10 @@ Before changing the repository, read the following documents in this order:
 23. docs/adr/ADR-0018-visual-entity-identity-and-selection-state.md
 24. docs/adr/ADR-0019-geometry-picking-strategy.md
 25. docs/adr/ADR-0020-geometry-visualization-scope.md
+26. docs/adr/ADR-0021-transform-ownership-and-geometry-boundary.md
+27. docs/adr/ADR-0022-local-world-coordinate-and-trs-composition-semantics.md
+28. docs/adr/ADR-0023-rotation-scale-and-pivot-policy.md
+29. docs/adr/ADR-0024-transform-integration-with-rendering-picking-and-interaction.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.
