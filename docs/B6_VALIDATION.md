@@ -1,6 +1,6 @@
 # B6 — Transformations validation
 
-Status: CANDIDATE — baseline validation pending.
+Status: FROZEN. B6.1–B6.10 COMPLETE; B6.FREEZE FROZEN.
 
 ## Implemented scope
 
@@ -31,11 +31,35 @@ types and shaders remain generic and do not know visual IDs or selection.
 - B6.6–B6.8 V2: 29 interaction/integration tests PASS before UI smoke correction.
 - Manual editor smoke initially found an ImGui assertion: InputScalar does not
   support EnterReturnsTrue. Local UI correction removes that flag and applies
-  valid edits immediately. The real selected-entity editor draw test passes for Point, Segment and Line (1/1). Corrected manual smoke is pending.
+  valid edits immediately. The real selected-entity editor draw test passes for
+  Point, Segment and Line (1/1). Corrected manual smoke passed with exit code 0.
+  This local implementation finding is CLOSED; no open architectural findings.
 - Native capture failed twice with SetIsBorderRequired / 0x80004002; manual
   runtime observations are required. This is an environment limitation.
 
 ## B6.10 baseline validation
 
-Pending clean configure, full build, full CTest, runtime, dependency audit and
-repository hygiene. No freeze or tag until all required validation passes.
+PASS at source HEAD `4e53fd40268c9e4b0ccfb3935b4c047fb77c16bc`:
+
+- Clean configure into previously absent `build/b6-validation`: PASS. Existing
+  pinned dependency sources reused, with fresh build artifacts and configuration.
+- Full Debug build: PASS; zero warnings/errors in the complete build log.
+- Full CTest: 708/708 PASS, 0 failed (474.67 seconds, two test processes).
+- Manual clean-build runtime: PASS for Point/Segment/Line TRS, picking, hover,
+  selection/highlight, grid/axes, navigation, projections, resize and UI/About.
+  Normal shutdown returned 0. Manual HiDPI was not explicitly confirmed;
+  automated HiDPI scenarios passed in the full suite.
+- Architecture/dependency audit: PASS. No source changes to Geometry, Rendering
+  or accepted ADRs; no new external dependencies. UI -> Presentation and
+  Presentation -> Geometry -> Math remain acyclic; Viewer keeps GPU range checks.
+- Repository hygiene and `git diff --check`: PASS; generated files stay in build/.
+
+Local evidence: `build/b6-v3-configure.log`, `build/b6-v3-build.log`,
+`build/b6-v3-ctest.log`, `build/b6-v3-runtime.log` and `build/b6-v3-runtime.exit`.
+
+## Freeze
+
+V0 only: documentation/state review, unchanged executable source versus the
+validated HEAD, diff check and clean committed tree. No repeated V3 after these
+documentation-only changes. Tag: `b6-transformations`.
+B7 is not started; it requires prerequisite review and explicit authorization.

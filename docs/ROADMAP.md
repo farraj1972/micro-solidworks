@@ -66,7 +66,7 @@ uses V0 rather than repeating V3.
 | B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle/basic intersections são DEFERRED GAP — not currently blocking B6 |
 | B4 Scene & Object Model: identity, transforms, visibility, object lifecycle | PARTIALLY SATISFIED | B4 técnica FROZEN: Presentation identity, GeometryPresentation, visual ownership boundary, visualização Point/Segment/Line e o slice de picking/hover/single-selection/highlight |
 | B5 Selection & Picking: screen ray, intersections/picking, hover, click selection, selection state, highlighting | REALIZED / SATISFIED BY B4 | FUNCTIONALLY REALIZED BY FROZEN TECHNICAL B4; No duplicate B5 implementation is required |
-| B6 Transformations: translate, rotate, scale, local/world coordinates | CANDIDATE | Transformações de entidades implementadas em B6; validação baseline pendente; D5 FROZEN |
+| B6 Transformations: translate, rotate, scale, local/world coordinates | REALIZED / FROZEN | B6.1–B6.10 COMPLETE; 708/708 testes e runtime PASS; D5 FROZEN |
 
 A realização de B5 usa PickingRay e picking geométrico screen-space existentes;
 não implica um motor geral de intersecções nem picking com oclusão perfeita.
@@ -77,7 +77,7 @@ Detalhe do B4 canónico:
 | Capability | Mapping |
 | --- | --- |
 | identity | PARTIALLY REALIZED: identidade visual local, não identidade CAD persistente/global |
-| transforms | REALIZED BY B6 candidate |
+| transforms | REALIZED BY frozen B6 |
 | visibility | NOT YET REALIZED as explicit entity state |
 | object lifecycle | NOT YET REALIZED beyond construction/lookup |
 
@@ -92,13 +92,13 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | --- | --- | --- | --- |
 | GAP-GEO-001 | Circle primitive missing from canonical B3 scope | NO | Before/during B8, antes do slice Sketcher que necessite circles/arcs |
 | GAP-GEO-002 | Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
-| GAP-SCENE-001 | IMPLEMENTED — Entity transforms in B6 candidate | NO | Closure after B6.10 PASS |
+| GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
 | GAP-SCENE-002 | Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
 
 Circle e basic intersections são gaps deferred, não bloqueiam actualmente B6
 e não serão implementados neste alignment. Cada fecho exige scope autorizado.
 
-## Next Functional Slice — B6, after D5 freeze
+## Delivered Functional Slice — B6
 
 ```text
 Select entity
@@ -119,7 +119,7 @@ persistence, CAD Document ou Topology. Estas semânticas estão FROZEN nos ADRs
 ADR-0021–0024, todos ACCEPTED.
 
 **D5 — Transformation Semantics: FROZEN.** ADR-0021–0024 estão ACCEPTED.
-B6 é um CANDIDATE autorizado; B6.10 e freeze permanecem pendentes.
+B6 está FROZEN. B6.1–B6.10 COMPLETE; freeze V0 após V3 PASS, sem alterações executáveis.
 
 ## Historical Technical Baselines and Canonical Phase Details
 
@@ -387,8 +387,8 @@ dependências ou linker. Runtime PASS: X nativo -> 0 e File -> Exit -> 0.
 HiDPI automatizado PASS; validação manual B4.12 indisponível/não repetida.
 O finding MINOR de estado documental está CLOSED por B4.FREEZE.
 
-Próxima área funcional canónica: B6, após D5 — Transformation Semantics FROZEN.
-B6 é um CANDIDATE autorizado; validação baseline pendente.
+B6 está FROZEN, após D5 — Transformation Semantics FROZEN.
+B7 requer revisão de pré-requisitos e autorização explícita; não foi iniciado.
 Alterações ao comportamento B4 congelado exigem autorização explícita.
 Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
 multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
@@ -422,7 +422,7 @@ Capacidades:
 
 # B6 — Transformations
 
-Estado: CANDIDATE; D5 — Transformation Semantics
+Estado: FROZEN; D5 — Transformation Semantics
 está FROZEN. O slice MVP-first está implementado sob
 autorização explícita.
 

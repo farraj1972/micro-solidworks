@@ -899,6 +899,15 @@ STATUS: FROZEN
 Current latest stable baseline:
 
 ```text
+B6 — Transformations
+STATUS: FROZEN
+B6.1–B6.10: COMPLETE
+B6.FREEZE: FROZEN
+```
+
+Previous stable baseline:
+
+```text
 B4 — Geometry Visualization & Selection
 STATUS: FROZEN
 B4.1–B4.12: COMPLETE
@@ -940,7 +949,7 @@ STATUS: FROZEN
 Latest decision gate:
 
 ```text
-D4 — Geometry Visualization & Selection
+D5 — Transformation Semantics
 STATUS: FROZEN
 ```
 
@@ -971,11 +980,13 @@ B4 is FROZEN. Changes to frozen B4 behavior require explicit authorization.
 Canonical functional progress (see docs/ROADMAP.md): B0/B1/B2 satisfied;
 B3/B4 partially satisfied; B5 REALIZED / SATISFIED BY technical B4. No duplicate
 B5 implementation is required. Technical B0–B4 remain FROZEN.
-B6 Transformations is the NEXT ACTIVE FUNCTIONAL AREA after frozen D5 —
-Transformation Semantics. B6 is an implemented CANDIDATE under explicit execution
-authorization. Circle/intersections and
-visibility/lifecycle gaps remain deferred;
-entity transforms are implemented by the B6 candidate; baseline validation is pending.
+B6 Transformations is FROZEN after B6.10: clean configure/full Debug build,
+708/708 CTest tests, manual runtime PASS and normal exit code 0. Build warnings: 0.
+ADR-0021–0024 are CONFORMANT. Manual HiDPI was not explicitly confirmed;
+automated HiDPI coverage passed. See docs/B6_VALIDATION.md.
+Entity transforms close GAP-SCENE-001. Circle/intersections and visibility/lifecycle
+remain deferred. B7 requires prerequisite review and explicit authorization;
+this campaign starts no B7 work. Frozen B6 changes require explicit authorization.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

@@ -14,8 +14,9 @@ product.
 | B2 — 3D Viewer | FROZEN | `b2-3d-viewer` |
 | B3 — Geometric Primitives | FROZEN | `b3-geometric-primitives` |
 | B4 — Geometry Visualization & Selection | FROZEN | — |
+| B6 — Transformations | FROZEN | `b6-transformations` |
 
-B4 is the latest stable baseline. B3 supplies Point2/3, Segment2/3,
+B6 is the latest stable baseline. B3 supplies Point2/3, Segment2/3,
 Line2/3, Ray2/3 and Plane, queries, metrics and geometric tolerance over internal
 Math. Geometry remains model-only, independent of graphics and UI.
 Point3 is not a Vertex, Segment3 is not an Edge, and Plane is not a Face.
@@ -53,7 +54,7 @@ dependencies, adapters and interaction are in [ARCHITECTURE.md](docs/ARCHITECTUR
 
 Technical B0–B4 remain FROZEN. Canonical functional progress is distinct:
 B0/B1/B2 satisfied; B3/B4 partially satisfied; B5 realized/satisfied by technical
-B4; B6 Transformations is the current functional candidate. No duplicate B5
+B4; B6 Transformations is FROZEN. No duplicate B5
 implementation is required. See [ROADMAP.md](docs/ROADMAP.md) for the fixed
 B0–B14 sequence, implementation mapping and Canonical Roadmap Gaps.
 
@@ -64,8 +65,8 @@ explicit visibility/lifecycle semantics wait until required.
 
 The B6 slice is select Point/Segment/Line -> edit transform -> updated
 rendering/picking -> coherent hover/selection/highlight. D5 — Transformation
-Semantics is **FROZEN** in accepted ADR-0021–0024. B6 is a **CANDIDATE** pending
-baseline validation. See [B6 validation](docs/B6_VALIDATION.md).
+Semantics is **FROZEN** in accepted ADR-0021–0024. B6 is **FROZEN** after clean
+build, 708/708 tests and runtime PASS. See [B6 validation](docs/B6_VALIDATION.md).
 
 ## Controls
 
@@ -99,8 +100,8 @@ occlusion-aware picking, scene graph/ECS, persistent IDs/serialization/Document,
 Topology/BRep, Sketching/constraints/dimensions and feature modeling
 (Extrude/Revolve/Boolean/history/regeneration) remain deferred.
 
-D5 — Transformation Semantics is frozen in accepted ADR-0021–0024. B6 is an
-authorized functional candidate. Changes to frozen B4 behavior require
+D5 — Transformation Semantics is frozen in accepted ADR-0021–0024. B6 is
+FROZEN. Changes to frozen baseline behavior require
 explicit authorization. Canonical B5 functionality is already satisfied by
 technical B4.
 

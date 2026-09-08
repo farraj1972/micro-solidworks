@@ -14,7 +14,7 @@ Canonical roadmap phase != necessarily one historical implementation baseline.
 The authoritative B0–B14 MVP sequence and gap register are in
 [ROADMAP.md](ROADMAP.md). Technical B0–B4 remain FROZEN; canonical B0/B1/B2
 are satisfied, B3/B4 partially satisfied, B5 satisfied by technical B4, and B6
-Transformations is the next functional area. This does not rename or reopen
+Transformations is FROZEN. This does not rename or reopen
 historical baselines and does not require duplicate B5 implementation.
 
 Feature over performance. Working vertical slice over speculative completeness.
