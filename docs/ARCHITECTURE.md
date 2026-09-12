@@ -44,10 +44,18 @@ typed aggregate-local IDs, canonical Edge direction with oriented Edge/Face
 uses, exact ID-based connectivity, and a first convex planar closed-manifold
 slice. Geometry associations remain explicit and minimal: Vertex owns Point3,
 Edge derives Segment3 from Vertex IDs, and Face stores an oriented support Plane
-with one outer Wire. The proposed dependency is
+with one outer Wire. The implemented dependency is
 `microsw_topology -> microsw_geometry -> microsw_math`; Topology remains
 model-space and independent of Presentation transforms. B7 is FROZEN after
 719/719 tests and runtime smoke passed.
+
+D7 — Sketch Coordinates, Ownership & Curve Semantics is PROPOSED / READY FOR
+REVIEW in ADR-0028–0031. The proposal makes Sketch-local Point2/Segment2/
+Circle2/Arc2 geometry authoritative, defines a deterministic SketchPlane basis,
+and gives a Sketch aggregate its own local stable identity and atomic editing.
+World geometry and curve tessellation remain derived through Presentation; the
+proposed core edge is `microsw_sketch -> microsw_geometry -> microsw_math`.
+B8 remains NOT STARTED.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:

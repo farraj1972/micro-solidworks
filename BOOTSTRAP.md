@@ -51,6 +51,9 @@ B7.1–B7.11: COMPLETE
 B7.FREEZE: FROZEN
 Latest validated snapshot (B7): 719/719 tests PASS, runtime PASS
 ADR-0025–0027: CONFORMANT
+D7 — Sketch Coordinates, Ownership & Curve Semantics: PROPOSED / READY FOR REVIEW
+ADR-0028–0031: PROPOSED
+B8 — Sketcher: NOT STARTED / NEXT ACTIVE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -108,6 +111,10 @@ Before changing the repository, read the following documents in this order:
 30. docs/adr/ADR-0025-topology-ownership-and-identity.md
 31. docs/adr/ADR-0026-topological-orientation-and-oriented-uses.md
 32. docs/adr/ADR-0027-topology-geometry-associations-and-manifold-invariants.md
+33. docs/adr/ADR-0028-sketch-coordinate-system-and-plane-semantics.md
+34. docs/adr/ADR-0029-sketch-ownership-identity-and-editing.md
+35. docs/adr/ADR-0030-circle-and-arc-geometry-semantics.md
+36. docs/adr/ADR-0031-sketch-presentation-and-interaction-boundary.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

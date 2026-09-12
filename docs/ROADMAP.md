@@ -90,7 +90,7 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 
 | ID | Gap | Blocking now | Expected closure |
 | --- | --- | --- | --- |
-| GAP-GEO-001 | Circle primitive missing from canonical B3 scope | NO | Before/during B8, antes do slice Sketcher que necessite circles/arcs |
+| GAP-GEO-001 | Circle primitive missing from canonical B3 scope | YES for B8 | Close with Circle2 during the authorized B8 campaign before Circle/Arc integration |
 | GAP-GEO-002 | Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
 | GAP-SCENE-002 | Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
@@ -480,6 +480,10 @@ B7 does not close or reclassify them.
 
 # B8 — Sketcher
 
+Estado: NOT STARTED / NEXT ACTIVE. D7 — Sketch Coordinates, Ownership & Curve
+Semantics is PROPOSED / READY FOR REVIEW in ADR-0028–0031. The proposal does
+not authorize B8 implementation.
+
 Objectivo:
 
 Criar geometria bidimensional sobre planos de referência.
@@ -497,6 +501,11 @@ Capacidades previstas:
 
 B3 Circle gap MUST be closed before the Sketcher slice that needs circles/arcs.
 Circle torna-se obrigatório antes/durante B8, em trabalho explicitamente autorizado.
+
+The proposed first slice keeps authoritative geometry in Sketch-local 2D
+coordinates, closes `GAP-GEO-001` with Circle2, adds Arc2, and derives a shared
+world presentation for rendering and picking. `GAP-GEO-002` and
+`GAP-SCENE-002` remain OPEN / deferred. Constraints remain B9 scope.
 
 ---
 
