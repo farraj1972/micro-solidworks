@@ -33,12 +33,24 @@ D5 targets Point3/Segment3/Line3 first: select -> edit transform
 hover/selection/highlight. Translation, rotation, positive scale, local/world
 transforms and minimal editing UI are frozen D5 decisions.
 Gizmo, hierarchy, parent-child transforms, undo/redo, persistence, CAD Document
-and Topology are not prerequisites for this initial slice. B7 needs prerequisite
-review; Circle must exist before the B8 slice requiring circles/arcs.
+and Topology are not prerequisites for this initial slice. The B7 prerequisite
+review is complete; Circle must exist before the B8 slice requiring circles/arcs.
 
 D5 — Transformation Semantics is FROZEN in accepted ADR-0021–0024.
+
+D6 — Topology Ownership, Identity & Orientation is PROPOSED / READY FOR REVIEW.
+Proposed ADR-0025–0027 define a `Solid` aggregate owning shared indexed topology,
+typed aggregate-local IDs, canonical Edge direction with oriented Edge/Face
+uses, exact ID-based connectivity, and a first convex planar closed-manifold
+slice. Geometry associations remain explicit and minimal: Vertex owns Point3,
+Edge derives Segment3 from Vertex IDs, and Face stores an oriented support Plane
+with one outer Wire. The proposed dependency is
+`microsw_topology -> microsw_geometry -> microsw_math`; Topology remains
+model-space and independent of Presentation transforms. B7 is NOT STARTED and
+no executable topology exists.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
-`Transform3` derives world representation. The proposed flat dependency graph is:
+`Transform3` derives world representation. The implemented flat dependency graph is:
 
 ```text
 Presentation -> Geometry -> Math
@@ -998,7 +1010,8 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0024 are **24/24 ACCEPTED**. ADR-0001–0020 remain unchanged.
+ADR-0001 through ADR-0024 are **24/24 ACCEPTED**. ADR-0025–0027 are PROPOSED
+for D6 and are not part of the accepted inventory. ADR-0001–0020 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and
@@ -1043,7 +1056,9 @@ Evolução possível:
 
 ### core/topology
 
-Representação das relações topológicas.
+Representação futura das relações topológicas. D6 is PROPOSED / READY FOR
+REVIEW; B7 is NOT STARTED. Proposed ADR-0025–0027 are normative for the planned
+ownership, identity, orientation, Geometry associations and manifold invariants.
 
 Exemplos:
 
@@ -1055,6 +1070,12 @@ Exemplos:
 - Solid
 
 Geometry e Topology deverão permanecer conceitos distintos.
+
+The proposed first dependency boundary is
+`microsw_topology -> microsw_geometry -> microsw_math`, with no dependency on
+Presentation, Viewer, Rendering, UI or Application. The first planned Solid owns
+shared indexed Vertex/Edge/Wire/Face/Shell records and exactly one closed,
+oriented 2-manifold Shell. This description records the proposal only.
 
 ### core/modeling
 

@@ -949,13 +949,14 @@ STATUS: FROZEN
 Latest decision gate:
 
 ```text
-D5 — Transformation Semantics
-STATUS: FROZEN
+D6 — Topology Ownership, Identity & Orientation
+STATUS: PROPOSED / READY FOR REVIEW
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 24/24 ADRs ACCEPTED.
+FROZEN. The accepted inventory is 24/24 ADRs ACCEPTED; ADR-0025–0027 are
+PROPOSED for D6 and are not accepted.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -985,8 +986,10 @@ B6 Transformations is FROZEN after B6.10: clean configure/full Debug build,
 ADR-0021–0024 are CONFORMANT. Manual HiDPI was not explicitly confirmed;
 automated HiDPI coverage passed. See docs/B6_VALIDATION.md.
 Entity transforms close GAP-SCENE-001. Circle/intersections and visibility/lifecycle
-remain deferred. B7 requires prerequisite review and explicit authorization;
-this campaign starts no B7 work. Frozen B6 changes require explicit authorization.
+remain deferred. The B7 prerequisite review is complete: these gaps do not block
+the first cuboid slice. Proposed ADR-0025–0027 define D6 ownership, identity,
+orientation, geometry association and manifold semantics. They are not ACCEPTED;
+B7 remains NOT STARTED. Frozen B6 changes require explicit authorization.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

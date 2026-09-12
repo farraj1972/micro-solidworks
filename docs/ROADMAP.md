@@ -388,7 +388,8 @@ HiDPI automatizado PASS; validação manual B4.12 indisponível/não repetida.
 O finding MINOR de estado documental está CLOSED por B4.FREEZE.
 
 B6 está FROZEN, após D5 — Transformation Semantics FROZEN.
-B7 requer revisão de pré-requisitos e autorização explícita; não foi iniciado.
+A revisão de pré-requisitos B7 está concluída; D6 está PROPOSED / READY FOR
+REVIEW e B7 permanece NOT STARTED.
 Alterações ao comportamento B4 congelado exigem autorização explícita.
 Ray3/Plane visualization, framebuffer e exact occlusion-aware picking,
 multi-selection/selection box/lasso, scene graph/ECS, identidade persistente,
@@ -438,6 +439,11 @@ Capacidades:
 
 # B7 — Topological Model
 
+Estado: NOT STARTED. A prerequisite review found Circle, basic intersections
+and visibility non-blocking for the first cuboid slice. D6 — Topology Ownership,
+Identity & Orientation is PROPOSED / READY FOR REVIEW in ADR-0025–0027; no B7
+implementation is authorized by that proposal.
+
 Objectivo:
 
 Introduzir representação topológica independente da geometria.
@@ -452,9 +458,11 @@ Shell
 Solid
 
 Esta baseline estabelece a fundação para modelação sólida. Antes de iniciar
-B7, executar prerequisite review: basic intersections, additional geometric
-predicates e possivelmente Circle, conforme o caminho Topology/Sketch.
-Não implementar estes pré-requisitos antecipadamente neste alignment.
+B7, approve/freeze D6. The proposed first slice is one programmatic cuboid with
+8 shared vertices, 12 shared straight edges, ordered convex planar outer wires,
+6 planar faces, one closed manifold shell and one simple solid. Circle, curved
+topology, general intersections, visibility and lifecycle remain deferred and
+must not be implemented speculatively.
 
 ---
 

@@ -27,19 +27,26 @@ B3.10A: COMPLETE
 B3.10: COMPLETE
 B3.FREEZE: FROZEN
 Decision Gate D4 — Geometry Visualization & Selection: FROZEN
-Current latest stable baseline: B4 — Geometry Visualization & Selection
+Previous stable baseline: B4 — Geometry Visualization & Selection
 B4 status: FROZEN
 B4.1–B4.12: COMPLETE
 B4.FREEZE: FROZEN
-Latest validated snapshot (B4.12): 684/684 tests PASS, 0 failed
-24/24 ADRs ACCEPTED; ADR-0017–0020 CONFORMANT
+Current latest stable baseline: B6 — Transformations
+B6 status: FROZEN
+B6.1–B6.10: COMPLETE
+B6.FREEZE: FROZEN
+Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
+24/24 accepted ADRs; ADR-0021–0024 CONFORMANT; ADR-0025–0027 PROPOSED
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
-Canonical B6: NEXT ACTIVE FUNCTIONAL AREA
+Canonical B6: REALIZED / FROZEN
 D5 — Transformation Semantics: FROZEN
 ADR-0021–0024: ACCEPTED
-B6 — Transformations: NOT STARTED
+B6 — Transformations: FROZEN; B6.1–B6.10 COMPLETE
+D6 — Topology Ownership, Identity & Orientation: PROPOSED / READY FOR REVIEW
+ADR-0025–0027: PROPOSED
+B7 — Topological Model: NOT STARTED
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -94,6 +101,9 @@ Before changing the repository, read the following documents in this order:
 27. docs/adr/ADR-0022-local-world-coordinate-and-trs-composition-semantics.md
 28. docs/adr/ADR-0023-rotation-scale-and-pivot-policy.md
 29. docs/adr/ADR-0024-transform-integration-with-rendering-picking-and-interaction.md
+30. docs/adr/ADR-0025-topology-ownership-and-identity.md
+31. docs/adr/ADR-0026-topological-orientation-and-oriented-uses.md
+32. docs/adr/ADR-0027-topology-geometry-associations-and-manifold-invariants.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.
