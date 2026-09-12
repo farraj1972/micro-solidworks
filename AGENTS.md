@@ -896,7 +896,7 @@ STATUS: FROZEN
 
 # 31. Current Development Boundary
 
-Current latest stable baseline:
+Previous stable baseline:
 
 ```text
 B6 — Transformations
@@ -905,12 +905,13 @@ B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 ```
 
-Current baseline candidate:
+Current latest stable baseline:
 
 ```text
 B7 — Topological Model
-STATUS: IMPLEMENTED / BASELINE CANDIDATE
-B7.1–B7.10: COMPLETE
+STATUS: FROZEN
+B7.1–B7.11: COMPLETE
+B7.FREEZE: FROZEN
 ```
 
 Previous stable baseline:
@@ -996,8 +997,9 @@ automated HiDPI coverage passed. See docs/B6_VALIDATION.md.
 Entity transforms close GAP-SCENE-001. Circle/intersections and visibility/lifecycle
 remain deferred. The B7 prerequisite review is complete: these gaps do not block
 the first cuboid slice. Accepted ADR-0025–0027 freeze D6 ownership, identity,
-orientation, geometry association and manifold semantics. B7.1–B7.10 implement
-the conformant Topology vertical slice; final V3 and freeze remain. Frozen B6
+orientation, geometry association and manifold semantics. B7.1–B7.11 are
+COMPLETE and conformant. B7 V3 passed clean configure/full Debug build, zero
+warnings, 719/719 CTest tests and runtime smoke; B7 is FROZEN. Frozen B6/B7
 changes require explicit authorization.
 
 No increment without explicit authorization.

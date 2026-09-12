@@ -46,8 +46,10 @@ ADR-0021–0024: ACCEPTED
 B6 — Transformations: FROZEN; B6.1–B6.10 COMPLETE
 D6 — Topology Ownership, Identity & Orientation: FROZEN
 ADR-0025–0027: ACCEPTED
-B7 — Topological Model: IMPLEMENTED / BASELINE CANDIDATE
-B7.1–B7.10: COMPLETE
+B7 — Topological Model: FROZEN
+B7.1–B7.11: COMPLETE
+B7.FREEZE: FROZEN
+Latest validated snapshot (B7): 719/719 tests PASS, runtime PASS
 ADR-0025–0027: CONFORMANT
 ```
 

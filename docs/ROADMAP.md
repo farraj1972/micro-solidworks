@@ -439,11 +439,11 @@ Capacidades:
 
 # B7 — Topological Model
 
-Estado: IMPLEMENTED / BASELINE CANDIDATE. A prerequisite review found Circle, basic
+Estado: FROZEN. A prerequisite review found Circle, basic
 intersections and visibility non-blocking for the first cuboid slice. D6 —
 Topology Ownership, Identity & Orientation is FROZEN in accepted ADR-0025–0027.
 The B7 implementation provides the authorized deterministic cuboid vertical
-slice and awaits final baseline validation.
+slice. Baseline validation passed with 719/719 tests and runtime smoke.
 
 Objectivo:
 
@@ -470,6 +470,8 @@ aggregate-local IDs, shared Vertex/Edge records, oriented closed Wires, convex
 planar Faces, oriented connected 2-manifold Shell validation, one-root-Shell
 Solid ownership, deterministic inspection and cuboid construction. ADR-0025,
 ADR-0026 and ADR-0027 are CONFORMANT.
+
+B7.11 is COMPLETE; B7.FREEZE is FROZEN.
 
 `GAP-GEO-001`, `GAP-GEO-002` and `GAP-SCENE-002` remain OPEN / deferred;
 B7 does not close or reclassify them.
