@@ -1,6 +1,6 @@
 # ADR-0025 — Topology Ownership and Identity
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

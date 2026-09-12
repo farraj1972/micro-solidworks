@@ -1,6 +1,6 @@
 # ADR-0026 — Topological Orientation and Oriented Uses
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

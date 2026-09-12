@@ -1,6 +1,6 @@
 # ADR-0027 — Topology Geometry Associations and Manifold Invariants
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

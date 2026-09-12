@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-24/24 accepted ADRs; ADR-0021–0024 CONFORMANT; ADR-0025–0027 PROPOSED
+27/27 ADRs ACCEPTED; ADR-0021–0024 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -44,9 +44,9 @@ Canonical B6: REALIZED / FROZEN
 D5 — Transformation Semantics: FROZEN
 ADR-0021–0024: ACCEPTED
 B6 — Transformations: FROZEN; B6.1–B6.10 COMPLETE
-D6 — Topology Ownership, Identity & Orientation: PROPOSED / READY FOR REVIEW
-ADR-0025–0027: PROPOSED
-B7 — Topological Model: NOT STARTED
+D6 — Topology Ownership, Identity & Orientation: FROZEN
+ADR-0025–0027: ACCEPTED
+B7 — Topological Model: NOT STARTED / NEXT ACTIVE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

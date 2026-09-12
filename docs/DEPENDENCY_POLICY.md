@@ -81,11 +81,11 @@ OpenGL 3.3 funcional.
   `microsw::math::Transform3` is a Math value; Presentation owns the B6 entity
   transform and depends directly on Math while continuing to depend on Geometry.
   The resulting graph remains acyclic.
-- Topological model: `BUILD`, proposed in D6 as a project-owned
+- Topological model: `BUILD`, frozen in D6 as a project-owned
   `microsw_topology` module depending only on `microsw_geometry` and transitively
   `microsw_math`. Shared indexed records, typed aggregate-local identity and
-  oriented uses are specified by proposed ADR-0025–0027. D6 implements no
-  target or topology; B7 remains NOT STARTED pending approval.
+  oriented uses are specified by accepted ADR-0025–0027. D6 implements no
+  target or topology; B7 is the next active campaign.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no
