@@ -46,8 +46,8 @@ slice. Geometry associations remain explicit and minimal: Vertex owns Point3,
 Edge derives Segment3 from Vertex IDs, and Face stores an oriented support Plane
 with one outer Wire. The proposed dependency is
 `microsw_topology -> microsw_geometry -> microsw_math`; Topology remains
-model-space and independent of Presentation transforms. B7 is NOT STARTED and
-no executable topology exists before B7.
+model-space and independent of Presentation transforms. B7 is IMPLEMENTED /
+BASELINE CANDIDATE and awaits final validation.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
@@ -1055,8 +1055,8 @@ Evolução possível:
 
 ### core/topology
 
-Representação futura das relações topológicas. D6 is FROZEN; B7 is NOT STARTED.
-Accepted ADR-0025–0027 are normative for the planned
+Representação das relações topológicas. D6 is FROZEN; B7 is IMPLEMENTED /
+BASELINE CANDIDATE. Accepted ADR-0025–0027 are normative for the implemented
 ownership, identity, orientation, Geometry associations and manifold invariants.
 
 Exemplos:
@@ -1070,11 +1070,14 @@ Exemplos:
 
 Geometry e Topology deverão permanecer conceitos distintos.
 
-The proposed first dependency boundary is
+The implemented dependency boundary is
 `microsw_topology -> microsw_geometry -> microsw_math`, with no dependency on
-Presentation, Viewer, Rendering, UI or Application. The first planned Solid owns
+Presentation, Viewer, Rendering, UI or Application. The B7 Solid owns
 shared indexed Vertex/Edge/Wire/Face/Shell records and exactly one closed,
-oriented 2-manifold Shell. This description records the frozen D6 contract.
+oriented 2-manifold Shell. Construction is append-only through validated APIs;
+inspection is read-only. Edge geometry is derived as Segment3 from shared
+Vertex positions. The deterministic cuboid contains 8 Vertices, 12 Edges,
+6 Wires, 6 Faces and one Shell. ADR-0025–0027 are CONFORMANT.
 
 ### core/modeling
 

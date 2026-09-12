@@ -905,6 +905,14 @@ B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 ```
 
+Current baseline candidate:
+
+```text
+B7 — Topological Model
+STATUS: IMPLEMENTED / BASELINE CANDIDATE
+B7.1–B7.10: COMPLETE
+```
+
 Previous stable baseline:
 
 ```text
@@ -988,8 +996,9 @@ automated HiDPI coverage passed. See docs/B6_VALIDATION.md.
 Entity transforms close GAP-SCENE-001. Circle/intersections and visibility/lifecycle
 remain deferred. The B7 prerequisite review is complete: these gaps do not block
 the first cuboid slice. Accepted ADR-0025–0027 freeze D6 ownership, identity,
-orientation, geometry association and manifold semantics. B7 is the authorized
-next active campaign. Frozen B6 changes require explicit authorization.
+orientation, geometry association and manifold semantics. B7.1–B7.10 implement
+the conformant Topology vertical slice; final V3 and freeze remain. Frozen B6
+changes require explicit authorization.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.
