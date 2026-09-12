@@ -115,6 +115,15 @@ set_target_properties(microsw_geometry PROPERTIES
 target_include_directories(microsw_geometry PUBLIC src)
 target_link_libraries(microsw_geometry PUBLIC microsw_math)
 
+add_library(microsw_topology STATIC
+    src/core/topology/CuboidBuilder.cpp
+    src/core/topology/Solid.cpp
+)
+target_compile_features(microsw_topology PUBLIC cxx_std_20)
+set_target_properties(microsw_topology PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_topology PUBLIC src)
+target_link_libraries(microsw_topology PUBLIC microsw_geometry)
+
 add_library(microsw_presentation STATIC
     src/presentation/GeometryPresentation.cpp
     src/presentation/WorldGeometry.cpp
@@ -270,6 +279,8 @@ if(BUILD_TESTING)
         tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
+        tests/topology/test_topology.cpp
+        tests/topology/test_topology_integration.cpp
         tests/viewer/test_geometry_viewer_integration.cpp
         tests/viewer/test_highlight_batching.cpp
         tests/viewer/test_workspace_highlight.cpp
@@ -309,6 +320,7 @@ if(BUILD_TESTING)
         microsw_logging
         microsw_math
         microsw_presentation
+        microsw_topology
         microsw_viewer
         microsw_rendering
         microsw_windowing
