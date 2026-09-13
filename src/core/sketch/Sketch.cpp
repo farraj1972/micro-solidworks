@@ -29,9 +29,44 @@ SketchEntityId Sketch::addArc(const geometry::Arc2& geometry)
     return add(SketchArc{geometry});
 }
 
+void Sketch::replace(SketchEntityId id, SketchEntityType expected, SketchGeometry geometry)
+{
+    const auto& current = find(id);
+    if (current.type() != expected)
+        throw std::invalid_argument{"Sketch entity replacement must preserve entity type"};
+    entities_[id.value()].emplace(id, std::move(geometry));
+}
+
+void Sketch::replaceLine(SketchEntityId id, const geometry::Segment2& geometry)
+{
+    replace(id, SketchEntityType::Line, SketchLine{geometry});
+}
+
+void Sketch::replaceCircle(SketchEntityId id, const geometry::Circle2& geometry)
+{
+    replace(id, SketchEntityType::Circle, SketchCircle{geometry});
+}
+
+void Sketch::replaceArc(SketchEntityId id, const geometry::Arc2& geometry)
+{
+    replace(id, SketchEntityType::Arc, SketchArc{geometry});
+}
+
+void Sketch::remove(SketchEntityId id)
+{
+    (void)find(id);
+    entities_[id.value()].reset();
+    --activeCount_;
+}
+
+bool Sketch::contains(SketchEntityId id) const noexcept
+{
+    return id.isValid() && id.value() < entities_.size() && entities_[id.value()].has_value();
+}
+
 const SketchEntity& Sketch::find(SketchEntityId id) const
 {
-    if (!id.isValid() || id.value() >= entities_.size() || !entities_[id.value()])
+    if (!contains(id))
         throw std::out_of_range{"Invalid or removed SketchEntityId"};
     return *entities_[id.value()];
 }

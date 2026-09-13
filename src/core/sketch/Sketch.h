@@ -21,12 +21,19 @@ public:
     SketchEntityId addCircle(const geometry::Circle2& geometry);
     SketchEntityId addArc(const geometry::Arc2& geometry);
 
+    void replaceLine(SketchEntityId id, const geometry::Segment2& geometry);
+    void replaceCircle(SketchEntityId id, const geometry::Circle2& geometry);
+    void replaceArc(SketchEntityId id, const geometry::Arc2& geometry);
+    void remove(SketchEntityId id);
+    [[nodiscard]] bool contains(SketchEntityId id) const noexcept;
+
     [[nodiscard]] const SketchEntity& find(SketchEntityId id) const;
     [[nodiscard]] std::vector<SketchEntityId> entityIds() const;
     [[nodiscard]] std::size_t size() const noexcept { return activeCount_; }
 
 private:
     SketchEntityId add(SketchGeometry geometry);
+    void replace(SketchEntityId id, SketchEntityType expected, SketchGeometry geometry);
 
     SketchPlane plane_;
     std::vector<std::optional<SketchEntity>> entities_;

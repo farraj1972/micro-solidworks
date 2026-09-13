@@ -47,4 +47,51 @@ TEST(Sketch, CopyAndMovePreserveOwnedValues)
     const auto& circle = std::get<SketchCircle>(moved.find(id).geometry()).geometry;
     EXPECT_DOUBLE_EQ(circle.radius(), 3);
 }
+
+TEST(Sketch, ReplacementPreservesIdentityAndType)
+{
+    Sketch sketch;
+    const auto line = sketch.addLine({geometry::Point2{}, geometry::Point2{1, 0}});
+    const auto circle = sketch.addCircle({geometry::Point2{}, 2});
+    const auto arc = sketch.addArc({geometry::Point2{}, 2, 0, 1});
+
+    sketch.replaceLine(line, {geometry::Point2{3, 4}, geometry::Point2{5, 6}});
+    sketch.replaceCircle(circle, {geometry::Point2{7, 8}, 9});
+    sketch.replaceArc(arc, {geometry::Point2{1, 2}, 3, 4, -1});
+
+    EXPECT_EQ(sketch.find(line).id(), line);
+    EXPECT_EQ(sketch.find(circle).id(), circle);
+    EXPECT_EQ(sketch.find(arc).id(), arc);
+    EXPECT_DOUBLE_EQ(std::get<SketchCircle>(sketch.find(circle).geometry()).geometry.radius(), 9);
+    EXPECT_THROW(sketch.replaceCircle(line, {geometry::Point2{}, 3}), std::invalid_argument);
+    EXPECT_EQ(sketch.find(line).type(), SketchEntityType::Line);
+}
+
+TEST(Sketch, InvalidReplacementValueCannotPartiallyChangeState)
+{
+    Sketch sketch;
+    const auto circle = sketch.addCircle({geometry::Point2{1, 2}, 3});
+    EXPECT_THROW(sketch.replaceCircle(circle, {geometry::Point2{9, 9}, 0}), std::invalid_argument);
+    const auto& retained = std::get<SketchCircle>(sketch.find(circle).geometry()).geometry;
+    EXPECT_DOUBLE_EQ(retained.center().x(), 1);
+    EXPECT_DOUBLE_EQ(retained.radius(), 3);
+}
+
+TEST(Sketch, RemovalCreatesTombstoneAndIdsAreNeverReused)
+{
+    Sketch sketch;
+    const auto removed = sketch.addLine({geometry::Point2{}, geometry::Point2{1, 0}});
+    const auto survivor = sketch.addCircle({geometry::Point2{}, 2});
+    sketch.remove(removed);
+    EXPECT_FALSE(sketch.contains(removed));
+    EXPECT_TRUE(sketch.contains(survivor));
+    EXPECT_EQ(sketch.size(), 1u);
+    EXPECT_EQ(sketch.entityIds(), (std::vector<SketchEntityId>{survivor}));
+    EXPECT_THROW((void)sketch.find(removed), std::out_of_range);
+    EXPECT_THROW(sketch.remove(removed), std::out_of_range);
+
+    const auto next = sketch.addArc({geometry::Point2{}, 2, 0, 1});
+    EXPECT_EQ(next.value(), 2u);
+    EXPECT_NE(next, removed);
+}
 }
