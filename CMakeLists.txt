@@ -96,6 +96,8 @@ set_target_properties(microsw_math PROPERTIES
 target_include_directories(microsw_math PUBLIC src)
 
 add_library(microsw_geometry STATIC
+    src/core/geometry/Arc2.cpp
+    src/core/geometry/Circle2.cpp
     src/core/geometry/GeometryQuerySupport.cpp
     src/core/geometry/Line2.cpp
     src/core/geometry/Line3.cpp
@@ -253,6 +255,7 @@ if(BUILD_TESTING)
         tests/ui/test_transform_editor.cpp
         tests/test_logging.cpp
         tests/geometry/test_point2.cpp
+        tests/geometry/test_circular2.cpp
         tests/geometry/test_line2.cpp
         tests/geometry/test_line3.cpp
         tests/geometry/test_ray2.cpp
