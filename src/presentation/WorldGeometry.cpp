@@ -33,7 +33,7 @@ PresentedGeometry worldGeometry(const VisualEntity& entity)
             return worldPoint(matrix, local);
         else if constexpr (std::is_same_v<Geometry, geometry::Segment3>)
             return geometry::Segment3{worldPoint(matrix, local.a()), worldPoint(matrix, local.b())};
-        else
+        else if constexpr (std::is_same_v<Geometry, geometry::Line3>)
         {
             const auto direction = math::transformDirection(matrix, local.direction());
             requireFinite(direction);
@@ -46,6 +46,13 @@ PresentedGeometry worldGeometry(const VisualEntity& entity)
             const math::Vector3 rescaled{direction.x() / magnitude,
                 direction.y() / magnitude, direction.z() / magnitude};
             return geometry::Line3{worldPoint(matrix, local.origin()), rescaled.normalized()};
+        }
+        else
+        {
+            std::vector<geometry::Point3> points;
+            points.reserve(local.points().size());
+            for (const auto& point : local.points()) points.push_back(worldPoint(matrix, point));
+            return Polyline3{std::move(points)};
         }
     }, entity.geometry());
 }

@@ -2,6 +2,7 @@
 #include "viewer/PresentedLines.h"
 #include "app/demo/GeometryDemoScene.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/Polyline3.h"
 #include "core/geometry/GeometricTolerance.h"
 
 #include <gtest/gtest.h>
@@ -83,6 +84,19 @@ TEST(GeometryPicker, PointUsesInclusivePixelToleranceAndReturnsVisualId)
     EXPECT_FALSE(pickGeometry(presentation, c));
     c.tolerancePixels = 8;
     EXPECT_TRUE(pickGeometry(presentation, c));
+}
+
+TEST(GeometryPicker, PolylineUsesItsRenderedSegmentsAndSingleVisualIdentity)
+{
+    auto c = context();
+    GeometryPresentation presentation;
+    const auto id = presentation.add(microsw::presentation::Polyline3{{
+        world(c, 300, 300), world(c, 400, 300), world(c, 400, 200)}});
+    auto hit = pickGeometry(presentation, c);
+    ASSERT_TRUE(hit);
+    EXPECT_EQ(hit->id, id);
+    c.mouseX = 500;
+    EXPECT_FALSE(pickGeometry(presentation, c));
 }
 
 TEST(GeometryPicker, NearestPointWinsBeforeDepthAndDepthBreaksVisualTies)

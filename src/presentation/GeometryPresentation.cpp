@@ -9,6 +9,7 @@ namespace microsw::presentation
 VisualEntityId GeometryPresentation::add(const geometry::Point3& point) { return add(PresentedGeometry{point}); }
 VisualEntityId GeometryPresentation::add(const geometry::Segment3& segment) { return add(PresentedGeometry{segment}); }
 VisualEntityId GeometryPresentation::add(const geometry::Line3& line) { return add(PresentedGeometry{line}); }
+VisualEntityId GeometryPresentation::add(const Polyline3& polyline) { return add(PresentedGeometry{polyline}); }
 
 const VisualEntity* GeometryPresentation::find(VisualEntityId id) const noexcept
 {
@@ -26,6 +27,27 @@ bool GeometryPresentation::setTransform(VisualEntityId id, const math::Transform
     candidate.setTransform(transform);
     (void)worldGeometry(candidate);
     entity->setTransform(transform);
+    return true;
+}
+
+bool GeometryPresentation::setGeometry(VisualEntityId id, PresentedGeometry geometry)
+{
+    const auto entity = std::find_if(entities_.begin(), entities_.end(),
+        [id](const VisualEntity& candidate) { return candidate.id() == id; });
+    if (entity == entities_.end()) return false;
+    VisualEntity candidate{id, std::move(geometry)};
+    candidate.setTransform(entity->transform());
+    (void)worldGeometry(candidate);
+    *entity = std::move(candidate);
+    return true;
+}
+
+bool GeometryPresentation::remove(VisualEntityId id) noexcept
+{
+    const auto entity = std::find_if(entities_.begin(), entities_.end(),
+        [id](const VisualEntity& candidate) { return candidate.id() == id; });
+    if (entity == entities_.end()) return false;
+    entities_.erase(entity);
     return true;
 }
 

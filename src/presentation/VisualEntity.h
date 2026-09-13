@@ -5,13 +5,14 @@
 #include "core/geometry/Segment3.h"
 #include "core/math/Transform3.h"
 #include "presentation/VisualEntityId.h"
+#include "presentation/Polyline3.h"
 
 #include <utility>
 #include <variant>
 
 namespace microsw::presentation
 {
-using PresentedGeometry = std::variant<geometry::Point3, geometry::Segment3, geometry::Line3>;
+using PresentedGeometry = std::variant<geometry::Point3, geometry::Segment3, geometry::Line3, Polyline3>;
 
 class VisualEntity
 {

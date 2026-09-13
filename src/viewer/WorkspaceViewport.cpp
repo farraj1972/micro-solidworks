@@ -292,7 +292,8 @@ void WorkspaceViewport::validateTransform(presentation::VisualEntityId id, const
         using Geometry = std::decay_t<decltype(value)>;
         if constexpr (std::is_same_v<Geometry, geometry::Point3>) check(value);
         else if constexpr (std::is_same_v<Geometry, geometry::Segment3>) { check(value.a()); check(value.b()); }
-        else check(value.origin());
+        else if constexpr (std::is_same_v<Geometry, geometry::Line3>) check(value.origin());
+        else for (const auto& point : value.points()) check(point);
     }, world);
 }
 

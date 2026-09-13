@@ -138,12 +138,14 @@ target_link_libraries(microsw_topology PUBLIC microsw_geometry)
 
 add_library(microsw_presentation STATIC
     src/presentation/GeometryPresentation.cpp
+    src/presentation/Polyline3.cpp
+    src/presentation/SketchPresentation.cpp
     src/presentation/WorldGeometry.cpp
 )
 target_compile_features(microsw_presentation PUBLIC cxx_std_20)
 set_target_properties(microsw_presentation PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_presentation PUBLIC src)
-target_link_libraries(microsw_presentation PUBLIC microsw_geometry)
+target_link_libraries(microsw_presentation PUBLIC microsw_geometry microsw_sketch)
 
 add_library(microsw_viewer STATIC
     src/viewer/GeometryPicker.cpp
@@ -318,6 +320,7 @@ if(BUILD_TESTING)
         tests/rendering/test_line_renderer.cpp
         tests/rendering/test_point_renderer.cpp
         tests/presentation/test_geometry_presentation.cpp
+        tests/presentation/test_sketch_presentation.cpp
         tests/presentation/test_visual_entity.cpp
         tests/viewer/test_presented_lines.cpp
         tests/viewer/test_presented_points.cpp

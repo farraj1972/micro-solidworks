@@ -205,6 +205,16 @@ std::optional<PickHit> pickGeometry(
         }
         else if (const auto* segment = std::get_if<geometry::Segment3>(&world))
             candidate = segmentCandidate(segment->a(), segment->b(), projection, context);
+        else if (const auto* polyline = std::get_if<presentation::Polyline3>(&world))
+        {
+            for (std::size_t i = 1; i < polyline->points().size(); ++i)
+            {
+                const auto current = segmentCandidate(polyline->points()[i - 1],
+                    polyline->points()[i], projection, context);
+                if (current && (!candidate || current->distance < candidate->distance))
+                    candidate = current;
+            }
+        }
         else if (std::holds_alternative<geometry::Line3>(entity.geometry()))
         {
             if (lineVertices.empty())
