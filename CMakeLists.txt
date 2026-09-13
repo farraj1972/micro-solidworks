@@ -229,6 +229,7 @@ target_link_libraries(microsw_ui PRIVATE
 add_executable(micro_solidworks
     src/app/main.cpp
     src/app/demo/GeometryDemoScene.cpp
+    src/app/sketch/SketchToolController.cpp
 )
 
 target_compile_features(micro_solidworks PRIVATE cxx_std_20)
@@ -262,7 +263,9 @@ if(BUILD_TESTING)
 
     add_executable(micro_solidworks_tests
         src/app/demo/GeometryDemoScene.cpp
+        src/app/sketch/SketchToolController.cpp
         tests/app/test_geometry_demo_scene.cpp
+        tests/app/test_sketch_tools.cpp
         tests/test_infrastructure.cpp
         tests/ui/test_transform_editor.cpp
         tests/test_logging.cpp
