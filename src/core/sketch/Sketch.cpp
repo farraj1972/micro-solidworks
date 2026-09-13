@@ -1,5 +1,8 @@
 #include "core/sketch/Sketch.h"
 
+#include "core/geometry/GeometricTolerance.h"
+
+#include <cmath>
 #include <stdexcept>
 
 namespace microsw::sketch
@@ -27,6 +30,34 @@ SketchEntityId Sketch::addCircle(const geometry::Circle2& geometry)
 SketchEntityId Sketch::addArc(const geometry::Arc2& geometry)
 {
     return add(SketchArc{geometry});
+}
+
+std::array<SketchEntityId, 4> Sketch::addRectangle(
+    const geometry::Point2& firstCorner,
+    const geometry::Point2& oppositeCorner)
+{
+    if (std::abs(oppositeCorner.x() - firstCorner.x()) <= geometry::defaultGeometricTolerance
+        || std::abs(oppositeCorner.y() - firstCorner.y()) <= geometry::defaultGeometricTolerance)
+        throw std::invalid_argument{"Rectangle width and height must exceed geometric tolerance"};
+
+    const geometry::Point2 second{oppositeCorner.x(), firstCorner.y()};
+    const geometry::Point2 fourth{firstCorner.x(), oppositeCorner.y()};
+    const auto originalSize = entities_.size();
+    const auto originalActiveCount = activeCount_;
+    if (originalSize > SketchEntityId::invalidValue - 4)
+        throw std::overflow_error{"Sketch entity ID space exhausted"};
+    entities_.reserve(originalSize + 4);
+    try
+    {
+        return {addLine({firstCorner, second}), addLine({second, oppositeCorner}),
+                addLine({oppositeCorner, fourth}), addLine({fourth, firstCorner})};
+    }
+    catch (...)
+    {
+        entities_.resize(originalSize);
+        activeCount_ = originalActiveCount;
+        throw;
+    }
 }
 
 void Sketch::replace(SketchEntityId id, SketchEntityType expected, SketchGeometry geometry)

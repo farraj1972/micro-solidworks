@@ -94,4 +94,37 @@ TEST(Sketch, RemovalCreatesTombstoneAndIdsAreNeverReused)
     EXPECT_EQ(next.value(), 2u);
     EXPECT_NE(next, removed);
 }
+
+TEST(Sketch, RectangleAtomicallyCreatesFourIndependentLines)
+{
+    Sketch sketch;
+    const auto ids = sketch.addRectangle(geometry::Point2{1, 2}, geometry::Point2{5, 7});
+    EXPECT_EQ(sketch.size(), 4u);
+    EXPECT_EQ(ids, (std::array<SketchEntityId, 4>{SketchEntityId{0}, SketchEntityId{1},
+                                                  SketchEntityId{2}, SketchEntityId{3}}));
+
+    const std::array<geometry::Point2, 4> corners{
+        geometry::Point2{1, 2}, geometry::Point2{5, 2},
+        geometry::Point2{5, 7}, geometry::Point2{1, 7}};
+    for (std::size_t i = 0; i < ids.size(); ++i)
+    {
+        const auto& line = std::get<SketchLine>(sketch.find(ids[i]).geometry()).geometry;
+        EXPECT_TRUE(geometry::areCoincident(line.a(), corners[i], 0));
+        EXPECT_TRUE(geometry::areCoincident(line.b(), corners[(i + 1) % 4], 0));
+    }
+
+    sketch.replaceLine(ids[0], {geometry::Point2{10, 10}, geometry::Point2{11, 10}});
+    const auto& unaffected = std::get<SketchLine>(sketch.find(ids[1]).geometry()).geometry;
+    EXPECT_TRUE(geometry::areCoincident(unaffected.a(), corners[1], 0));
+}
+
+TEST(Sketch, RectangleRejectsDegeneracyWithoutInsertion)
+{
+    Sketch sketch;
+    const auto existing = sketch.addCircle({geometry::Point2{}, 2});
+    EXPECT_THROW((void)sketch.addRectangle(geometry::Point2{}, geometry::Point2{0, 2}), std::invalid_argument);
+    EXPECT_THROW((void)sketch.addRectangle(geometry::Point2{}, geometry::Point2{2, 5e-10}), std::invalid_argument);
+    EXPECT_EQ(sketch.size(), 1u);
+    EXPECT_EQ(sketch.entityIds(), (std::vector<SketchEntityId>{existing}));
+}
 }

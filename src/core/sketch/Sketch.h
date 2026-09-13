@@ -4,6 +4,7 @@
 #include "core/sketch/SketchPlane.h"
 
 #include <optional>
+#include <array>
 #include <vector>
 
 namespace microsw::sketch
@@ -20,6 +21,9 @@ public:
     SketchEntityId addLine(const geometry::Segment2& geometry);
     SketchEntityId addCircle(const geometry::Circle2& geometry);
     SketchEntityId addArc(const geometry::Arc2& geometry);
+    [[nodiscard]] std::array<SketchEntityId, 4> addRectangle(
+        const geometry::Point2& firstCorner,
+        const geometry::Point2& oppositeCorner);
 
     void replaceLine(SketchEntityId id, const geometry::Segment2& geometry);
     void replaceCircle(SketchEntityId id, const geometry::Circle2& geometry);
