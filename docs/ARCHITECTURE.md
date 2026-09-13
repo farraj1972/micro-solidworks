@@ -49,13 +49,13 @@ with one outer Wire. The implemented dependency is
 model-space and independent of Presentation transforms. B7 is FROZEN after
 719/719 tests and runtime smoke passed.
 
-D7 — Sketch Coordinates, Ownership & Curve Semantics is PROPOSED / READY FOR
-REVIEW in ADR-0028–0031. The proposal makes Sketch-local Point2/Segment2/
+D7 — Sketch Coordinates, Ownership & Curve Semantics is FROZEN in accepted
+ADR-0028–0031. These decisions make Sketch-local Point2/Segment2/
 Circle2/Arc2 geometry authoritative, defines a deterministic SketchPlane basis,
 and gives a Sketch aggregate its own local stable identity and atomic editing.
 World geometry and curve tessellation remain derived through Presentation; the
-proposed core edge is `microsw_sketch -> microsw_geometry -> microsw_math`.
-B8 remains NOT STARTED.
+frozen core edge is `microsw_sketch -> microsw_geometry -> microsw_math`.
+B8 remains NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
@@ -1018,7 +1018,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0027 are **27/27 ACCEPTED**. ADR-0001–0024 remain unchanged.
+ADR-0001 through ADR-0031 are **31/31 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

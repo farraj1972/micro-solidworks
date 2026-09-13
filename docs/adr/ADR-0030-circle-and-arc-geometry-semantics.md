@@ -1,6 +1,6 @@
 # ADR-0030 — Circle and Arc Geometry Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

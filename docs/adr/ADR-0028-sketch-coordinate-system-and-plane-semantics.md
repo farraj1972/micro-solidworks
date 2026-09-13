@@ -1,6 +1,6 @@
 # ADR-0028 — Sketch Coordinate System and Plane Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

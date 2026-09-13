@@ -90,10 +90,10 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 
 | ID | Gap | Blocking now | Expected closure |
 | --- | --- | --- | --- |
-| GAP-GEO-001 | Circle primitive missing from canonical B3 scope | YES for B8 | Close with Circle2 during the authorized B8 campaign before Circle/Arc integration |
-| GAP-GEO-002 | Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
+| GAP-GEO-001 | OPEN — Circle primitive missing from canonical B3 scope | YES for B8 | Close only when Circle2 is implemented during the authorized B8 campaign |
+| GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
-| GAP-SCENE-002 | Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
+| GAP-SCENE-002 | OPEN / deferred — Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
 
 Circle e basic intersections são gaps deferred, não bloqueiam actualmente B6
 e não serão implementados neste alignment. Cada fecho exige scope autorizado.
@@ -480,9 +480,9 @@ B7 does not close or reclassify them.
 
 # B8 — Sketcher
 
-Estado: NOT STARTED / NEXT ACTIVE. D7 — Sketch Coordinates, Ownership & Curve
-Semantics is PROPOSED / READY FOR REVIEW in ADR-0028–0031. The proposal does
-not authorize B8 implementation.
+Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D7 — Sketch Coordinates,
+Ownership & Curve Semantics is FROZEN in accepted ADR-0028–0031. This freeze
+does not implement or otherwise start B8.
 
 Objectivo:
 
@@ -502,8 +502,8 @@ Capacidades previstas:
 B3 Circle gap MUST be closed before the Sketcher slice that needs circles/arcs.
 Circle torna-se obrigatório antes/durante B8, em trabalho explicitamente autorizado.
 
-The proposed first slice keeps authoritative geometry in Sketch-local 2D
-coordinates, closes `GAP-GEO-001` with Circle2, adds Arc2, and derives a shared
+The approved first slice keeps authoritative geometry in Sketch-local 2D
+coordinates, closes `GAP-GEO-001` only when Circle2 is implemented, adds Arc2, and derives a shared
 world presentation for rendering and picking. `GAP-GEO-002` and
 `GAP-SCENE-002` remain OPEN / deferred. Constraints remain B9 scope.
 

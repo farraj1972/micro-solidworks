@@ -1,6 +1,6 @@
 # ADR-0029 — Sketch Ownership, Identity and Editing
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

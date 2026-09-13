@@ -1,6 +1,6 @@
 # ADR-0031 — Sketch Presentation and Interaction Boundary
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

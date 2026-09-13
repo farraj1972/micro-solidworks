@@ -959,14 +959,14 @@ Latest decision gate:
 
 ```text
 D7 — Sketch Coordinates, Ownership & Curve Semantics
-STATUS: PROPOSED / READY FOR REVIEW
+STATUS: FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 27/27 ADRs ACCEPTED. D6 — Topology Ownership,
+FROZEN. The complete inventory is 31/31 ADRs ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
-ADR-0028–0031 are PROPOSED for D7 and are not part of the accepted inventory.
+ADR-0028–0031 are ACCEPTED and freeze D7.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1003,9 +1003,9 @@ COMPLETE and conformant. B7 V3 passed clean configure/full Debug build, zero
 warnings, 719/719 CTest tests and runtime smoke; B7 is FROZEN. Frozen B6/B7
 changes require explicit authorization.
 The B8 prerequisite review is complete. Circle2 is blocking; general
-intersections and visibility/lifecycle are not. D7 proposes the local coordinate,
+intersections and visibility/lifecycle are not. Accepted ADR-0028–0031 freeze the local coordinate,
 SketchPlane, ownership/identity/editing, Circle2/Arc2 and presentation boundaries.
-B8 remains NOT STARTED pending D7 approval/freeze.
+B8 remains NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

@@ -86,11 +86,11 @@ OpenGL 3.3 funcional.
   `microsw_math`. Shared indexed records, typed aggregate-local identity and
   oriented uses are specified by accepted ADR-0025–0027. The implemented target
   has no dependency on Presentation, Viewer, Rendering, UI or Application.
-- Sketch model and planar circular geometry: `BUILD`, proposed in D7.
-  `Circle2` and `Arc2` extend `microsw_geometry`; the proposed
+- Sketch model and planar circular geometry: `BUILD`, frozen in D7.
+  `Circle2` and `Arc2` extend `microsw_geometry`; the accepted
   `microsw_sketch -> microsw_geometry -> microsw_math` core remains independent
   of Topology and infrastructure. Presentation/Application adapters may consume
-  Sketch. ADR-0028–0031 are PROPOSED; no target or executable behavior exists.
+  Sketch. ADR-0028–0031 are ACCEPTED; no target or executable behavior exists.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no
