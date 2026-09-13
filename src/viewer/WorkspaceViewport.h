@@ -50,6 +50,7 @@ public:
     void updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
         int framebufferWidth, int framebufferHeight);
     [[nodiscard]] std::optional<presentation::VisualEntityId> selectedEntity() const noexcept;
+    void clearSelection() noexcept;
     // Preflight a UI edit against world Geometry and the renderer's numeric range.
     // Does not mutate Presentation or interaction state.
     void validateTransform(presentation::VisualEntityId id, const math::Transform3& transform) const;
@@ -62,6 +63,9 @@ public:
     // This query does not change interaction state. Invalid layout
     // or non-finite mouse throws invalid_argument; outside returns no hit.
     [[nodiscard]] std::optional<PickHit> pick(
+        const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+        math::Scalar mouseX, math::Scalar mouseY) const;
+    [[nodiscard]] std::optional<geometry::Point3> pointOnGlobalXY(
         const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
         math::Scalar mouseX, math::Scalar mouseY) const;
 

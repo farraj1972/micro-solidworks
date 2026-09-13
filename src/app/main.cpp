@@ -1,7 +1,8 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
-#include "app/demo/GeometryDemoScene.h"
+#include "app/sketch/SketchToolController.h"
+#include "presentation/SketchPresentation.h"
 #include "ui/ApplicationShell.h"
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
@@ -20,8 +21,11 @@ int main()
             microsw::OpenGLContext openGLContext{window};
             microsw::ImGuiLayer ui{window, openGLContext};
             microsw::ApplicationShell shell{window};
-            auto presentation = microsw::demo::createGeometryDemoScene();
-            microsw::viewer::WorkspaceViewport workspace{presentation};
+            microsw::sketch::Sketch sketch;
+            microsw::SketchToolController tools{sketch};
+            microsw::presentation::SketchPresentation presentation;
+            presentation.regenerate(sketch);
+            microsw::viewer::WorkspaceViewport workspace{presentation.geometry()};
 
             while (!window.shouldClose())
             {
@@ -30,24 +34,61 @@ int main()
                 // only its scissored Workspace region.
                 openGLContext.clear();
                 ui.beginFrame();
-                const auto selected = workspace.selectedEntity();
-                shell.draw(workspace.projectionMode(), selected ? presentation.find(*selected) : nullptr);
-                if (selected && shell.transformRequest())
+                const auto selectedVisual = workspace.selectedEntity();
+                const auto selectedSketch = selectedVisual
+                    ? presentation.sketchId(*selectedVisual) : std::nullopt;
+                const auto* selected = selectedSketch && sketch.contains(*selectedSketch)
+                    ? &sketch.find(*selectedSketch) : nullptr;
+                shell.drawSketch(workspace.projectionMode(), tools.tool(), selected);
+                if (shell.sketchToolRequest())
+                    tools.setTool(*shell.sketchToolRequest());
+                if (selectedSketch && shell.sketchGeometryRequest())
                 {
                     try
                     {
-                        workspace.validateTransform(*selected, *shell.transformRequest());
-                        presentation.setTransform(*selected, *shell.transformRequest());
+                        std::visit([&](const auto& geometry)
+                        {
+                            using Entity = std::decay_t<decltype(geometry)>;
+                            if constexpr (std::is_same_v<Entity, microsw::sketch::SketchLine>)
+                                sketch.replaceLine(*selectedSketch, geometry.geometry);
+                            else if constexpr (std::is_same_v<Entity, microsw::sketch::SketchCircle>)
+                                sketch.replaceCircle(*selectedSketch, geometry.geometry);
+                            else sketch.replaceArc(*selectedSketch, geometry.geometry);
+                        }, *shell.sketchGeometryRequest());
+                        presentation.regenerate(sketch);
                     }
-                    catch (const std::invalid_argument& error) { shell.reportTransformError(error.what()); }
-                    catch (const std::overflow_error& error) { shell.reportTransformError(error.what()); }
+                    catch (const std::exception& error) { shell.reportSketchError(error.what()); }
+                }
+                if (selectedSketch && shell.deleteSketchRequest())
+                {
+                    sketch.remove(*selectedSketch);
+                    presentation.regenerate(sketch);
+                    workspace.clearSelection();
                 }
                 workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());
                 const auto framebuffer = window.framebufferSize();
                 workspace.updateHover(shell.workspaceRect(), shell.workspaceInput(),
                     framebuffer.width, framebuffer.height);
-                workspace.updateSelection(shell.workspaceRect(), shell.workspaceInput(),
-                    framebuffer.width, framebuffer.height);
+                if (tools.tool() == microsw::SketchTool::Select)
+                    workspace.updateSelection(shell.workspaceRect(), shell.workspaceInput(),
+                        framebuffer.width, framebuffer.height);
+                else if (shell.workspaceInput().leftPressed && shell.workspaceInput().focused
+                    && shell.workspaceInput().pointerValid && shell.workspaceInput().workspaceHovered
+                    && !shell.workspaceInput().blocked)
+                {
+                    try
+                    {
+                        const auto world = workspace.pointOnGlobalXY(shell.workspaceRect(),
+                            framebuffer.width, framebuffer.height,
+                            shell.workspaceInput().x, shell.workspaceInput().y);
+                        if (world)
+                        {
+                            (void)tools.click(sketch.plane().toLocal(*world));
+                            presentation.regenerate(sketch);
+                        }
+                    }
+                    catch (const std::exception& error) { shell.reportSketchError(error.what()); }
+                }
                 workspace.render(shell.workspaceRect(), framebuffer.width, framebuffer.height);
                 ui.endFrame();
                 window.swapBuffers();

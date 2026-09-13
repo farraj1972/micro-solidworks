@@ -13,6 +13,7 @@
 #include "viewer/PresentedPoints.h"
 #include "viewer/PresentedSegments.h"
 #include "viewer/PresentedLines.h"
+#include "viewer/PickingRay.h"
 #include "rendering/ShaderProgram.h"
 #include "rendering/LineRenderer.h"
 #include "rendering/PointRenderer.h"
@@ -246,6 +247,36 @@ void WorkspaceViewport::updateHover(const WorkspaceLayout& layout, const Workspa
 std::optional<presentation::VisualEntityId> WorkspaceViewport::selectedEntity() const noexcept
 {
     return impl_->selection.selected();
+}
+
+void WorkspaceViewport::clearSelection() noexcept { impl_->selection.clear(); }
+
+std::optional<geometry::Point3> WorkspaceViewport::pointOnGlobalXY(
+    const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+    math::Scalar mouseX, math::Scalar mouseY) const
+{
+    const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
+    if (rect.width <= 0 || rect.height <= 0) return std::nullopt;
+    const auto logicalPerPixelX = layout.displayWidth / framebufferWidth;
+    const auto logicalPerPixelY = layout.displayHeight / framebufferHeight;
+    PickingContext context;
+    context.camera = impl_->camera;
+    context.projection = impl_->projection;
+    context.width = rect.width * logicalPerPixelX;
+    context.height = rect.height * logicalPerPixelY;
+    context.mouseX = mouseX - rect.x * logicalPerPixelX;
+    context.mouseY = mouseY - (framebufferHeight - rect.y - rect.height) * logicalPerPixelY;
+    context.projectionAspectRatio = rect.aspectRatio();
+    context.verticalFov = impl_->verticalFov;
+    context.nearPlane = impl_->nearPlane;
+    context.farPlane = impl_->farPlane;
+    if (context.mouseX < 0 || context.mouseX >= context.width
+        || context.mouseY < 0 || context.mouseY >= context.height) return std::nullopt;
+    const auto ray = makePickingRay(context);
+    if (std::abs(ray.direction().z()) <= geometry::defaultGeometricTolerance) return std::nullopt;
+    const auto t = -ray.origin().z() / ray.direction().z();
+    if (t < 0 || !std::isfinite(t)) return std::nullopt;
+    return ray.pointAt(t);
 }
 
 void WorkspaceViewport::updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,

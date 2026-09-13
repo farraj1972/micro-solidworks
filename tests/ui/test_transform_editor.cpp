@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <gtest/gtest.h>
+#include <array>
 
 TEST(TransformEditor, DrawsEverySelectedPrimitiveAndHandlesDeselection)
 {
@@ -31,5 +32,33 @@ TEST(TransformEditor, DrawsEverySelectedPrimitiveAndHandlesDeselection)
     ui.beginFrame();
     shell.draw(ProjectionMode::Orthographic);
     EXPECT_FALSE(shell.transformRequest());
+    ui.endFrame();
+}
+
+TEST(SketchEditor, DrawsEverySketchEntityTypeAndToolState)
+{
+    microsw::ApplicationWindow window{640, 480, "Sketch editor test"};
+    glfwHideWindow(static_cast<GLFWwindow*>(window.nativeHandle()));
+    microsw::OpenGLContext context{window};
+    microsw::ImGuiLayer ui{window, context};
+    microsw::ApplicationShell shell{window};
+    microsw::sketch::Sketch model;
+    const auto ids = std::array{
+        model.addLine({{0, 0}, {1, 0}}),
+        model.addCircle({{0, 0}, 2}),
+        model.addArc({{0, 0}, 2, 0, 1})};
+    for (const auto id : ids)
+    {
+        ui.beginFrame();
+        shell.drawSketch(microsw::ProjectionMode::Perspective,
+                         microsw::SketchTool::Select, &model.find(id));
+        EXPECT_FALSE(shell.sketchGeometryRequest());
+        EXPECT_FALSE(shell.deleteSketchRequest());
+        ui.endFrame();
+    }
+    ui.beginFrame();
+    shell.drawSketch(microsw::ProjectionMode::Orthographic,
+                     microsw::SketchTool::Circle);
+    EXPECT_FALSE(shell.sketchToolRequest());
     ui.endFrame();
 }
