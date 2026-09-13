@@ -480,8 +480,8 @@ B8.1 subsequently closed `GAP-GEO-001`; the other two remain OPEN / deferred.
 
 # B8 — Sketcher
 
-Estado: CANDIDATE — B8.1–B8.12 COMPLETE; V3 pending. D7 — Sketch Coordinates,
-Ownership & Curve Semantics is FROZEN in accepted ADR-0028–0031.
+Estado: FROZEN — B8.1–B8.12 COMPLETE; B8.FREEZE FROZEN. D7 — Sketch
+Coordinates, Ownership & Curve Semantics is FROZEN in accepted ADR-0028–0031.
 
 Objectivo:
 
@@ -506,6 +506,8 @@ coordinates, closes `GAP-GEO-001` with validated Circle2, adds Arc2, and derives
 a shared world presentation for rendering and picking. It provides global-XY
 Line/Rectangle/Circle/Arc tools, stable logical selection, replacement editing
 and tombstone deletion. `GAP-GEO-002` and `GAP-SCENE-002` remain OPEN / deferred.
+The B8 V3 validation passed a clean configure/full Debug build with zero
+warnings, 746/746 CTest tests and runtime smoke. ADR-0028–0031 are CONFORMANT.
 Constraints remain B9 scope.
 
 ---

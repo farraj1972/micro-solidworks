@@ -905,13 +905,22 @@ B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 ```
 
-Current latest stable baseline:
+Previous stable baseline:
 
 ```text
 B7 — Topological Model
 STATUS: FROZEN
 B7.1–B7.11: COMPLETE
 B7.FREEZE: FROZEN
+```
+
+Current latest stable baseline:
+
+```text
+B8 — Sketcher
+STATUS: FROZEN
+B8.1–B8.12: COMPLETE
+B8.FREEZE: FROZEN
 ```
 
 Previous stable baseline:
@@ -1005,7 +1014,8 @@ changes require explicit authorization.
 The B8 prerequisite review is complete. Circle2 is blocking; general
 intersections and visibility/lifecycle are not. Accepted ADR-0028–0031 freeze the local coordinate,
 SketchPlane, ownership/identity/editing, Circle2/Arc2 and presentation boundaries.
-B8.1–B8.12 are COMPLETE and B8 is a CANDIDATE pending V3. Circle2 closes
+B8.1–B8.12 are COMPLETE and B8 is FROZEN after a clean configure/full Debug
+build, zero warnings, 746/746 CTest tests and runtime smoke. Circle2 closes
 GAP-GEO-001; GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 ADR-0028–0031 are CONFORMANT. The implemented core dependency is
 microsw_sketch -> microsw_geometry -> microsw_math; Presentation and

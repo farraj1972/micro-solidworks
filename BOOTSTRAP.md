@@ -31,7 +31,7 @@ Previous stable baseline: B4 — Geometry Visualization & Selection
 B4 status: FROZEN
 B4.1–B4.12: COMPLETE
 B4.FREEZE: FROZEN
-Current latest stable baseline: B6 — Transformations
+Previous stable baseline: B6 — Transformations
 B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
@@ -53,7 +53,10 @@ Latest validated snapshot (B7): 719/719 tests PASS, runtime PASS
 ADR-0025–0027: CONFORMANT
 D7 — Sketch Coordinates, Ownership & Curve Semantics: FROZEN
 ADR-0028–0031: ACCEPTED
-B8 — Sketcher: CANDIDATE; B8.1–B8.12 COMPLETE; V3 pending
+B8 — Sketcher: FROZEN
+B8.1–B8.12: COMPLETE
+B8.FREEZE: FROZEN
+Latest validated snapshot (B8): 746/746 tests PASS, runtime PASS, 0 warnings
 ADR-0028–0031: CONFORMANT
 ```
 

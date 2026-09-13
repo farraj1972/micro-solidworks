@@ -55,7 +55,8 @@ Circle2/Arc2 geometry authoritative, defines a deterministic SketchPlane basis,
 and gives a Sketch aggregate its own local stable identity and atomic editing.
 World geometry and curve tessellation remain derived through Presentation; the
 frozen core edge is `microsw_sketch -> microsw_geometry -> microsw_math`.
-B8.1–B8.12 are COMPLETE and the baseline is a CANDIDATE pending V3.
+B8.1–B8.12 are COMPLETE and B8 is FROZEN after a clean configure/full Debug
+build, zero warnings, 746/746 CTest tests and runtime smoke.
 The implemented core edge is
 `microsw_sketch -> microsw_geometry -> microsw_math`; Presentation derives one
 stable visual proxy per live Sketch entity, and shared polylines keep curve
