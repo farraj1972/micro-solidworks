@@ -266,6 +266,7 @@ if(BUILD_TESTING)
         src/app/sketch/SketchToolController.cpp
         tests/app/test_geometry_demo_scene.cpp
         tests/app/test_sketch_tools.cpp
+        tests/app/test_sketch_vertical_slice.cpp
         tests/test_infrastructure.cpp
         tests/ui/test_transform_editor.cpp
         tests/test_logging.cpp
