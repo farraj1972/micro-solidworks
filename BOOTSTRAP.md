@@ -53,7 +53,8 @@ Latest validated snapshot (B7): 719/719 tests PASS, runtime PASS
 ADR-0025–0027: CONFORMANT
 D7 — Sketch Coordinates, Ownership & Curve Semantics: FROZEN
 ADR-0028–0031: ACCEPTED
-B8 — Sketcher: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA
+B8 — Sketcher: CANDIDATE; B8.1–B8.12 COMPLETE; V3 pending
+ADR-0028–0031: CONFORMANT
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

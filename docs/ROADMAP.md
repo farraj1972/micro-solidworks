@@ -90,7 +90,7 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 
 | ID | Gap | Blocking now | Expected closure |
 | --- | --- | --- | --- |
-| GAP-GEO-001 | OPEN — Circle primitive missing from canonical B3 scope | YES for B8 | Close only when Circle2 is implemented during the authorized B8 campaign |
+| GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
 | GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
 | GAP-SCENE-002 | OPEN / deferred — Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
@@ -473,16 +473,15 @@ ADR-0026 and ADR-0027 are CONFORMANT.
 
 B7.11 is COMPLETE; B7.FREEZE is FROZEN.
 
-`GAP-GEO-001`, `GAP-GEO-002` and `GAP-SCENE-002` remain OPEN / deferred;
-B7 does not close or reclassify them.
+At the B7 freeze, `GAP-GEO-001`, `GAP-GEO-002` and `GAP-SCENE-002` were OPEN.
+B8.1 subsequently closed `GAP-GEO-001`; the other two remain OPEN / deferred.
 
 ---
 
 # B8 — Sketcher
 
-Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D7 — Sketch Coordinates,
-Ownership & Curve Semantics is FROZEN in accepted ADR-0028–0031. This freeze
-does not implement or otherwise start B8.
+Estado: CANDIDATE — B8.1–B8.12 COMPLETE; V3 pending. D7 — Sketch Coordinates,
+Ownership & Curve Semantics is FROZEN in accepted ADR-0028–0031.
 
 Objectivo:
 
@@ -502,10 +501,12 @@ Capacidades previstas:
 B3 Circle gap MUST be closed before the Sketcher slice that needs circles/arcs.
 Circle torna-se obrigatório antes/durante B8, em trabalho explicitamente autorizado.
 
-The approved first slice keeps authoritative geometry in Sketch-local 2D
-coordinates, closes `GAP-GEO-001` only when Circle2 is implemented, adds Arc2, and derives a shared
-world presentation for rendering and picking. `GAP-GEO-002` and
-`GAP-SCENE-002` remain OPEN / deferred. Constraints remain B9 scope.
+The implemented slice keeps authoritative geometry in Sketch-local 2D
+coordinates, closes `GAP-GEO-001` with validated Circle2, adds Arc2, and derives
+a shared world presentation for rendering and picking. It provides global-XY
+Line/Rectangle/Circle/Arc tools, stable logical selection, replacement editing
+and tombstone deletion. `GAP-GEO-002` and `GAP-SCENE-002` remain OPEN / deferred.
+Constraints remain B9 scope.
 
 ---
 

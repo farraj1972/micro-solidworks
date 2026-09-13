@@ -1005,7 +1005,11 @@ changes require explicit authorization.
 The B8 prerequisite review is complete. Circle2 is blocking; general
 intersections and visibility/lifecycle are not. Accepted ADR-0028–0031 freeze the local coordinate,
 SketchPlane, ownership/identity/editing, Circle2/Arc2 and presentation boundaries.
-B8 remains NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
+B8.1–B8.12 are COMPLETE and B8 is a CANDIDATE pending V3. Circle2 closes
+GAP-GEO-001; GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
+ADR-0028–0031 are CONFORMANT. The implemented core dependency is
+microsw_sketch -> microsw_geometry -> microsw_math; Presentation and
+Application consume Sketch without a reverse infrastructure dependency.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.
