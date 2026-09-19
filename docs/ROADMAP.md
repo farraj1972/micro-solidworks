@@ -514,6 +514,9 @@ Constraints remain B9 scope.
 
 # B9 — Constraint System
 
+Estado: NOT STARTED / NEXT ACTIVE. D8 — Constraint Ownership, References &
+Solver Semantics is PROPOSED / READY FOR REVIEW in ADR-0032–0034.
+
 Objectivo:
 
 Introduzir relações paramétricas.
@@ -530,6 +533,15 @@ Constraints possíveis:
 - angle.
 
 Inicialmente poderá ser utilizado um solver educacional simples.
+
+The D8 proposal defines Sketch-owned logical constraints with stable local
+identity and strong sub-element references. It proposes a project-owned
+Levenberg–Marquardt service in `microsw_constraints`, finite-difference
+Jacobians, normalized residuals, explicit solver tolerances and atomic
+candidate-state commit. The initial scope is endpoint/center coincidence,
+line horizontal/vertical/parallel/perpendicular relations, driving horizontal
+and vertical distances, line length and circle radius. B9 remains unimplemented
+until D8 is approved and frozen.
 
 ---
 

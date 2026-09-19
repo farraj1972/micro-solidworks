@@ -92,6 +92,11 @@ OpenGL 3.3 funcional.
   of Topology and infrastructure. Presentation/Application adapters may consume
   Sketch. ADR-0028–0031 are ACCEPTED and CONFORMANT; `microsw_sketch` has only
   the approved Geometry dependency. Presentation/Application consume Sketch.
+- Constraint system: proposed `BUILD` strategy in D8. Logical constraint values,
+  identities and element references belong to Sketch. The proposed project-owned
+  dense numeric solver is isolated in `microsw_constraints`, depending on
+  `microsw_sketch` without a reverse dependency. ADR-0032–0034 are PROPOSED;
+  no external solver dependency or B9 implementation is authorized yet.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

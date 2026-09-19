@@ -58,6 +58,9 @@ B8.1–B8.12: COMPLETE
 B8.FREEZE: FROZEN
 Latest validated snapshot (B8): 746/746 tests PASS, runtime PASS, 0 warnings
 ADR-0028–0031: CONFORMANT
+D8 — Constraint Ownership, References & Solver Semantics: PROPOSED / READY FOR REVIEW
+ADR-0032–0034: PROPOSED
+B9 — Constraint System: NOT STARTED / NEXT ACTIVE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -119,6 +122,9 @@ Before changing the repository, read the following documents in this order:
 34. docs/adr/ADR-0029-sketch-ownership-identity-and-editing.md
 35. docs/adr/ADR-0030-circle-and-arc-geometry-semantics.md
 36. docs/adr/ADR-0031-sketch-presentation-and-interaction-boundary.md
+37. docs/adr/ADR-0032-constraint-ownership-identity-and-element-references.md
+38. docs/adr/ADR-0033-constraint-solver-architecture-and-parameterization.md
+39. docs/adr/ADR-0034-solver-convergence-transaction-and-failure-semantics.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

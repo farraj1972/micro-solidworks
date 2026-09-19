@@ -967,8 +967,8 @@ STATUS: FROZEN
 Latest decision gate:
 
 ```text
-D7 — Sketch Coordinates, Ownership & Curve Semantics
-STATUS: FROZEN
+D8 — Constraint Ownership, References & Solver Semantics
+STATUS: PROPOSED / READY FOR REVIEW
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
@@ -976,6 +976,7 @@ ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
 FROZEN. The complete inventory is 31/31 ADRs ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
+ADR-0032–0034 are PROPOSED for D8 and are not part of the accepted inventory.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1020,6 +1021,10 @@ GAP-GEO-001; GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 ADR-0028–0031 are CONFORMANT. The implemented core dependency is
 microsw_sketch -> microsw_geometry -> microsw_math; Presentation and
 Application consume Sketch without a reverse infrastructure dependency.
+The B9 prerequisite review is complete. D8 proposes Sketch-owned logical
+constraints and stable sub-element references, with a project-owned
+`microsw_constraints -> microsw_sketch` numeric solver boundary. B9 remains
+NOT STARTED pending D8 approval/freeze.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

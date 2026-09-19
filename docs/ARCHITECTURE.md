@@ -62,6 +62,14 @@ The implemented core edge is
 stable visual proxy per live Sketch entity, and shared polylines keep curve
 rendering and picking coherent. Sketch core has no infrastructure dependency.
 
+D8 — Constraint Ownership, References & Solver Semantics is PROPOSED / READY
+FOR REVIEW in ADR-0032–0034. The proposal keeps logical constraints, their
+Sketch-local stable IDs and `SketchElementRef` values inside Sketch. A separate
+project-owned numeric service follows
+`microsw_constraints -> microsw_sketch -> microsw_geometry -> microsw_math`.
+It solves only temporary candidate state and commits validated multi-entity
+replacement atomically; Presentation remains derived. B9 is NOT STARTED.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
 
