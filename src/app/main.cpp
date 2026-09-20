@@ -6,6 +6,7 @@
 #include "ui/ApplicationShell.h"
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
+#include "constraints/ConstraintSolver.h"
 
 #include <exception>
 #include <stdexcept>
@@ -24,6 +25,7 @@ int main()
             microsw::sketch::Sketch sketch;
             microsw::SketchToolController tools{sketch};
             microsw::presentation::SketchPresentation presentation;
+            microsw::constraints::ConstraintSolver constraintSolver;
             presentation.regenerate(sketch);
             microsw::viewer::WorkspaceViewport workspace{presentation.geometry()};
 
@@ -39,7 +41,7 @@ int main()
                     ? presentation.sketchId(*selectedVisual) : std::nullopt;
                 const auto* selected = selectedSketch && sketch.contains(*selectedSketch)
                     ? &sketch.find(*selectedSketch) : nullptr;
-                shell.drawSketch(workspace.projectionMode(), tools.tool(), selected);
+                shell.drawSketch(workspace.projectionMode(), tools.tool(), sketch, selected);
                 if (shell.sketchToolRequest())
                     tools.setTool(*shell.sketchToolRequest());
                 if (selectedSketch && shell.sketchGeometryRequest())
@@ -65,6 +67,21 @@ int main()
                     presentation.regenerate(sketch);
                     workspace.clearSelection();
                 }
+                try
+                {
+                    if (shell.addConstraintRequest()) (void)sketch.addConstraint(*shell.addConstraintRequest());
+                    if (shell.removeConstraintRequest()) sketch.removeConstraint(*shell.removeConstraintRequest());
+                    if (shell.drivingValueRequest()) sketch.setDrivingValue(
+                        shell.drivingValueRequest()->first, shell.drivingValueRequest()->second);
+                    if (shell.solveSketchRequest())
+                    {
+                        const auto result = constraintSolver.solve(sketch);
+                        if (result.status == microsw::constraints::SolveStatus::Solved)
+                            presentation.regenerate(sketch);
+                        else shell.reportSketchError("Constraint solve did not produce a valid solution");
+                    }
+                }
+                catch (const std::exception& error) { shell.reportSketchError(error.what()); }
                 workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());
                 const auto framebuffer = window.framebufferSize();
                 workspace.updateHover(shell.workspaceRect(), shell.workspaceInput(),

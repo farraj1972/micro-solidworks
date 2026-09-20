@@ -51,14 +51,14 @@ TEST(SketchEditor, DrawsEverySketchEntityTypeAndToolState)
     {
         ui.beginFrame();
         shell.drawSketch(microsw::ProjectionMode::Perspective,
-                         microsw::SketchTool::Select, &model.find(id));
+                         microsw::SketchTool::Select, model, &model.find(id));
         EXPECT_FALSE(shell.sketchGeometryRequest());
         EXPECT_FALSE(shell.deleteSketchRequest());
         ui.endFrame();
     }
     ui.beginFrame();
     shell.drawSketch(microsw::ProjectionMode::Orthographic,
-                     microsw::SketchTool::Circle);
+                     microsw::SketchTool::Circle, model);
     EXPECT_FALSE(shell.sketchToolRequest());
     ui.endFrame();
 }

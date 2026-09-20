@@ -128,6 +128,14 @@ set_target_properties(microsw_sketch PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_sketch PUBLIC src)
 target_link_libraries(microsw_sketch PUBLIC microsw_geometry)
 
+add_library(microsw_constraints STATIC
+    src/constraints/ConstraintSolver.cpp
+)
+target_compile_features(microsw_constraints PUBLIC cxx_std_20)
+set_target_properties(microsw_constraints PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_constraints PUBLIC src)
+target_link_libraries(microsw_constraints PUBLIC microsw_sketch)
+
 add_library(microsw_topology STATIC
     src/core/topology/CuboidBuilder.cpp
     src/core/topology/Solid.cpp
@@ -238,6 +246,7 @@ set_target_properties(micro_solidworks PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_link_libraries(micro_solidworks PRIVATE
+    microsw_constraints
     microsw_viewer
     microsw_logging
     microsw_rendering
@@ -265,6 +274,7 @@ if(BUILD_TESTING)
     add_executable(micro_solidworks_tests
         src/app/demo/GeometryDemoScene.cpp
         src/app/sketch/SketchToolController.cpp
+        tests/constraints/test_constraint_solver.cpp
         tests/app/test_geometry_demo_scene.cpp
         tests/app/test_sketch_tools.cpp
         tests/app/test_sketch_vertical_slice.cpp
@@ -338,6 +348,7 @@ if(BUILD_TESTING)
     )
     target_link_libraries(micro_solidworks_tests PRIVATE
         GTest::gtest_main
+        microsw_constraints
         microsw_ui
         microsw_geometry
         microsw_logging

@@ -64,14 +64,16 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
 }
 
 void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool activeTool,
-                                  const sketch::SketchEntity* selected)
+                                  const sketch::Sketch& sketch, const sketch::SketchEntity* selected)
 {
     input_ = {};
     sketchToolRequest_.reset();
     sketchGeometryRequest_.reset();
     deleteSketchRequest_ = false;
+    addConstraintRequest_.reset(); removeConstraintRequest_.reset();
+    drivingValueRequest_.reset(); solveSketchRequest_ = false;
     drawMainMenu(projectionMode);
-    drawSketchPanel(activeTool, selected);
+    drawSketchPanel(activeTool, sketch, selected);
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
@@ -90,7 +92,8 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
         || (io.WantCaptureMouse && ImGui::IsAnyItemActive());
 }
 
-void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::SketchEntity* selected)
+void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sketch& model,
+                                       const sketch::SketchEntity* selected)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight};
@@ -151,6 +154,81 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         if (ImGui::Button("Delete") || ImGui::IsKeyPressed(ImGuiKey_Delete)) deleteSketchRequest_ = true;
     }
     if (!sketchError_.empty()) ImGui::TextWrapped("Edit rejected: %s", sketchError_.c_str());
+    ImGui::Separator();
+    ImGui::Text("Constraints (%zu)", model.constraintCount());
+    static int firstEntity{};
+    static int secondEntity{};
+    static double relationDistance{1.0};
+    ImGui::InputInt("Entity A", &firstEntity);
+    ImGui::InputInt("Entity B", &secondEntity);
+    ImGui::InputDouble("Driving distance", &relationDistance);
+    const auto entityId = [](int value) {
+        return sketch::SketchEntityId{static_cast<sketch::SketchEntityId::Value>(value)};
+    };
+    const sketch::SketchElementRef aEnd{entityId(firstEntity), sketch::SubElementKind::LineEnd};
+    const sketch::SketchElementRef bStart{entityId(secondEntity), sketch::SubElementKind::LineStart};
+    const sketch::SketchElementRef aBody{entityId(firstEntity), sketch::SubElementKind::LineBody};
+    const sketch::SketchElementRef bBody{entityId(secondEntity), sketch::SubElementKind::LineBody};
+    if (ImGui::Button("Coincident A.End B.Start")) addConstraintRequest_ = sketch::Coincident{aEnd, bStart};
+    if (ImGui::Button("Parallel A/B")) addConstraintRequest_ = sketch::Parallel{aBody, bBody};
+    if (ImGui::Button("Perpendicular A/B")) addConstraintRequest_ = sketch::Perpendicular{aBody, bBody};
+    if (ImGui::Button("Horizontal distance A.End/B.Start"))
+        addConstraintRequest_ = sketch::HorizontalDistance{aEnd, bStart, relationDistance};
+    if (ImGui::Button("Vertical distance A.End/B.Start"))
+        addConstraintRequest_ = sketch::VerticalDistance{aEnd, bStart, relationDistance};
+    if (selected)
+    {
+        const auto id = selected->id();
+        if (selected->type() == sketch::SketchEntityType::Line)
+        {
+            const sketch::SketchElementRef ref{id, sketch::SubElementKind::LineBody};
+            if (ImGui::Button("Add Horizontal")) addConstraintRequest_ = sketch::Horizontal{ref};
+            if (ImGui::Button("Add Vertical")) addConstraintRequest_ = sketch::Vertical{ref};
+            const auto& line = std::get<sketch::SketchLine>(selected->geometry()).geometry;
+            double length = line.length();
+            if (ImGui::InputDouble("Line length", &length))
+                addConstraintRequest_ = sketch::LineLength{ref, length};
+        }
+        else if (selected->type() == sketch::SketchEntityType::Circle)
+        {
+            double radius = std::get<sketch::SketchCircle>(selected->geometry()).geometry.radius();
+            if (ImGui::InputDouble("Radius dimension", &radius))
+                addConstraintRequest_ = sketch::CircleRadius{{id, sketch::SubElementKind::CircleRadius}, radius};
+        }
+    }
+    for (const auto id : model.constraintIds())
+    {
+        ImGui::PushID(static_cast<int>(id.value()));
+        const auto& value = model.findConstraint(id).value();
+        const char* name = std::visit([](const auto& c) {
+            using T = std::decay_t<decltype(c)>;
+            if constexpr (std::is_same_v<T, sketch::Coincident>) return "Coincident";
+            else if constexpr (std::is_same_v<T, sketch::Horizontal>) return "Horizontal";
+            else if constexpr (std::is_same_v<T, sketch::Vertical>) return "Vertical";
+            else if constexpr (std::is_same_v<T, sketch::Parallel>) return "Parallel";
+            else if constexpr (std::is_same_v<T, sketch::Perpendicular>) return "Perpendicular";
+            else if constexpr (std::is_same_v<T, sketch::HorizontalDistance>) return "HorizontalDistance";
+            else if constexpr (std::is_same_v<T, sketch::VerticalDistance>) return "VerticalDistance";
+            else if constexpr (std::is_same_v<T, sketch::LineLength>) return "LineLength";
+            else return "CircleRadius";
+        }, value);
+        ImGui::Text("%u: %s", id.value(), name);
+        if (sketch::isDrivingDimension(value))
+        {
+            double driving = std::visit([](const auto& c) -> double {
+                using T = std::decay_t<decltype(c)>;
+                if constexpr (std::is_same_v<T, sketch::HorizontalDistance>
+                    || std::is_same_v<T, sketch::VerticalDistance>
+                    || std::is_same_v<T, sketch::LineLength>
+                    || std::is_same_v<T, sketch::CircleRadius>) return c.value;
+                else return 0;
+            }, value);
+            if (ImGui::InputDouble("Value", &driving)) drivingValueRequest_ = std::pair{id, driving};
+        }
+        if (ImGui::Button("Remove")) removeConstraintRequest_ = id;
+        ImGui::PopID();
+    }
+    if (ImGui::Button("Solve constraints")) solveSketchRequest_ = true;
     ImGui::End();
 }
 
