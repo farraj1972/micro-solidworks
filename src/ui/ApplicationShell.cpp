@@ -166,6 +166,19 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     }
     if (!sketchError_.empty()) ImGui::TextWrapped("Edit rejected: %s", sketchError_.c_str());
     ImGui::Separator();
+    const auto entityIds = model.entityIds();
+    ImGui::Text("Entities (%zu)", entityIds.size());
+    for (const auto id : entityIds)
+    {
+        const auto& entity = model.find(id);
+        const char* type = entity.type() == sketch::SketchEntityType::Line ? "Line"
+            : entity.type() == sketch::SketchEntityType::Circle ? "Circle" : "Arc";
+        if (selected && selected->id() == id)
+            ImGui::TextColored(ImVec4{1.0F, 0.65F, 0.2F, 1.0F}, "%u: %s (selected)", id.value(), type);
+        else
+            ImGui::Text("%u: %s", id.value(), type);
+    }
+    ImGui::Separator();
     ImGui::Text("Constraints (%zu)", model.constraintCount());
     static int firstEntity{};
     static int secondEntity{};
