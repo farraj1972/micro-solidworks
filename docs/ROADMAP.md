@@ -567,7 +567,7 @@ ADR-0032–0034 are CONFORMANT.
 
 # B10 — Extrusion
 
-Estado: CANDIDATE — B10.1–B10.18 COMPLETE; pending baseline V3 and freeze.
+Estado: FROZEN — B10.1–B10.18 COMPLETE; B10.FREEZE FROZEN.
 D9 — Profile, Extrusion & Modeling Boundary is FROZEN in accepted ADR-0035–0037.
 
 Objectivo:
@@ -591,6 +591,8 @@ Application owns one active result, preserves it on rejected regeneration and
 offers explicit distance editing and manual regeneration. ADR-0035–0037 are
 CONFORMANT. Circle/Arc extrusion, curved topology, feature history and automatic
 rebuild remain deferred. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
+The B10 V3 passed clean configure/full Debug build, zero warnings, 767/767
+CTest tests and manual runtime validation. See `docs/B10_VALIDATION.md`.
 
 ---
 

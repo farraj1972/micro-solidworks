@@ -88,7 +88,8 @@ implements these boundaries with `microsw_modeling -> microsw_topology`, a
 separate Sketch-to-Profile integration adapter, and a single Solid presentation
 identity whose unique topological edges feed both rendering and picking.
 Circle/Arc extrusion, feature history and automatic rebuild remain deferred.
-B10 is CANDIDATE pending V3 and freeze; ADR-0035–0037 are CONFORMANT.
+B10 is FROZEN after clean V3, 767/767 tests and runtime validation;
+ADR-0035–0037 are CONFORMANT.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
