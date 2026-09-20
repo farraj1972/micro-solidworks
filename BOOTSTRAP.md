@@ -60,7 +60,8 @@ Latest validated snapshot (B8): 746/746 tests PASS, runtime PASS, 0 warnings
 ADR-0028–0031: CONFORMANT
 D8 — Constraint Ownership, References & Solver Semantics: FROZEN
 ADR-0032–0034: ACCEPTED
-B9 — Constraint System: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA
+B9 — Constraint System: CANDIDATE; B9.1–B9.15 COMPLETE; V3 pending
+ADR-0032–0034: CONFORMANT
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

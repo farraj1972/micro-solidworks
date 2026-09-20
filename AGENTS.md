@@ -1024,8 +1024,8 @@ microsw_sketch -> microsw_geometry -> microsw_math; Presentation and
 Application consume Sketch without a reverse infrastructure dependency.
 The B9 prerequisite review is complete. Frozen D8 defines Sketch-owned logical
 constraints and stable sub-element references, with a project-owned
-`microsw_constraints -> microsw_sketch` numeric solver boundary. B9 remains
-NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
+`microsw_constraints -> microsw_sketch` numeric solver boundary. B9.1–B9.15
+are implemented and B9 is a CANDIDATE pending V3. ADR-0032–0034 are CONFORMANT.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

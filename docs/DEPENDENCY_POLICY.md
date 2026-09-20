@@ -96,7 +96,8 @@ OpenGL 3.3 funcional.
   identities and element references belong to Sketch. The project-owned
   dense numeric solver is isolated in `microsw_constraints`, depending on
   `microsw_sketch` without a reverse dependency. ADR-0032–0034 are ACCEPTED;
-  no external solver dependency is permitted in B9.
+  no external solver dependency is permitted in B9. The implemented dense,
+  project-owned Levenberg–Marquardt target conforms to this boundary.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

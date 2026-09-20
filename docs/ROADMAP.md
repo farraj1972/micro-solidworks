@@ -514,7 +514,7 @@ Constraints remain B9 scope.
 
 # B9 — Constraint System
 
-Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D8 — Constraint Ownership,
+Estado: CANDIDATE — B9.1–B9.15 COMPLETE; V3 pending. D8 — Constraint Ownership,
 References & Solver Semantics is FROZEN in accepted ADR-0032–0034.
 
 Objectivo:
@@ -540,7 +540,12 @@ Levenberg–Marquardt service in `microsw_constraints`, finite-difference
 Jacobians, normalized residuals, explicit solver tolerances and atomic
 candidate-state commit. The initial scope is endpoint/center coincidence,
 line horizontal/vertical/parallel/perpendicular relations, driving horizontal
-and vertical distances, line length and circle radius. B9 remains unimplemented.
+and vertical distances, line length and circle radius.
+The implemented candidate adds stable constraint identities and references,
+validated lifecycle and atomic Sketch replacement, normalized residuals,
+central finite differences, a dense project-owned Levenberg–Marquardt solver,
+under-constrained stabilization, diagnostics, rectangle/circle fixtures and
+minimal constraint editing UI. ADR-0032–0034 are CONFORMANT.
 
 ---
 
