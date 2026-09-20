@@ -932,6 +932,14 @@ B9.1–B9.16: COMPLETE
 B9.FREEZE: FROZEN
 ```
 
+Current candidate baseline:
+
+```text
+B10 — Extrusion
+STATUS: CANDIDATE
+B10.1–B10.18: COMPLETE
+```
+
 Previous stable baseline:
 
 ```text
@@ -1039,12 +1047,12 @@ are COMPLETE. The B9 V3 passed clean configure/full Debug build, zero warnings,
 758/758 CTest tests and manual runtime validation; B9 is FROZEN.
 ADR-0032–0034 are CONFORMANT.
 The B10 prerequisite review is complete. Frozen D9 defines an ephemeral strictly
-convex Profile, a Sketch-to-Profile integration adapter, the future dependency
+convex Profile, a Sketch-to-Profile integration adapter, the dependency
 `microsw_modeling -> microsw_topology`, positive one-shot extrusion, shared
 manifold topology, Application ownership of one active Solid and derived
-wireframe solid-level presentation. GAP-GEO-002 and GAP-SCENE-002 remain OPEN /
-deferred and non-blocking for this slice. B10 is NOT STARTED / NEXT ACTIVE
-FUNCTIONAL AREA. ADR-0035–0037 are ACCEPTED.
+wireframe solid-level presentation. B10.1–B10.18 are COMPLETE and B10 is a
+CANDIDATE pending V3. ADR-0035–0037 are CONFORMANT. GAP-GEO-002 and
+GAP-SCENE-002 remain OPEN / deferred and non-blocking for this slice.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

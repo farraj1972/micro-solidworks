@@ -103,7 +103,9 @@ OpenGL 3.3 funcional.
   microsw_math`. Modeling owns an ephemeral Profile value and one-shot
   extrusion; it does not depend on Sketch, Constraints, Presentation, Viewer,
   Rendering, UI or Application. A higher integration adapter may consume both
-  Sketch and Modeling. ADR-0035–0037 are ACCEPTED; B10 is not implemented.
+  Sketch and Modeling. B10 implements this project-owned core and its separate
+  Application integration/presentation adapters. ADR-0035–0037 are ACCEPTED
+  and CONFORMANT; B10 is CANDIDATE pending V3 and freeze.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

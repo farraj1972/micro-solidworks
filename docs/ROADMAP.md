@@ -567,8 +567,8 @@ ADR-0032–0034 are CONFORMANT.
 
 # B10 — Extrusion
 
-Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D9 — Profile, Extrusion &
-Modeling Boundary is FROZEN in accepted ADR-0035–0037.
+Estado: CANDIDATE — B10.1–B10.18 COMPLETE; pending baseline V3 and freeze.
+D9 — Profile, Extrusion & Modeling Boundary is FROZEN in accepted ADR-0035–0037.
 
 Objectivo:
 
@@ -584,10 +584,13 @@ Extrude
  ↓
 Solid
 
-Proposed first slice: extract one strictly-convex CCW line-only Profile from a
-solved Sketch, extrude it by a positive distance into shared manifold topology,
-and present/select the resulting Solid as one wireframe object. Circle/Arc
-extrusion and curved topology remain deferred.
+Implemented first slice: extract one strictly-convex CCW line-only Profile from
+a solved Sketch, extrude it by a positive distance into shared manifold topology,
+and present/pick/select the resulting Solid as one wireframe object. The
+Application owns one active result, preserves it on rejected regeneration and
+offers explicit distance editing and manual regeneration. ADR-0035–0037 are
+CONFORMANT. Circle/Arc extrusion, curved topology, feature history and automatic
+rebuild remain deferred. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 
 ---
 

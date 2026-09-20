@@ -80,12 +80,15 @@ the clean V3 passed 758/758 tests and manual runtime validation.
 D9 — Profile, Extrusion & Modeling Boundary is FROZEN in accepted
 ADR-0035–0037. The decision defines an ephemeral strictly-convex Profile as
 ordered world-space boundary points plus an oriented Plane, extracted from
-solved Sketch geometry by an integration adapter. It proposes the future edge
+solved Sketch geometry by an integration adapter. It defines the edge
 `microsw_modeling -> microsw_topology -> microsw_geometry -> microsw_math`,
 positive one-shot extrusion into shared manifold topology, Application-owned
-active Solid replacement and derived wireframe solid-level presentation.
+active Solid replacement and derived wireframe solid-level presentation. B10
+implements these boundaries with `microsw_modeling -> microsw_topology`, a
+separate Sketch-to-Profile integration adapter, and a single Solid presentation
+identity whose unique topological edges feed both rendering and picking.
 Circle/Arc extrusion, feature history and automatic rebuild remain deferred.
-B10 is NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
+B10 is CANDIDATE pending V3 and freeze; ADR-0035–0037 are CONFORMANT.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
