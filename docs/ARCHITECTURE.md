@@ -23,7 +23,8 @@ slices, preserve ADRs/dependency direction, map early capabilities explicitly
 and defer subsystem completeness until it is a real prerequisite. Gaps are
 closed through new authorized work while preserving compatibility.
 
-Canonical B3 still lacks Circle and basic intersections. Canonical B4 identity
+Canonical B3's Circle gap was closed by Circle2 in B8; basic intersections
+remain deferred. Canonical B4 identity
 is partially realized through visual IDs; B6 supplies entity transforms. Explicit visibility
 state and lifecycle beyond construction/lookup remain incomplete. B4 FROZEN
 therefore describes its accepted technical slice, not full Scene & Object Model.
@@ -33,8 +34,9 @@ D5 targets Point3/Segment3/Line3 first: select -> edit transform
 hover/selection/highlight. Translation, rotation, positive scale, local/world
 transforms and minimal editing UI are frozen D5 decisions.
 Gizmo, hierarchy, parent-child transforms, undo/redo, persistence, CAD Document
-and Topology are not prerequisites for this initial slice. The B7 prerequisite
-review is complete; Circle must exist before the B8 slice requiring circles/arcs.
+and Topology are not prerequisites for this initial slice. Historically, the B7
+prerequisite review identified Circle as required before the B8 circles/arcs
+slice; Circle2 was implemented and validated in B8.1.
 
 D5 — Transformation Semantics is FROZEN in accepted ADR-0021–0024.
 
@@ -62,8 +64,8 @@ The implemented core edge is
 stable visual proxy per live Sketch entity, and shared polylines keep curve
 rendering and picking coherent. Sketch core has no infrastructure dependency.
 
-D8 — Constraint Ownership, References & Solver Semantics is PROPOSED / READY
-FOR REVIEW in ADR-0032–0034. The proposal keeps logical constraints, their
+D8 — Constraint Ownership, References & Solver Semantics is FROZEN in accepted
+ADR-0032–0034. The decision keeps logical constraints, their
 Sketch-local stable IDs and `SketchElementRef` values inside Sketch. A separate
 project-owned numeric service follows
 `microsw_constraints -> microsw_sketch -> microsw_geometry -> microsw_math`.
@@ -1031,7 +1033,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0031 are **31/31 ACCEPTED**. ADR-0001–0027 remain unchanged.
+ADR-0001 through ADR-0034 are **34/34 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

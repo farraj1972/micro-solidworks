@@ -63,7 +63,7 @@ uses V0 rather than repeating V3.
 | B0 Foundation | SATISFIED | COMPLETE / FROZEN; nenhum gap material |
 | B1 Mathematical Foundation | SATISFIED | COMPLETE / FROZEN; nenhum gap material para o roadmap actual |
 | B2 3D Viewer | SATISFIED | COMPLETE / FROZEN |
-| B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle/basic intersections são DEFERRED GAP — not currently blocking B6 |
+| B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle2 was implemented in B8 and closed GAP-GEO-001; basic intersections remain GAP-GEO-002 deferred |
 | B4 Scene & Object Model: identity, transforms, visibility, object lifecycle | PARTIALLY SATISFIED | B4 técnica FROZEN: Presentation identity, GeometryPresentation, visual ownership boundary, visualização Point/Segment/Line e o slice de picking/hover/single-selection/highlight |
 | B5 Selection & Picking: screen ray, intersections/picking, hover, click selection, selection state, highlighting | REALIZED / SATISFIED BY B4 | FUNCTIONALLY REALIZED BY FROZEN TECHNICAL B4; No duplicate B5 implementation is required |
 | B6 Transformations: translate, rotate, scale, local/world coordinates | REALIZED / FROZEN | B6.1–B6.10 COMPLETE; 708/708 testes e runtime PASS; D5 FROZEN |
@@ -95,8 +95,8 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
 | GAP-SCENE-002 | OPEN / deferred — Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
 
-Circle e basic intersections são gaps deferred, não bloqueiam actualmente B6
-e não serão implementados neste alignment. Cada fecho exige scope autorizado.
+Circle2 is implemented and GAP-GEO-001 is CLOSED. Basic intersections remain
+GAP-GEO-002 deferred; each future closure requires authorized scope.
 
 ## Delivered Functional Slice — B6
 
@@ -498,8 +498,8 @@ Capacidades previstas:
 - editing;
 - dimensions iniciais.
 
-B3 Circle gap MUST be closed before the Sketcher slice that needs circles/arcs.
-Circle torna-se obrigatório antes/durante B8, em trabalho explicitamente autorizado.
+Historical prerequisite: the B3 Circle gap had to close before the Sketcher
+slice needing circles/arcs. B8.1 implemented Circle2 and closed GAP-GEO-001.
 
 The implemented slice keeps authoritative geometry in Sketch-local 2D
 coordinates, closes `GAP-GEO-001` with validated Circle2, adds Arc2, and derives
@@ -514,8 +514,8 @@ Constraints remain B9 scope.
 
 # B9 — Constraint System
 
-Estado: NOT STARTED / NEXT ACTIVE. D8 — Constraint Ownership, References &
-Solver Semantics is PROPOSED / READY FOR REVIEW in ADR-0032–0034.
+Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D8 — Constraint Ownership,
+References & Solver Semantics is FROZEN in accepted ADR-0032–0034.
 
 Objectivo:
 
@@ -534,14 +534,13 @@ Constraints possíveis:
 
 Inicialmente poderá ser utilizado um solver educacional simples.
 
-The D8 proposal defines Sketch-owned logical constraints with stable local
-identity and strong sub-element references. It proposes a project-owned
+Frozen D8 defines Sketch-owned logical constraints with stable local identity
+and strong sub-element references. It specifies a project-owned
 Levenberg–Marquardt service in `microsw_constraints`, finite-difference
 Jacobians, normalized residuals, explicit solver tolerances and atomic
 candidate-state commit. The initial scope is endpoint/center coincidence,
 line horizontal/vertical/parallel/perpendicular relations, driving horizontal
-and vertical distances, line length and circle radius. B9 remains unimplemented
-until D8 is approved and frozen.
+and vertical distances, line length and circle radius. B9 remains unimplemented.
 
 ---
 

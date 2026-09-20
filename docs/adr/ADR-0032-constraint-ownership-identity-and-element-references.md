@@ -1,6 +1,6 @@
 # ADR-0032 — Constraint Ownership, Identity and Element References
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

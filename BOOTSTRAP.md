@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-31/31 ADRs ACCEPTED; ADR-0021–0024 CONFORMANT
+34/34 ADRs ACCEPTED; ADR-0021–0024 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -58,9 +58,9 @@ B8.1–B8.12: COMPLETE
 B8.FREEZE: FROZEN
 Latest validated snapshot (B8): 746/746 tests PASS, runtime PASS, 0 warnings
 ADR-0028–0031: CONFORMANT
-D8 — Constraint Ownership, References & Solver Semantics: PROPOSED / READY FOR REVIEW
-ADR-0032–0034: PROPOSED
-B9 — Constraint System: NOT STARTED / NEXT ACTIVE
+D8 — Constraint Ownership, References & Solver Semantics: FROZEN
+ADR-0032–0034: ACCEPTED
+B9 — Constraint System: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

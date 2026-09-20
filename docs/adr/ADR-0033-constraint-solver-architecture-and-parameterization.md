@@ -1,6 +1,6 @@
 # ADR-0033 — Constraint Solver Architecture and Parameterization
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -52,9 +52,11 @@ semantics. Direction-dependent constraints reject degenerate candidate lines;
 NaN and infinity are invalid.
 
 The Jacobian uses deterministic central finite differences. For parameter
-`x_i`, the perturbation derives from a centralized solver policy and scales with
-`max(parameterScale_i, abs(x_i))`; it is not a scattered fixed epsilon.
-Analytic Jacobians and automatic differentiation are deferred.
+`x_i`, the perturbation derives from a centralized, scale-aware solver policy;
+it is not a scattered fixed epsilon. Concrete defaults are implementation
+settings, deterministic and tunable from focused numerical evidence rather than
+architectural invariants. Analytic Jacobians and automatic differentiation are
+deferred.
 
 Length residuals are divided by a deterministic characteristic length:
 
@@ -70,7 +72,9 @@ No constraint type may embed an undocumented weight.
 Under-constrained Sketches are valid. Solving starts at the current state. A
 small, centralized Tikhonov regularization penalizes normalized displacement
 from that initial state so unconstrained parameters do not move arbitrarily.
-This is solver stabilization, not a visible logical constraint or hidden anchor.
+This participates in optimization stability but is not a visible logical
+constraint or hidden anchor, and it does not participate in final logical
+constraint satisfaction.
 
 ## Rationale
 

@@ -1,6 +1,6 @@
 # ADR-0034 — Solver Convergence, Transaction and Failure Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -19,17 +19,20 @@ Levenberg–Marquardt damping. Initial normalized defaults are:
 stepTolerance                 = 1e-10
 costReductionTolerance        = 1e-12
 residualSatisfactionTolerance = 1e-8
-finiteDifferenceStep          = sqrt(machine epsilon) times parameter scale
+finiteDifferenceStep          = centralized scale-aware deterministic default
 maxIterations                 = 100
 initial damping               = 1e-3
 damping adjustment factor     = 10
 initial-state regularization  = 1e-8
 ```
 
-These are solver defaults, not Math or Geometry constants. They may be tuned
-with focused numerical evidence without changing the ownership and transaction
-architecture. Convergence alone is insufficient: the final normalized
-constraint residual must also satisfy `residualSatisfactionTolerance`.
+These are solver defaults, not Math or Geometry constants. The concrete
+finite-difference default and other numerical settings may be tuned with
+focused evidence without changing the ownership and transaction architecture.
+Convergence alone is insufficient: the final normalized residuals of the
+logical Sketch constraints must also satisfy `residualSatisfactionTolerance`.
+Initial-state regularization participates only in optimization stability and
+does not participate in that final logical satisfaction check.
 
 The public result is:
 

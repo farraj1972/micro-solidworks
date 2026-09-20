@@ -968,15 +968,15 @@ Latest decision gate:
 
 ```text
 D8 — Constraint Ownership, References & Solver Semantics
-STATUS: PROPOSED / READY FOR REVIEW
+STATUS: FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 31/31 ADRs ACCEPTED. D6 — Topology Ownership,
+FROZEN. The complete inventory is 34/34 ADRs ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
-ADR-0032–0034 are PROPOSED for D8 and are not part of the accepted inventory.
+ADR-0032–0034 are ACCEPTED and freeze D8.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1005,15 +1005,16 @@ B6 Transformations is FROZEN after B6.10: clean configure/full Debug build,
 708/708 CTest tests, manual runtime PASS and normal exit code 0. Build warnings: 0.
 ADR-0021–0024 are CONFORMANT. Manual HiDPI was not explicitly confirmed;
 automated HiDPI coverage passed. See docs/B6_VALIDATION.md.
-Entity transforms close GAP-SCENE-001. Circle/intersections and visibility/lifecycle
-remain deferred. The B7 prerequisite review is complete: these gaps do not block
+Entity transforms close GAP-SCENE-001. Intersections and visibility/lifecycle
+remain deferred. The B7 prerequisite review concluded that the then-open gaps did not block
 the first cuboid slice. Accepted ADR-0025–0027 freeze D6 ownership, identity,
 orientation, geometry association and manifold semantics. B7.1–B7.11 are
 COMPLETE and conformant. B7 V3 passed clean configure/full Debug build, zero
 warnings, 719/719 CTest tests and runtime smoke; B7 is FROZEN. Frozen B6/B7
 changes require explicit authorization.
-The B8 prerequisite review is complete. Circle2 is blocking; general
-intersections and visibility/lifecycle are not. Accepted ADR-0028–0031 freeze the local coordinate,
+The B8 prerequisite review identified Circle2 as blocking; B8.1 subsequently
+implemented it and closed GAP-GEO-001. General intersections and
+visibility/lifecycle remain deferred. Accepted ADR-0028–0031 freeze the local coordinate,
 SketchPlane, ownership/identity/editing, Circle2/Arc2 and presentation boundaries.
 B8.1–B8.12 are COMPLETE and B8 is FROZEN after a clean configure/full Debug
 build, zero warnings, 746/746 CTest tests and runtime smoke. Circle2 closes
@@ -1021,10 +1022,10 @@ GAP-GEO-001; GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 ADR-0028–0031 are CONFORMANT. The implemented core dependency is
 microsw_sketch -> microsw_geometry -> microsw_math; Presentation and
 Application consume Sketch without a reverse infrastructure dependency.
-The B9 prerequisite review is complete. D8 proposes Sketch-owned logical
+The B9 prerequisite review is complete. Frozen D8 defines Sketch-owned logical
 constraints and stable sub-element references, with a project-owned
 `microsw_constraints -> microsw_sketch` numeric solver boundary. B9 remains
-NOT STARTED pending D8 approval/freeze.
+NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.
