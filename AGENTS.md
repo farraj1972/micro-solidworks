@@ -976,8 +976,8 @@ STATUS: FROZEN
 Latest decision gate:
 
 ```text
-D8 — Constraint Ownership, References & Solver Semantics
-STATUS: FROZEN
+D9 — Profile, Extrusion & Modeling Boundary
+STATUS: PROPOSED / READY FOR REVIEW
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
@@ -986,6 +986,7 @@ FROZEN. The complete inventory is 34/34 ADRs ACCEPTED. D6 — Topology Ownership
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
+ADR-0035–0037 are PROPOSED for D9 and are not part of the accepted inventory.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1037,6 +1038,13 @@ constraints and stable sub-element references, with a project-owned
 are COMPLETE. The B9 V3 passed clean configure/full Debug build, zero warnings,
 758/758 CTest tests and manual runtime validation; B9 is FROZEN.
 ADR-0032–0034 are CONFORMANT.
+The B10 prerequisite review is complete. D9 proposes an ephemeral strictly
+convex Profile, a Sketch-to-Profile integration adapter, the future dependency
+`microsw_modeling -> microsw_topology`, positive one-shot extrusion, shared
+manifold topology, Application ownership of one active Solid and derived
+wireframe solid-level presentation. GAP-GEO-002 and GAP-SCENE-002 remain OPEN /
+deferred and non-blocking for this slice. B10 remains NOT STARTED pending D9
+approval and freeze. ADR-0035–0037 are PROPOSED.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

@@ -77,6 +77,16 @@ Levenberg–Marquardt machinery and depends only on Sketch. Presentation is
 regenerated only after successful commit. B9.1–B9.16 and B9.FREEZE are complete;
 the clean V3 passed 758/758 tests and manual runtime validation.
 
+D9 — Profile, Extrusion & Modeling Boundary is PROPOSED / READY FOR REVIEW in
+ADR-0035–0037. The proposal defines an ephemeral strictly-convex Profile as
+ordered world-space boundary points plus an oriented Plane, extracted from
+solved Sketch geometry by an integration adapter. It proposes the future edge
+`microsw_modeling -> microsw_topology -> microsw_geometry -> microsw_math`,
+positive one-shot extrusion into shared manifold topology, Application-owned
+active Solid replacement and derived wireframe solid-level presentation.
+Circle/Arc extrusion, feature history and automatic rebuild remain deferred.
+B10 remains NOT STARTED pending D9 approval and freeze.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
 

@@ -64,6 +64,9 @@ B9.1–B9.16: COMPLETE
 B9.FREEZE: FROZEN
 Latest validated snapshot (B9): 758/758 tests PASS, runtime PASS, 0 warnings
 ADR-0032–0034: CONFORMANT
+D9 — Profile, Extrusion & Modeling Boundary: PROPOSED / READY FOR REVIEW
+ADR-0035–0037: PROPOSED
+B10 — Extrusion: NOT STARTED
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -128,6 +131,9 @@ Before changing the repository, read the following documents in this order:
 37. docs/adr/ADR-0032-constraint-ownership-identity-and-element-references.md
 38. docs/adr/ADR-0033-constraint-solver-architecture-and-parameterization.md
 39. docs/adr/ADR-0034-solver-convergence-transaction-and-failure-semantics.md
+40. docs/adr/ADR-0035-profile-representation-and-sketch-to-modeling-boundary.md
+41. docs/adr/ADR-0036-extrusion-semantics-and-topology-generation.md
+42. docs/adr/ADR-0037-modeling-result-ownership-and-presentation-boundary.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

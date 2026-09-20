@@ -521,7 +521,7 @@ Objectivo:
 
 Introduzir relações paramétricas.
 
-Constraints possíveis:
+Canonical B9 capability list:
 
 - coincident;
 - horizontal;
@@ -533,6 +533,18 @@ Constraints possíveis:
 - angle.
 
 Inicialmente poderá ser utilizado um solver educacional simples.
+
+Frozen implemented B9 scope:
+
+- Coincident for supported point references;
+- Horizontal and Vertical for lines;
+- Parallel and Perpendicular for lines;
+- driving HorizontalDistance and VerticalDistance;
+- driving LineLength and CircleRadius;
+- dense educational LM solver with transactional commit.
+
+General distance, angle dimensions and advanced constraint types remain future
+canonical capabilities; they are not part of the frozen technical B9 scope.
 
 Frozen D8 defines Sketch-owned logical constraints with stable local identity
 and strong sub-element references. It specifies a project-owned
@@ -553,6 +565,10 @@ ADR-0032–0034 are CONFORMANT.
 
 # B10 — Extrusion
 
+Estado: NOT STARTED. D9 — Profile, Extrusion & Modeling Boundary is PROPOSED /
+READY FOR REVIEW in ADR-0035–0037. B10 implementation requires D9 approval and
+freeze.
+
 Objectivo:
 
 Gerar sólidos a partir de profiles fechados.
@@ -566,6 +582,11 @@ Profile
 Extrude
  ↓
 Solid
+
+Proposed first slice: extract one strictly-convex CCW line-only Profile from a
+solved Sketch, extrude it by a positive distance into shared manifold topology,
+and present/select the resulting Solid as one wireframe object. Circle/Arc
+extrusion and curved topology remain deferred.
 
 ---
 

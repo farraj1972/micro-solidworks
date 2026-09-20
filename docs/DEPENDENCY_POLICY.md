@@ -98,6 +98,12 @@ OpenGL 3.3 funcional.
   `microsw_sketch` without a reverse dependency. ADR-0032–0034 are ACCEPTED;
   no external solver dependency is permitted in B9. The implemented dense,
   project-owned Levenberg–Marquardt target conforms to this boundary.
+- Profile and extrusion modeling: `BUILD`, proposed in D9. The proposed core
+  edge is `microsw_modeling -> microsw_topology -> microsw_geometry ->
+  microsw_math`. Modeling owns an ephemeral Profile value and one-shot
+  extrusion; it does not depend on Sketch, Constraints, Presentation, Viewer,
+  Rendering, UI or Application. A higher integration adapter may consume both
+  Sketch and Modeling. ADR-0035–0037 remain PROPOSED; B10 is not implemented.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no
