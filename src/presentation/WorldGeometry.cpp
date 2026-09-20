@@ -47,12 +47,20 @@ PresentedGeometry worldGeometry(const VisualEntity& entity)
                 direction.y() / magnitude, direction.z() / magnitude};
             return geometry::Line3{worldPoint(matrix, local.origin()), rescaled.normalized()};
         }
-        else
+        else if constexpr (std::is_same_v<Geometry, Polyline3>)
         {
             std::vector<geometry::Point3> points;
             points.reserve(local.points().size());
             for (const auto& point : local.points()) points.push_back(worldPoint(matrix, point));
             return Polyline3{std::move(points)};
+        }
+        else
+        {
+            std::vector<geometry::Segment3> segments;
+            segments.reserve(local.segments().size());
+            for (const auto& segment : local.segments())
+                segments.emplace_back(worldPoint(matrix, segment.a()), worldPoint(matrix, segment.b()));
+            return SegmentSet3{std::move(segments)};
         }
     }, entity.geometry());
 }

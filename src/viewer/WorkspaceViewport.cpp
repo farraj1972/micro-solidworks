@@ -166,6 +166,15 @@ WorkspaceViewport::WorkspaceViewport(const presentation::GeometryPresentation& p
     : impl_{std::make_unique<Impl>(&presentation)} {}
 WorkspaceViewport::~WorkspaceViewport() = default;
 
+void WorkspaceViewport::setPresentation(
+    const presentation::GeometryPresentation& presentation) noexcept
+{
+    if (impl_->presentation == &presentation) return;
+    impl_->presentation = &presentation;
+    impl_->hover.clear();
+    impl_->selection.clear();
+}
+
 ProjectionMode WorkspaceViewport::projectionMode() const noexcept
 {
     return impl_->projection.mode();
@@ -324,7 +333,9 @@ void WorkspaceViewport::validateTransform(presentation::VisualEntityId id, const
         if constexpr (std::is_same_v<Geometry, geometry::Point3>) check(value);
         else if constexpr (std::is_same_v<Geometry, geometry::Segment3>) { check(value.a()); check(value.b()); }
         else if constexpr (std::is_same_v<Geometry, geometry::Line3>) check(value.origin());
-        else for (const auto& point : value.points()) check(point);
+        else if constexpr (std::is_same_v<Geometry, presentation::Polyline3>)
+            for (const auto& point : value.points()) check(point);
+        else for (const auto& segment : value.segments()) { check(segment.a()); check(segment.b()); }
     }, world);
 }
 

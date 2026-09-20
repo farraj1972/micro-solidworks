@@ -100,7 +100,9 @@ auto snapshot(const GeometryPresentation& presentation)
             if constexpr (std::is_same_v<T, Point3>) append(value);
             else if constexpr (std::is_same_v<T, Segment3>) { append(value.a()); append(value.b()); }
             else if constexpr (std::is_same_v<T, Line3>) { append(value.origin()); append(value.direction()); }
-            else for (const auto& point : value.points()) append(point);
+            else if constexpr (std::is_same_v<T, microsw::presentation::Polyline3>)
+                for (const auto& point : value.points()) append(point);
+            else for (const auto& segment : value.segments()) { append(segment.a()); append(segment.b()); }
         }, entity.geometry());
         result.emplace_back(entity.id().value(), entity.geometry().index(), std::move(values));
     }

@@ -215,6 +215,15 @@ std::optional<PickHit> pickGeometry(
                     candidate = current;
             }
         }
+        else if (const auto* set = std::get_if<presentation::SegmentSet3>(&world))
+        {
+            for (const auto& segment : set->segments())
+            {
+                const auto current = segmentCandidate(segment.a(), segment.b(), projection, context);
+                if (current && (!candidate || current->distance < candidate->distance))
+                    candidate = current;
+            }
+        }
         else if (std::holds_alternative<geometry::Line3>(entity.geometry()))
         {
             if (lineVertices.empty())

@@ -63,5 +63,27 @@ TEST(SketchProfileAdapter, OrdersUnorderedRectangleAndRejectsInvalidGraphs)
     EXPECT_THROW((void)extractProfile(open), std::invalid_argument);
     sketch::Sketch branching; branching.addLine({{0,0},{1,0}}); branching.addLine({{1,0},{1,1}}); branching.addLine({{1,0},{2,0}});
     EXPECT_THROW((void)extractProfile(branching), std::invalid_argument);
+    sketch::Sketch disconnected;
+    disconnected.addLine({{0,0},{1,0}}); disconnected.addLine({{1,0},{0,1}});
+    disconnected.addLine({{0,1},{0,0}}); disconnected.addLine({{4,4},{5,4}});
+    EXPECT_THROW((void)extractProfile(disconnected), std::invalid_argument);
+    sketch::Sketch nonConvex;
+    nonConvex.addLine({{0,0},{3,0}}); nonConvex.addLine({{3,0},{1,1}});
+    nonConvex.addLine({{1,1},{3,3}}); nonConvex.addLine({{3,3},{0,3}});
+    nonConvex.addLine({{0,3},{0,0}});
+    EXPECT_THROW((void)extractProfile(nonConvex), std::invalid_argument);
+}
+
+TEST(SketchProfileAdapter, MatchesEndpointsWithinGeometricTolerance)
+{
+    constexpr double epsilon = geometry::defaultGeometricTolerance * 0.25;
+    sketch::Sketch sketch;
+    sketch.addLine({{0,0},{4,0}});
+    sketch.addLine({{4 + epsilon,0},{4,3}});
+    sketch.addLine({{4,3 + epsilon},{0,3}});
+    sketch.addLine({{-epsilon,3},{0,epsilon}});
+    const auto profile = extractProfile(sketch);
+    EXPECT_EQ(profile.boundary().size(), 4u);
+    EXPECT_TRUE(modeling::extrude(profile, 2).isValid());
 }
 }

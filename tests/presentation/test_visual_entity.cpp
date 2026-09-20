@@ -22,6 +22,7 @@ using microsw::math::Transform3;
 using microsw::math::almostEqual;
 using microsw::presentation::PresentedGeometry;
 using microsw::presentation::Polyline3;
+using microsw::presentation::SegmentSet3;
 using microsw::presentation::VisualEntity;
 using microsw::presentation::VisualEntityId;
 using microsw::presentation::VisualEntityIdGenerator;
@@ -29,11 +30,12 @@ using microsw::presentation::VisualEntityIdGenerator;
 static_assert(!std::is_default_constructible_v<VisualEntityId>);
 static_assert(std::is_copy_constructible_v<VisualEntityId> && std::is_move_constructible_v<VisualEntityId>);
 static_assert(std::is_copy_assignable_v<VisualEntityId> && std::is_move_assignable_v<VisualEntityId>);
-static_assert(std::variant_size_v<PresentedGeometry> == 4);
+static_assert(std::variant_size_v<PresentedGeometry> == 5);
 static_assert(std::is_same_v<std::variant_alternative_t<0, PresentedGeometry>, Point3>);
 static_assert(std::is_same_v<std::variant_alternative_t<1, PresentedGeometry>, Segment3>);
 static_assert(std::is_same_v<std::variant_alternative_t<2, PresentedGeometry>, Line3>);
 static_assert(std::is_same_v<std::variant_alternative_t<3, PresentedGeometry>, Polyline3>);
+static_assert(std::is_same_v<std::variant_alternative_t<4, PresentedGeometry>, SegmentSet3>);
 static_assert(std::is_copy_constructible_v<VisualEntity> && std::is_move_constructible_v<VisualEntity>);
 static_assert(std::is_same_v<decltype(std::declval<const VisualEntity&>().geometry()), const PresentedGeometry&>);
 static_assert(std::is_same_v<decltype(std::declval<VisualEntity&>().transform()), const Transform3&>);
@@ -104,11 +106,20 @@ TEST(VisualEntity, TransformChangesPreserveIdentityAndAllLocalGeometryValues)
                 EXPECT_TRUE(areCoincident(actual.origin(), original.origin(), 0));
                 EXPECT_TRUE(almostEqual(actual.direction(), original.direction(), 0, 0));
             }
-            else
+            else if constexpr (std::is_same_v<Geometry, Polyline3>)
             {
                 ASSERT_EQ(actual.points().size(), original.points().size());
                 for (std::size_t i = 0; i < actual.points().size(); ++i)
                     EXPECT_TRUE(areCoincident(actual.points()[i], original.points()[i], 0));
+            }
+            else
+            {
+                ASSERT_EQ(actual.segments().size(), original.segments().size());
+                for (std::size_t i = 0; i < actual.segments().size(); ++i)
+                {
+                    EXPECT_TRUE(areCoincident(actual.segments()[i].a(), original.segments()[i].a(), 0));
+                    EXPECT_TRUE(areCoincident(actual.segments()[i].b(), original.segments()[i].b(), 0));
+                }
             }
         }, geometry);
     }

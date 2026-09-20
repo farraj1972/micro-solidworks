@@ -18,7 +18,8 @@ std::vector<math::Vector3> presentedSegmentVertices(
     {
         if (filter && !filter->accepts(entity.id())) continue;
         if (!std::holds_alternative<geometry::Segment3>(entity.geometry())
-            && !std::holds_alternative<presentation::Polyline3>(entity.geometry())) continue;
+            && !std::holds_alternative<presentation::Polyline3>(entity.geometry())
+            && !std::holds_alternative<presentation::SegmentSet3>(entity.geometry())) continue;
         const auto world = presentation::worldGeometry(entity);
         if (const auto* segment = std::get_if<geometry::Segment3>(&world))
         {
@@ -34,6 +35,14 @@ std::vector<math::Vector3> presentedSegmentVertices(
             {
                 vertices.emplace_back(points[i - 1].x(), points[i - 1].y(), points[i - 1].z());
                 vertices.emplace_back(points[i].x(), points[i].y(), points[i].z());
+            }
+        }
+        else if (const auto* set = std::get_if<presentation::SegmentSet3>(&world))
+        {
+            for (const auto& segment : set->segments())
+            {
+                vertices.emplace_back(segment.a().x(), segment.a().y(), segment.a().z());
+                vertices.emplace_back(segment.b().x(), segment.b().y(), segment.b().z());
             }
         }
     }

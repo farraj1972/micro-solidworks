@@ -10,6 +10,7 @@ VisualEntityId GeometryPresentation::add(const geometry::Point3& point) { return
 VisualEntityId GeometryPresentation::add(const geometry::Segment3& segment) { return add(PresentedGeometry{segment}); }
 VisualEntityId GeometryPresentation::add(const geometry::Line3& line) { return add(PresentedGeometry{line}); }
 VisualEntityId GeometryPresentation::add(const Polyline3& polyline) { return add(PresentedGeometry{polyline}); }
+VisualEntityId GeometryPresentation::add(const SegmentSet3& segments) { return add(PresentedGeometry{segments}); }
 
 const VisualEntity* GeometryPresentation::find(VisualEntityId id) const noexcept
 {

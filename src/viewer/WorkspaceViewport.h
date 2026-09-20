@@ -37,6 +37,8 @@ public:
     ~WorkspaceViewport();
     WorkspaceViewport(const WorkspaceViewport&) = delete;
     WorkspaceViewport& operator=(const WorkspaceViewport&) = delete;
+    // Switching model sources clears interaction identities from the old source.
+    void setPresentation(const presentation::GeometryPresentation& presentation) noexcept;
 
     // Empty/invalid surfaces are no-ops. Restores the OpenGL states changed by this pass.
     void render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight);

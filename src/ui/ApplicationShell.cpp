@@ -65,7 +65,8 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
 }
 
 void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool activeTool,
-                                  const sketch::Sketch& sketch, const sketch::SketchEntity* selected)
+                                  const sketch::Sketch& sketch, const sketch::SketchEntity* selected,
+                                  bool hasActiveSolid)
 {
     input_ = {};
     sketchToolRequest_.reset();
@@ -73,8 +74,9 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     deleteSketchRequest_ = false;
     addConstraintRequest_.reset(); removeConstraintRequest_.reset();
     drivingValueRequest_.reset(); solveSketchRequest_ = false;
+    extrusionRequest_ = false;
     drawMainMenu(projectionMode);
-    drawSketchPanel(activeTool, sketch, selected);
+    drawSketchPanel(activeTool, sketch, selected, hasActiveSolid);
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
@@ -94,7 +96,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
 }
 
 void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sketch& model,
-                                       const sketch::SketchEntity* selected)
+                                       const sketch::SketchEntity* selected, bool hasActiveSolid)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight};
@@ -291,6 +293,13 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGui::PopID();
     }
     if (ImGui::Button("Solve constraints")) solveSketchRequest_ = true;
+    ImGui::Separator();
+    ImGui::TextUnformatted("Extrusion");
+    ImGui::InputDouble("Distance", &extrusionDistance_);
+    if (ImGui::Button(hasActiveSolid ? "Regenerate Solid" : "Extrude Solid"))
+        extrusionRequest_ = true;
+    if (hasActiveSolid) ImGui::TextUnformatted("Active result: one selectable Solid");
+    if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
     ImGui::End();
 }
 

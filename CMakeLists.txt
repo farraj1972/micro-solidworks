@@ -155,23 +155,30 @@ target_include_directories(microsw_modeling PUBLIC src)
 target_link_libraries(microsw_modeling PUBLIC microsw_topology)
 
 add_library(microsw_sketch_modeling_adapter STATIC
+    src/app/modeling/ActiveExtrusion.cpp
     src/app/modeling/SketchProfileAdapter.cpp
 )
 target_compile_features(microsw_sketch_modeling_adapter PUBLIC cxx_std_20)
 set_target_properties(microsw_sketch_modeling_adapter PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_sketch_modeling_adapter PUBLIC src)
-target_link_libraries(microsw_sketch_modeling_adapter PUBLIC microsw_sketch microsw_modeling)
+target_link_libraries(microsw_sketch_modeling_adapter PUBLIC
+    microsw_sketch
+    microsw_modeling
+    microsw_presentation
+)
 
 add_library(microsw_presentation STATIC
     src/presentation/GeometryPresentation.cpp
     src/presentation/Polyline3.cpp
+    src/presentation/SegmentSet3.cpp
     src/presentation/SketchPresentation.cpp
+    src/presentation/SolidPresentation.cpp
     src/presentation/WorldGeometry.cpp
 )
 target_compile_features(microsw_presentation PUBLIC cxx_std_20)
 set_target_properties(microsw_presentation PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_presentation PUBLIC src)
-target_link_libraries(microsw_presentation PUBLIC microsw_geometry microsw_sketch)
+target_link_libraries(microsw_presentation PUBLIC microsw_geometry microsw_sketch microsw_topology)
 
 add_library(microsw_viewer STATIC
     src/viewer/GeometryPicker.cpp
@@ -296,6 +303,7 @@ if(BUILD_TESTING)
         tests/app/test_geometry_demo_scene.cpp
         tests/app/test_sketch_tools.cpp
         tests/app/test_sketch_vertical_slice.cpp
+        tests/app/test_extrusion_vertical_slice.cpp
         tests/test_infrastructure.cpp
         tests/ui/test_transform_editor.cpp
         tests/test_logging.cpp
@@ -355,6 +363,7 @@ if(BUILD_TESTING)
         tests/rendering/test_point_renderer.cpp
         tests/presentation/test_geometry_presentation.cpp
         tests/presentation/test_sketch_presentation.cpp
+        tests/presentation/test_solid_presentation.cpp
         tests/presentation/test_visual_entity.cpp
         tests/viewer/test_presented_lines.cpp
         tests/viewer/test_presented_points.cpp

@@ -7,9 +7,25 @@
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
 #include "constraints/ConstraintSolver.h"
+#include "app/modeling/ActiveExtrusion.h"
+#include "core/geometry/GeometricTolerance.h"
 
 #include <exception>
 #include <stdexcept>
+
+namespace
+{
+microsw::constraints::SolverPolicy modelingSolverPolicy()
+{
+    microsw::constraints::SolverPolicy policy;
+    policy.residualSatisfactionTolerance = microsw::geometry::defaultGeometricTolerance;
+    policy.stepTolerance = microsw::geometry::defaultGeometricTolerance * 0.01;
+    policy.costReductionTolerance = 1e-16;
+    policy.initialStateRegularization = 1e-12;
+    policy.maxIterations = 200;
+    return policy;
+}
+}
 
 int main()
 {
@@ -25,7 +41,8 @@ int main()
             microsw::sketch::Sketch sketch;
             microsw::SketchToolController tools{sketch};
             microsw::presentation::SketchPresentation presentation;
-            microsw::constraints::ConstraintSolver constraintSolver;
+            microsw::constraints::ConstraintSolver constraintSolver{modelingSolverPolicy()};
+            microsw::ActiveExtrusion activeExtrusion;
             presentation.regenerate(sketch);
             microsw::viewer::WorkspaceViewport workspace{presentation.geometry()};
 
@@ -37,11 +54,12 @@ int main()
                 openGLContext.clear();
                 ui.beginFrame();
                 const auto selectedVisual = workspace.selectedEntity();
-                const auto selectedSketch = selectedVisual
+                const auto selectedSketch = selectedVisual && !activeExtrusion.hasSolid()
                     ? presentation.sketchId(*selectedVisual) : std::nullopt;
                 const auto* selected = selectedSketch && sketch.contains(*selectedSketch)
                     ? &sketch.find(*selectedSketch) : nullptr;
-                shell.drawSketch(workspace.projectionMode(), tools.tool(), sketch, selected);
+                shell.drawSketch(workspace.projectionMode(), tools.tool(), sketch, selected,
+                    activeExtrusion.hasSolid());
                 if (shell.sketchToolRequest())
                     tools.setTool(*shell.sketchToolRequest());
                 if (selectedSketch && shell.sketchGeometryRequest())
@@ -82,6 +100,21 @@ int main()
                     }
                 }
                 catch (const std::exception& error) { shell.reportSketchError(error.what()); }
+                if (shell.extrusionRequest())
+                {
+                    try
+                    {
+                        const bool firstResult = !activeExtrusion.hasSolid();
+                        activeExtrusion.regenerate(sketch, shell.extrusionDistance());
+                        if (firstResult)
+                            workspace.setPresentation(activeExtrusion.presentation().geometry());
+                        shell.reportExtrusionSuccess();
+                    }
+                    catch (const std::exception& error)
+                    {
+                        shell.reportExtrusionError(error.what());
+                    }
+                }
                 workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());
                 const auto framebuffer = window.framebufferSize();
                 workspace.updateHover(shell.workspaceRect(), shell.workspaceInput(),
