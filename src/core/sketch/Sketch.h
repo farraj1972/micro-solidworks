@@ -1,11 +1,13 @@
 #pragma once
 
 #include "core/sketch/SketchEntity.h"
+#include "core/sketch/SketchConstraint.h"
 #include "core/sketch/SketchPlane.h"
 
 #include <optional>
 #include <array>
 #include <vector>
+#include <utility>
 
 namespace microsw::sketch
 {
@@ -35,13 +37,27 @@ public:
     [[nodiscard]] std::vector<SketchEntityId> entityIds() const;
     [[nodiscard]] std::size_t size() const noexcept { return activeCount_; }
 
+    SketchConstraintId addConstraint(SketchConstraintValue value);
+    void removeConstraint(SketchConstraintId id);
+    void setDrivingValue(SketchConstraintId id, math::Scalar value);
+    [[nodiscard]] bool containsConstraint(SketchConstraintId id) const noexcept;
+    [[nodiscard]] const SketchConstraint& findConstraint(SketchConstraintId id) const;
+    [[nodiscard]] std::vector<SketchConstraintId> constraintIds() const;
+    [[nodiscard]] std::size_t constraintCount() const noexcept { return activeConstraintCount_; }
+
+    using Replacement = std::pair<SketchEntityId, SketchGeometry>;
+    void replaceMany(const std::vector<Replacement>& replacements);
+
 private:
     SketchEntityId add(SketchGeometry geometry);
     void replace(SketchEntityId id, SketchEntityType expected, SketchGeometry geometry);
+    void validateConstraint(const SketchConstraintValue& value) const;
 
     SketchPlane plane_;
     std::vector<std::optional<SketchEntity>> entities_;
     std::size_t activeCount_{};
+    std::vector<std::optional<SketchConstraint>> constraints_;
+    std::size_t activeConstraintCount_{};
 };
 
 }

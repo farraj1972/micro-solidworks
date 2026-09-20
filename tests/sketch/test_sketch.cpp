@@ -6,6 +6,24 @@
 
 namespace
 {
+
+using microsw::sketch::CircleRadius;
+using microsw::sketch::Coincident;
+using microsw::sketch::Horizontal;
+using microsw::sketch::SketchCircle;
+using microsw::sketch::SketchElementRef;
+using microsw::sketch::SketchLine;
+using microsw::sketch::SubElementKind;
+
+SketchElementRef lineStart(microsw::sketch::SketchEntityId id)
+{
+    return {id, SubElementKind::LineStart};
+}
+
+SketchElementRef lineEnd(microsw::sketch::SketchEntityId id)
+{
+    return {id, SubElementKind::LineEnd};
+}
 using namespace microsw;
 using namespace microsw::sketch;
 
@@ -126,5 +144,67 @@ TEST(Sketch, RectangleRejectsDegeneracyWithoutInsertion)
     EXPECT_THROW((void)sketch.addRectangle(geometry::Point2{}, geometry::Point2{2, 5e-10}), std::invalid_argument);
     EXPECT_EQ(sketch.size(), 1u);
     EXPECT_EQ(sketch.entityIds(), (std::vector<SketchEntityId>{existing}));
+}
+
+TEST(Sketch, ConstraintLifecycleUsesStableNonReusedIdentity)
+{
+    Sketch sketch;
+    const auto firstLine = sketch.addLine({geometry::Point2{}, geometry::Point2{1, 0}});
+    const auto secondLine = sketch.addLine({geometry::Point2{1, 1}, geometry::Point2{2, 1}});
+    const auto first = sketch.addConstraint(Coincident{lineEnd(firstLine), lineStart(secondLine)});
+    const auto second = sketch.addConstraint(Horizontal{{firstLine, SubElementKind::LineBody}});
+    EXPECT_EQ(first.value(), 0u);
+    EXPECT_EQ(second.value(), 1u);
+    sketch.removeConstraint(first);
+    const auto third = sketch.addConstraint(Horizontal{{secondLine, SubElementKind::LineBody}});
+    EXPECT_EQ(third.value(), 2u);
+    EXPECT_FALSE(sketch.containsConstraint(first));
+    EXPECT_EQ(sketch.constraintCount(), 2u);
+}
+
+TEST(Sketch, RejectsIncompatibleConstraintReferencesAndReferencedEntityRemoval)
+{
+    Sketch sketch;
+    const auto line = sketch.addLine({geometry::Point2{}, geometry::Point2{1, 0}});
+    const auto circle = sketch.addCircle({geometry::Point2{}, 2});
+    EXPECT_THROW((void)sketch.addConstraint(Horizontal{{circle, SubElementKind::CircleCenter}}),
+                 std::invalid_argument);
+    const auto constraint = sketch.addConstraint(
+        Coincident{lineStart(line), {circle, SubElementKind::CircleCenter}});
+    EXPECT_THROW(sketch.remove(circle), std::invalid_argument);
+    sketch.removeConstraint(constraint);
+    EXPECT_NO_THROW(sketch.remove(circle));
+}
+
+TEST(Sketch, DrivingValueEditingIsValidatedAndAtomic)
+{
+    Sketch sketch;
+    const auto circle = sketch.addCircle({geometry::Point2{}, 2});
+    const auto id = sketch.addConstraint(CircleRadius{{circle, SubElementKind::CircleRadius}, 3});
+    sketch.setDrivingValue(id, 4);
+    EXPECT_DOUBLE_EQ(std::get<CircleRadius>(sketch.findConstraint(id).value()).value, 4);
+    EXPECT_THROW(sketch.setDrivingValue(id, -1), std::invalid_argument);
+    EXPECT_DOUBLE_EQ(std::get<CircleRadius>(sketch.findConstraint(id).value()).value, 4);
+}
+
+TEST(Sketch, MultiEntityReplacementValidatesAllBeforeCommit)
+{
+    Sketch sketch;
+    const auto line = sketch.addLine({geometry::Point2{}, geometry::Point2{1, 0}});
+    const auto circle = sketch.addCircle({geometry::Point2{}, 2});
+    const auto originalLine = std::get<SketchLine>(sketch.find(line).geometry()).geometry;
+    EXPECT_THROW(sketch.replaceMany({
+        {line, SketchLine{{geometry::Point2{5, 5}, geometry::Point2{6, 5}}}},
+        {circle, SketchLine{{geometry::Point2{}, geometry::Point2{2, 0}}}}}),
+        std::invalid_argument);
+    const auto& unchanged = std::get<SketchLine>(sketch.find(line).geometry()).geometry;
+    EXPECT_TRUE(geometry::areCoincident(unchanged.a(), originalLine.a(), 0));
+    EXPECT_TRUE(geometry::areCoincident(unchanged.b(), originalLine.b(), 0));
+
+    sketch.replaceMany({
+        {line, SketchLine{{geometry::Point2{5, 5}, geometry::Point2{6, 5}}}},
+        {circle, SketchCircle{{geometry::Point2{2, 2}, 3}}}});
+    EXPECT_EQ(line, sketch.find(line).id());
+    EXPECT_EQ(circle, sketch.find(circle).id());
 }
 }

@@ -119,6 +119,7 @@ target_link_libraries(microsw_geometry PUBLIC microsw_math)
 
 add_library(microsw_sketch STATIC
     src/core/sketch/Sketch.cpp
+    src/core/sketch/SketchConstraint.cpp
     src/core/sketch/SketchEntity.cpp
     src/core/sketch/SketchPlane.cpp
 )
