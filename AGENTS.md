@@ -914,13 +914,22 @@ B7.1–B7.11: COMPLETE
 B7.FREEZE: FROZEN
 ```
 
-Current latest stable baseline:
+Previous stable baseline:
 
 ```text
 B8 — Sketcher
 STATUS: FROZEN
 B8.1–B8.12: COMPLETE
 B8.FREEZE: FROZEN
+```
+
+Current latest stable baseline:
+
+```text
+B9 — Constraint System
+STATUS: FROZEN
+B9.1–B9.16: COMPLETE
+B9.FREEZE: FROZEN
 ```
 
 Previous stable baseline:
@@ -1024,8 +1033,10 @@ microsw_sketch -> microsw_geometry -> microsw_math; Presentation and
 Application consume Sketch without a reverse infrastructure dependency.
 The B9 prerequisite review is complete. Frozen D8 defines Sketch-owned logical
 constraints and stable sub-element references, with a project-owned
-`microsw_constraints -> microsw_sketch` numeric solver boundary. B9.1–B9.15
-are implemented and B9 is a CANDIDATE pending V3. ADR-0032–0034 are CONFORMANT.
+`microsw_constraints -> microsw_sketch` numeric solver boundary. B9.1–B9.16
+are COMPLETE. The B9 V3 passed clean configure/full Debug build, zero warnings,
+758/758 CTest tests and manual runtime validation; B9 is FROZEN.
+ADR-0032–0034 are CONFORMANT.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

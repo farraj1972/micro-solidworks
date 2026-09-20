@@ -56,11 +56,13 @@ ADR-0028–0031: ACCEPTED
 B8 — Sketcher: FROZEN
 B8.1–B8.12: COMPLETE
 B8.FREEZE: FROZEN
-Latest validated snapshot (B8): 746/746 tests PASS, runtime PASS, 0 warnings
 ADR-0028–0031: CONFORMANT
 D8 — Constraint Ownership, References & Solver Semantics: FROZEN
 ADR-0032–0034: ACCEPTED
-B9 — Constraint System: CANDIDATE; B9.1–B9.15 COMPLETE; V3 pending
+B9 — Constraint System: FROZEN
+B9.1–B9.16: COMPLETE
+B9.FREEZE: FROZEN
+Latest validated snapshot (B9): 758/758 tests PASS, runtime PASS, 0 warnings
 ADR-0032–0034: CONFORMANT
 ```
 

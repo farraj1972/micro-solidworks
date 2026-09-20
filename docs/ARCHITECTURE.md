@@ -71,10 +71,11 @@ project-owned numeric service follows
 `microsw_constraints -> microsw_sketch -> microsw_geometry -> microsw_math`.
 It solves only temporary candidate state and commits validated multi-entity
 replacement atomically; Presentation remains derived.
-The implemented B9 candidate conforms: Sketch owns stable logical constraint
+The frozen B9 baseline conforms: Sketch owns stable logical constraint
 records and atomic replacement, while `microsw_constraints` owns dense
 Levenberg–Marquardt machinery and depends only on Sketch. Presentation is
-regenerated only after successful commit. B9.1–B9.15 are COMPLETE; V3 is pending.
+regenerated only after successful commit. B9.1–B9.16 and B9.FREEZE are complete;
+the clean V3 passed 758/758 tests and manual runtime validation.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
