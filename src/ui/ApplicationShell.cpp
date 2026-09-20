@@ -190,21 +190,59 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (selected)
     {
         const auto id = selected->id();
+        const auto dimensionFor = [&](sketch::SketchEntityId entityId, bool radius) {
+            std::optional<sketch::SketchConstraintId> result;
+            for (const auto constraintId : model.constraintIds())
+            {
+                std::visit([&](const auto& constraint) {
+                    using T = std::decay_t<decltype(constraint)>;
+                    if constexpr (std::is_same_v<T, sketch::LineLength>)
+                    {
+                        if (!radius && constraint.line.entity == entityId) result = constraintId;
+                    }
+                    else if constexpr (std::is_same_v<T, sketch::CircleRadius>)
+                    {
+                        if (radius && constraint.radius.entity == entityId) result = constraintId;
+                    }
+                }, model.findConstraint(constraintId).value());
+            }
+            return result;
+        };
         if (selected->type() == sketch::SketchEntityType::Line)
         {
             const sketch::SketchElementRef ref{id, sketch::SubElementKind::LineBody};
             if (ImGui::Button("Add Horizontal")) addConstraintRequest_ = sketch::Horizontal{ref};
             if (ImGui::Button("Add Vertical")) addConstraintRequest_ = sketch::Vertical{ref};
             const auto& line = std::get<sketch::SketchLine>(selected->geometry()).geometry;
-            double length = line.length();
-            if (ImGui::InputDouble("Line length", &length))
-                addConstraintRequest_ = sketch::LineLength{ref, length};
+            if (const auto constraintId = dimensionFor(id, false))
+            {
+                double length = std::get<sketch::LineLength>(model.findConstraint(*constraintId).value()).value;
+                if (ImGui::InputDouble("Line length constraint", &length))
+                    drivingValueRequest_ = std::pair{*constraintId, length};
+            }
+            else
+            {
+                ImGui::Text("Current line length: %.6g", line.length());
+                if (ImGui::Button("Add line length constraint"))
+                    addConstraintRequest_ = sketch::LineLength{ref, line.length()};
+            }
         }
         else if (selected->type() == sketch::SketchEntityType::Circle)
         {
-            double radius = std::get<sketch::SketchCircle>(selected->geometry()).geometry.radius();
-            if (ImGui::InputDouble("Radius dimension", &radius))
-                addConstraintRequest_ = sketch::CircleRadius{{id, sketch::SubElementKind::CircleRadius}, radius};
+            const auto radiusRef = sketch::SketchElementRef{id, sketch::SubElementKind::CircleRadius};
+            const auto& circle = std::get<sketch::SketchCircle>(selected->geometry()).geometry;
+            if (const auto constraintId = dimensionFor(id, true))
+            {
+                double radius = std::get<sketch::CircleRadius>(model.findConstraint(*constraintId).value()).value;
+                if (ImGui::InputDouble("Radius constraint", &radius))
+                    drivingValueRequest_ = std::pair{*constraintId, radius};
+            }
+            else
+            {
+                ImGui::Text("Current radius: %.6g", circle.radius());
+                if (ImGui::Button("Add radius constraint"))
+                    addConstraintRequest_ = sketch::CircleRadius{radiusRef, circle.radius()};
+            }
         }
     }
     for (const auto id : model.constraintIds())
