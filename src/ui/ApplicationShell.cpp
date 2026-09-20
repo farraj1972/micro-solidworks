@@ -10,7 +10,8 @@
 
 namespace
 {
-constexpr float modelPanelWidth = 260.0F;
+constexpr float defaultModelPanelWidth = 320.0F;
+constexpr float minimumModelPanelWidth = 260.0F;
 constexpr float statusBarHeight = 26.0F;
 
 constexpr ImGuiWindowFlags structuralWindowFlags =
@@ -97,7 +98,17 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight};
-    beginStructuralWindow("Model", viewport->WorkPos, ImVec2{modelPanelWidth, contentSize.y});
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(ImVec2{defaultModelPanelWidth, contentSize.y}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(
+        ImVec2{minimumModelPanelWidth, contentSize.y},
+        ImVec2{viewport->WorkSize.x * 0.7F, contentSize.y});
+    constexpr ImGuiWindowFlags sketchPanelFlags =
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
+    ImGui::Begin("Model", nullptr, sketchPanelFlags);
+    modelPanelWidth_ = ImGui::GetWindowSize().x;
     ImGui::TextUnformatted("Sketch — Global XY");
     ImGui::Separator();
     const auto toolButton = [&](const char* label, SketchTool tool)
@@ -303,7 +314,7 @@ void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected
     beginStructuralWindow(
         "Model",
         viewport->WorkPos,
-        ImVec2{modelPanelWidth, contentSize.y});
+        ImVec2{modelPanelWidth_, contentSize.y});
     ImGui::TextUnformatted("Model");
     ImGui::Separator();
     ImGui::TextDisabled("No document");
@@ -362,9 +373,9 @@ void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected
 void ApplicationShell::drawWorkspace()
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    const ImVec2 position{viewport->WorkPos.x + modelPanelWidth, viewport->WorkPos.y};
+    const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y};
     const ImVec2 size{
-        viewport->WorkSize.x - modelPanelWidth,
+        viewport->WorkSize.x - modelPanelWidth_,
         viewport->WorkSize.y - statusBarHeight};
 
     const ImGuiIO& io = ImGui::GetIO();
@@ -380,6 +391,12 @@ void ApplicationShell::drawWorkspace()
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::TextDisabled("Workspace");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4{1.0F, 0.25F, 0.25F, 1.0F}, "X");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4{0.25F, 1.0F, 0.25F, 1.0F}, "Y");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4{0.3F, 0.55F, 1.0F, 1.0F}, "Z");
     input_.workspaceHovered = ImGui::IsWindowHovered();
     ImGui::End();
 }

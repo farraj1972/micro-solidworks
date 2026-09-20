@@ -58,5 +58,6 @@ private:
     std::optional<sketch::SketchConstraintId> removeConstraintRequest_;
     std::optional<std::pair<sketch::SketchConstraintId, math::Scalar>> drivingValueRequest_;
     bool solveSketchRequest_{};
+    float modelPanelWidth_{320.0F};
 };
 }
