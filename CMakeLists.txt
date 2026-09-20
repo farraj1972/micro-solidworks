@@ -145,6 +145,23 @@ set_target_properties(microsw_topology PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_topology PUBLIC src)
 target_link_libraries(microsw_topology PUBLIC microsw_geometry)
 
+add_library(microsw_modeling STATIC
+    src/modeling/Extrusion.cpp
+    src/modeling/Profile.cpp
+)
+target_compile_features(microsw_modeling PUBLIC cxx_std_20)
+set_target_properties(microsw_modeling PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_modeling PUBLIC src)
+target_link_libraries(microsw_modeling PUBLIC microsw_topology)
+
+add_library(microsw_sketch_modeling_adapter STATIC
+    src/app/modeling/SketchProfileAdapter.cpp
+)
+target_compile_features(microsw_sketch_modeling_adapter PUBLIC cxx_std_20)
+set_target_properties(microsw_sketch_modeling_adapter PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_sketch_modeling_adapter PUBLIC src)
+target_link_libraries(microsw_sketch_modeling_adapter PUBLIC microsw_sketch microsw_modeling)
+
 add_library(microsw_presentation STATIC
     src/presentation/GeometryPresentation.cpp
     src/presentation/Polyline3.cpp
@@ -247,6 +264,7 @@ set_target_properties(micro_solidworks PROPERTIES
 )
 target_link_libraries(micro_solidworks PRIVATE
     microsw_constraints
+    microsw_sketch_modeling_adapter
     microsw_viewer
     microsw_logging
     microsw_rendering
@@ -309,6 +327,7 @@ if(BUILD_TESTING)
         tests/math/test_transformations.cpp
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
+        tests/modeling/test_profile_extrusion.cpp
         tests/topology/test_topology.cpp
         tests/topology/test_topology_integration.cpp
         tests/sketch/test_sketch_plane.cpp
@@ -353,8 +372,10 @@ if(BUILD_TESTING)
         microsw_geometry
         microsw_logging
         microsw_math
+        microsw_modeling
         microsw_presentation
         microsw_sketch
+        microsw_sketch_modeling_adapter
         microsw_topology
         microsw_viewer
         microsw_rendering
