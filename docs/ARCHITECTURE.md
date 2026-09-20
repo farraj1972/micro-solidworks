@@ -77,15 +77,15 @@ Levenberg–Marquardt machinery and depends only on Sketch. Presentation is
 regenerated only after successful commit. B9.1–B9.16 and B9.FREEZE are complete;
 the clean V3 passed 758/758 tests and manual runtime validation.
 
-D9 — Profile, Extrusion & Modeling Boundary is PROPOSED / READY FOR REVIEW in
-ADR-0035–0037. The proposal defines an ephemeral strictly-convex Profile as
+D9 — Profile, Extrusion & Modeling Boundary is FROZEN in accepted
+ADR-0035–0037. The decision defines an ephemeral strictly-convex Profile as
 ordered world-space boundary points plus an oriented Plane, extracted from
 solved Sketch geometry by an integration adapter. It proposes the future edge
 `microsw_modeling -> microsw_topology -> microsw_geometry -> microsw_math`,
 positive one-shot extrusion into shared manifold topology, Application-owned
 active Solid replacement and derived wireframe solid-level presentation.
 Circle/Arc extrusion, feature history and automatic rebuild remain deferred.
-B10 remains NOT STARTED pending D9 approval and freeze.
+B10 is NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
@@ -1048,7 +1048,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0034 are **34/34 ACCEPTED**. ADR-0001–0027 remain unchanged.
+ADR-0001 through ADR-0037 are **37/37 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

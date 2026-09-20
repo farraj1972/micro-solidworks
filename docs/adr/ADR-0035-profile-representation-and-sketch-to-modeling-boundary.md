@@ -1,6 +1,6 @@
 # ADR-0035 — Profile Representation and Sketch-to-Modeling Boundary
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

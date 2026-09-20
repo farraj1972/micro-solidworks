@@ -1,6 +1,6 @@
 # ADR-0036 — Extrusion Semantics and Topology Generation
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

@@ -1,6 +1,6 @@
 # ADR-0037 — Modeling Result Ownership and Presentation Boundary
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

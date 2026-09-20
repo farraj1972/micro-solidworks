@@ -91,12 +91,14 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | ID | Gap | Blocking now | Expected closure |
 | --- | --- | --- | --- |
 | GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
-| GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | Before first B7/B8 capability that requires them |
+| GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | When an authorized non-convex/general operation requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
 | GAP-SCENE-002 | OPEN / deferred — Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
 
 Circle2 is implemented and GAP-GEO-001 is CLOSED. Basic intersections remain
-GAP-GEO-002 deferred; each future closure requires authorized scope.
+GAP-GEO-002 deferred; frozen D9 confirms they do not block the strict-convex
+B10 slice. Each future closure requires authorized scope. GAP-SCENE-002 likewise
+remains open and does not block one Application-owned active Solid.
 
 ## Delivered Functional Slice — B6
 
@@ -565,9 +567,8 @@ ADR-0032–0034 are CONFORMANT.
 
 # B10 — Extrusion
 
-Estado: NOT STARTED. D9 — Profile, Extrusion & Modeling Boundary is PROPOSED /
-READY FOR REVIEW in ADR-0035–0037. B10 implementation requires D9 approval and
-freeze.
+Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D9 — Profile, Extrusion &
+Modeling Boundary is FROZEN in accepted ADR-0035–0037.
 
 Objectivo:
 
