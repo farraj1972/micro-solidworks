@@ -598,7 +598,7 @@ CTest tests and manual runtime validation. See `docs/B10_VALIDATION.md`.
 
 # B11 — Boolean Operations
 
-Estado: CANDIDATE pending V3 baseline validation. D10 — Axis-Aligned Boolean
+Estado: FROZEN. B11 completed the restricted axis-aligned Boolean vertical slice and passed 775/775 tests plus runtime validation. D10 — Axis-Aligned Boolean
 Semantics & Non-Convex Solid Validation is FROZEN in accepted ADR-0038–0040.
 
 Capacidades:

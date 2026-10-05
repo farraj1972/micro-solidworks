@@ -941,6 +941,15 @@ B10.1â€“B10.18: COMPLETE
 B10.FREEZE: FROZEN
 ```
 
+Current latest stable baseline:
+
+```text
+B11 — Boolean Operations
+STATUS: FROZEN
+B11.1–B11.28: COMPLETE
+B11.FREEZE: FROZEN
+```
+
 Previous stable baseline:
 
 ```text
@@ -1061,7 +1070,7 @@ Boolean slice to axis-aligned box operands, coordinate-cell decomposition and
 one connected, hole-free, single-shell orthogonal result. It defines explicit
 SUCCESS/EMPTY/INVALID_INPUT/UNSUPPORTED_CASE/NUMERICAL_FAILURE semantics and a
 limited extension separating non-convex Solid validity from convex-specific
-orientation validation. ADR-0038â€“0040 are ACCEPTED. B11 is CANDIDATE pending V3 baseline validation.
+orientation validation. ADR-0038â€“0040 are ACCEPTED. B11 is FROZEN after clean configure/full Debug build, zero warnings, 775/775 CTest tests and manual runtime validation. ADR-0038-0040 are CONFORMANT.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

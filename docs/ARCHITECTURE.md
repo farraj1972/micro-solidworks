@@ -98,7 +98,7 @@ Cell-derived boundary rectangles reconstruct new shared Topology while
 preserving convex single-wire Faces. The authorized B7 extension separates
 structural manifold validity from convex-only orientation validation so one
 connected non-convex orthogonal Shell can be validated from cell-derived
-outward directions. B11 is CANDIDATE: the axis-aligned cell engine reconstructs shared manifold topology and reuses Solid presentation.
+outward directions. B11 is FROZEN: the axis-aligned cell engine reconstructs shared manifold topology and reuses Solid presentation.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:

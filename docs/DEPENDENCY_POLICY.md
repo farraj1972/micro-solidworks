@@ -110,7 +110,7 @@ OpenGL 3.3 funcional.
   temporary grid values and topology reconstruction remain inside
   `microsw_modeling`, preserving `microsw_modeling -> microsw_topology ->
   microsw_geometry -> microsw_math`. No BSP, external Boolean kernel or general
-  intersection dependency is authorized. ADR-0038–0040 are ACCEPTED; B11 is CANDIDATE and the accepted D10 contract is CONFORMANT.
+  intersection dependency is authorized. ADR-0038–0040 are ACCEPTED; B11 is FROZEN and the accepted D10 contract is CONFORMANT.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no
