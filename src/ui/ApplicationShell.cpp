@@ -75,6 +75,8 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     addConstraintRequest_.reset(); removeConstraintRequest_.reset();
     drivingValueRequest_.reset(); solveSketchRequest_ = false;
     extrusionRequest_ = false;
+    assignOperandARequest_ = assignOperandBRequest_ = false;
+    booleanRequest_.reset();
     drawMainMenu(projectionMode);
     drawSketchPanel(activeTool, sketch, selected, hasActiveSolid);
     drawWorkspace();
@@ -300,7 +302,28 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         extrusionRequest_ = true;
     if (hasActiveSolid) ImGui::TextUnformatted("Active result: one selectable Solid");
     if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
+    ImGui::Separator();
+    ImGui::TextUnformatted("Boolean Operations");
+    ImGui::TextWrapped("Extrude a Solid, assign it to A or B, then execute.");
+    if (ImGui::Button("Assign active Solid to A")) assignOperandARequest_ = true;
+    if (ImGui::Button("Assign active Solid to B")) assignOperandBRequest_ = true;
+    if (ImGui::Button("Intersection")) booleanRequest_ = modeling::BooleanOperation::Intersection;
+    ImGui::SameLine(); if (ImGui::Button("Union")) booleanRequest_ = modeling::BooleanOperation::Union;
+    if (ImGui::Button("Difference A-B")) booleanRequest_ = modeling::BooleanOperation::Difference;
+    if (!booleanStatus_.empty()) ImGui::TextWrapped("Boolean: %s", booleanStatus_.c_str());
     ImGui::End();
+}
+
+void ApplicationShell::reportBooleanStatus(modeling::BooleanStatus status)
+{
+    switch (status)
+    {
+    case modeling::BooleanStatus::SUCCESS: booleanStatus_ = "SUCCESS"; break;
+    case modeling::BooleanStatus::EMPTY: booleanStatus_ = "EMPTY"; break;
+    case modeling::BooleanStatus::INVALID_INPUT: booleanStatus_ = "INVALID_INPUT"; break;
+    case modeling::BooleanStatus::UNSUPPORTED_CASE: booleanStatus_ = "UNSUPPORTED_CASE"; break;
+    case modeling::BooleanStatus::NUMERICAL_FAILURE: booleanStatus_ = "NUMERICAL_FAILURE"; break;
+    }
 }
 
 void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)

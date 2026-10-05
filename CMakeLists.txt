@@ -146,6 +146,7 @@ target_include_directories(microsw_topology PUBLIC src)
 target_link_libraries(microsw_topology PUBLIC microsw_geometry)
 
 add_library(microsw_modeling STATIC
+    src/modeling/Boolean.cpp
     src/modeling/Extrusion.cpp
     src/modeling/Profile.cpp
 )
@@ -156,6 +157,7 @@ target_link_libraries(microsw_modeling PUBLIC microsw_topology)
 
 add_library(microsw_sketch_modeling_adapter STATIC
     src/app/modeling/ActiveExtrusion.cpp
+    src/app/modeling/ActiveBoolean.cpp
     src/app/modeling/SketchProfileAdapter.cpp
 )
 target_compile_features(microsw_sketch_modeling_adapter PUBLIC cxx_std_20)
@@ -304,6 +306,7 @@ if(BUILD_TESTING)
         tests/app/test_sketch_tools.cpp
         tests/app/test_sketch_vertical_slice.cpp
         tests/app/test_extrusion_vertical_slice.cpp
+        tests/app/test_boolean_vertical_slice.cpp
         tests/test_infrastructure.cpp
         tests/ui/test_transform_editor.cpp
         tests/test_logging.cpp
@@ -336,6 +339,7 @@ if(BUILD_TESTING)
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
         tests/modeling/test_profile_extrusion.cpp
+        tests/modeling/test_boolean.cpp
         tests/topology/test_topology.cpp
         tests/topology/test_topology_integration.cpp
         tests/sketch/test_sketch_plane.cpp

@@ -4,6 +4,7 @@
 #include "app/WorkspaceInput.h"
 #include "presentation/VisualEntity.h"
 #include "app/sketch/SketchToolController.h"
+#include "modeling/Boolean.h"
 
 #include <optional>
 #include <string>
@@ -35,6 +36,10 @@ public:
     [[nodiscard]] math::Scalar extrusionDistance() const noexcept { return extrusionDistance_; }
     void reportExtrusionError(const std::string& error) { extrusionStatus_ = "Extrusion rejected: " + error; }
     void reportExtrusionSuccess() { extrusionStatus_ = "Solid regenerated"; }
+    [[nodiscard]] bool assignOperandARequest() const noexcept { return assignOperandARequest_; }
+    [[nodiscard]] bool assignOperandBRequest() const noexcept { return assignOperandBRequest_; }
+    [[nodiscard]] const std::optional<modeling::BooleanOperation>& booleanRequest() const noexcept { return booleanRequest_; }
+    void reportBooleanStatus(modeling::BooleanStatus status);
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
 
@@ -66,6 +71,10 @@ private:
     bool extrusionRequest_{};
     math::Scalar extrusionDistance_{5.0};
     std::string extrusionStatus_;
+    bool assignOperandARequest_{};
+    bool assignOperandBRequest_{};
+    std::optional<modeling::BooleanOperation> booleanRequest_;
+    std::string booleanStatus_;
     float modelPanelWidth_{320.0F};
 };
 }

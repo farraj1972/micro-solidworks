@@ -8,6 +8,7 @@
 #include "viewer/WorkspaceViewport.h"
 #include "constraints/ConstraintSolver.h"
 #include "app/modeling/ActiveExtrusion.h"
+#include "app/modeling/ActiveBoolean.h"
 #include "core/geometry/GeometricTolerance.h"
 
 #include <exception>
@@ -43,6 +44,7 @@ int main()
             microsw::presentation::SketchPresentation presentation;
             microsw::constraints::ConstraintSolver constraintSolver{modelingSolverPolicy()};
             microsw::ActiveExtrusion activeExtrusion;
+            microsw::ActiveBoolean activeBoolean;
             presentation.regenerate(sketch);
             microsw::viewer::WorkspaceViewport workspace{presentation.geometry()};
 
@@ -113,6 +115,20 @@ int main()
                     catch (const std::exception& error)
                     {
                         shell.reportExtrusionError(error.what());
+                    }
+                }
+                if (shell.assignOperandARequest() && activeExtrusion.solid())
+                    activeBoolean.setOperandA(*activeExtrusion.solid());
+                if (shell.assignOperandBRequest() && activeExtrusion.solid())
+                    activeBoolean.setOperandB(*activeExtrusion.solid());
+                if (shell.booleanRequest())
+                {
+                    const auto status = activeBoolean.execute(*shell.booleanRequest());
+                    shell.reportBooleanStatus(status);
+                    if (status == microsw::modeling::BooleanStatus::SUCCESS)
+                    {
+                        workspace.setPresentation(activeBoolean.presentation().geometry());
+                        workspace.clearSelection();
                     }
                 }
                 workspace.updateNavigation(shell.workspaceRect(), shell.workspaceInput());

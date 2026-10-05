@@ -214,6 +214,16 @@ void Solid::setRootShell(ShellId shellId)
     rootShell_ = shellId;
 }
 
+void Solid::setCellDerivedRootShell(ShellId shellId)
+{
+    const auto& shell = find(shellId);
+    if (shells_.size() != 1)
+        throw std::invalid_argument{"A Solid supports exactly one Shell"};
+    for (const auto& use : shell.uses())
+        if (use.orientation != FaceOrientation::Forward)
+            throw std::invalid_argument{"Cell-derived Face uses must preserve their outward support Plane"};
+    rootShell_ = shellId;
+}
 geometry::Segment3 Solid::segment(EdgeId edgeId) const
 {
     const auto& edge = find(edgeId);

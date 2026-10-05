@@ -87,6 +87,7 @@ public:
     FaceId addFace(WireId outerWire, const geometry::Plane& supportPlane);
     ShellId addShell(std::vector<OrientedFaceUse> uses);
     void setRootShell(ShellId shell);
+    void setCellDerivedRootShell(ShellId shell);
 
     [[nodiscard]] geometry::Segment3 segment(EdgeId edge) const;
     [[nodiscard]] const std::vector<Vertex>& vertices() const noexcept { return vertices_; }
