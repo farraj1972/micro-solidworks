@@ -1061,8 +1061,7 @@ Boolean slice to axis-aligned box operands, coordinate-cell decomposition and
 one connected, hole-free, single-shell orthogonal result. It defines explicit
 SUCCESS/EMPTY/INVALID_INPUT/UNSUPPORTED_CASE/NUMERICAL_FAILURE semantics and a
 limited extension separating non-convex Solid validity from convex-specific
-orientation validation. ADR-0038–0040 are ACCEPTED. B11 is NOT STARTED / NEXT
-ACTIVE FUNCTIONAL AREA.
+orientation validation. ADR-0038–0040 are ACCEPTED. B11 is CANDIDATE pending V3 baseline validation.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

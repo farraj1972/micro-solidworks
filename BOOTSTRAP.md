@@ -73,7 +73,7 @@ Latest validated snapshot (B10): 767/767 tests PASS, runtime PASS, 0 warnings
 ADR-0035–0037: CONFORMANT
 D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation: FROZEN
 ADR-0038–0040: ACCEPTED
-B11 — Boolean Operations: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA
+B11 — Boolean Operations: CANDIDATE pending V3 baseline validation
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
