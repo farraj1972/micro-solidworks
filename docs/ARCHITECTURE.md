@@ -91,6 +91,15 @@ Circle/Arc extrusion, feature history and automatic rebuild remain deferred.
 B10 is FROZEN after clean V3, 767/767 tests and runtime validation;
 ADR-0035–0037 are CONFORMANT.
 
+D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation is PROPOSED
+/ READY FOR REVIEW in ADR-0038–0040. It proposes an axis-aligned box input
+contract, explicit BooleanResult states and coordinate-cell decomposition in
+`microsw_modeling`. Cell-derived boundary rectangles reconstruct new shared
+Topology while preserving convex single-wire Faces. The only proposed B7
+extension separates structural manifold validity from convex-only orientation
+validation so one connected non-convex orthogonal Shell can be validated from
+cell-derived outward directions. B11 remains NOT STARTED.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
 

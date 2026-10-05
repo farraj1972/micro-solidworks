@@ -598,6 +598,10 @@ CTest tests and manual runtime validation. See `docs/B10_VALIDATION.md`.
 
 # B11 — Boolean Operations
 
+Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D10 — Axis-Aligned Boolean
+Semantics & Non-Convex Solid Validation is PROPOSED / READY FOR REVIEW in
+ADR-0038–0040.
+
 Capacidades:
 
 - union;
@@ -607,6 +611,13 @@ Capacidades:
 Prioridade inicial:
 
 correctness e compreensão, não robustez industrial.
+
+Proposed first slice: Union, Difference and Intersection of validated
+axis-aligned box Solids through coordinate-cell decomposition. A successful
+result is one connected, hole-free, single-shell orthogonal Solid; empty is an
+explicit result, while touching, near-coincident, disconnected, cavity and
+through-hole cases are unsupported. Individual Faces remain convex rectangles,
+possibly as multiple coplanar Faces. GAP-GEO-002 and GAP-SCENE-002 remain OPEN.
 
 ---
 
