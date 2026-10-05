@@ -9,6 +9,7 @@
 #include "constraints/ConstraintSolver.h"
 #include "app/modeling/ActiveExtrusion.h"
 #include "app/modeling/ActiveBoolean.h"
+#include "modeling/Extrusion.h"
 #include "core/geometry/GeometricTolerance.h"
 
 #include <exception>
@@ -116,6 +117,22 @@ int main()
                     {
                         shell.reportExtrusionError(error.what());
                     }
+                }
+                if (shell.loadBooleanDemoRequest())
+                {
+                    const microsw::modeling::Profile a{{{0,0,0},{4,0,0},{4,4,0},{0,4,0}},{{0,0,0},{0,0,1}}};
+                    const microsw::modeling::Profile b{{{2,2,1},{6,2,1},{6,6,1},{2,6,1}},{{2,2,1},{0,0,1}}};
+                    activeBoolean.setOperandA(microsw::modeling::extrude(a,4));
+                    activeBoolean.setOperandB(microsw::modeling::extrude(b,4));
+                    shell.reportBooleanOperandsReady();
+                }
+                if (shell.loadBooleanUnsupportedRequest())
+                {
+                    const microsw::modeling::Profile a{{{0,0,0},{4,0,0},{4,4,0},{0,4,0}},{{0,0,0},{0,0,1}}};
+                    const microsw::modeling::Profile b{{{4,0,0},{8,0,0},{8,4,0},{4,4,0}},{{4,0,0},{0,0,1}}};
+                    activeBoolean.setOperandA(microsw::modeling::extrude(a,4));
+                    activeBoolean.setOperandB(microsw::modeling::extrude(b,4));
+                    shell.reportBooleanOperandsReady();
                 }
                 if (shell.assignOperandARequest() && activeExtrusion.solid())
                     activeBoolean.setOperandA(*activeExtrusion.solid());

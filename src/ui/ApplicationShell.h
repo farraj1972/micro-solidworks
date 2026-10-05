@@ -36,10 +36,13 @@ public:
     [[nodiscard]] math::Scalar extrusionDistance() const noexcept { return extrusionDistance_; }
     void reportExtrusionError(const std::string& error) { extrusionStatus_ = "Extrusion rejected: " + error; }
     void reportExtrusionSuccess() { extrusionStatus_ = "Solid regenerated"; }
+    [[nodiscard]] bool loadBooleanDemoRequest() const noexcept { return loadBooleanDemoRequest_; }
+    [[nodiscard]] bool loadBooleanUnsupportedRequest() const noexcept { return loadBooleanUnsupportedRequest_; }
     [[nodiscard]] bool assignOperandARequest() const noexcept { return assignOperandARequest_; }
     [[nodiscard]] bool assignOperandBRequest() const noexcept { return assignOperandBRequest_; }
     [[nodiscard]] const std::optional<modeling::BooleanOperation>& booleanRequest() const noexcept { return booleanRequest_; }
     void reportBooleanStatus(modeling::BooleanStatus status);
+    void reportBooleanOperandsReady() { booleanStatus_ = "Operands A/B ready"; }
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
 
@@ -71,6 +74,8 @@ private:
     bool extrusionRequest_{};
     math::Scalar extrusionDistance_{5.0};
     std::string extrusionStatus_;
+    bool loadBooleanDemoRequest_{};
+    bool loadBooleanUnsupportedRequest_{};
     bool assignOperandARequest_{};
     bool assignOperandBRequest_{};
     std::optional<modeling::BooleanOperation> booleanRequest_;

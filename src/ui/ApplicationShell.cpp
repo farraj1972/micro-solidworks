@@ -75,6 +75,8 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     addConstraintRequest_.reset(); removeConstraintRequest_.reset();
     drivingValueRequest_.reset(); solveSketchRequest_ = false;
     extrusionRequest_ = false;
+    loadBooleanDemoRequest_ = false;
+    loadBooleanUnsupportedRequest_ = false;
     assignOperandARequest_ = assignOperandBRequest_ = false;
     booleanRequest_.reset();
     drawMainMenu(projectionMode);
@@ -304,7 +306,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
     ImGui::Separator();
     ImGui::TextUnformatted("Boolean Operations");
-    ImGui::TextWrapped("Extrude a Solid, assign it to A or B, then execute.");
+    ImGui::TextWrapped("Use deterministic overlapping box operands or assign the active extruded Solid.");
+    if (ImGui::Button("Load demo operands A/B")) loadBooleanDemoRequest_ = true;
+    if (ImGui::Button("Load touching unsupported A/B")) loadBooleanUnsupportedRequest_ = true;
     if (ImGui::Button("Assign active Solid to A")) assignOperandARequest_ = true;
     if (ImGui::Button("Assign active Solid to B")) assignOperandBRequest_ = true;
     if (ImGui::Button("Intersection")) booleanRequest_ = modeling::BooleanOperation::Intersection;
