@@ -986,17 +986,17 @@ Latest decision gate:
 
 ```text
 D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation
-STATUS: PROPOSED / READY FOR REVIEW
+STATUS: FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 37/37 ADRs ACCEPTED. D6 — Topology Ownership,
+FROZEN. The complete inventory is 40/40 ADRs ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
 ADR-0035–0037 are ACCEPTED and freeze D9.
-ADR-0038–0040 are PROPOSED by D10 and are not yet architectural authority.
+ADR-0038–0040 are ACCEPTED and freeze D10.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1056,13 +1056,13 @@ wireframe solid-level presentation. B10.1–B10.18 are COMPLETE. The B10 V3
 passed clean configure/full Debug build, zero warnings, 767/767 CTest tests and
 manual runtime validation; B10 is FROZEN. ADR-0035–0037 are CONFORMANT.
 GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
-The B11 prerequisite review is complete. Proposed D10 restricts the initial
+The B11 prerequisite review is complete. Frozen D10 restricts the initial
 Boolean slice to axis-aligned box operands, coordinate-cell decomposition and
-one connected, hole-free, single-shell orthogonal result. It proposes explicit
+one connected, hole-free, single-shell orthogonal result. It defines explicit
 SUCCESS/EMPTY/INVALID_INPUT/UNSUPPORTED_CASE/NUMERICAL_FAILURE semantics and a
 limited extension separating non-convex Solid validity from convex-specific
-orientation validation. ADR-0038–0040 are PROPOSED / READY FOR REVIEW. B11 is
-NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA pending D10 approval.
+orientation validation. ADR-0038–0040 are ACCEPTED. B11 is NOT STARTED / NEXT
+ACTIVE FUNCTIONAL AREA.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

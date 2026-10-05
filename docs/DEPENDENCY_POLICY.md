@@ -106,11 +106,11 @@ OpenGL 3.3 funcional.
   Sketch and Modeling. B10 implements this project-owned core and its separate
   Application integration/presentation adapters. ADR-0035–0037 are ACCEPTED
   and CONFORMANT; B10 is FROZEN.
-- Axis-aligned Boolean modeling: `BUILD`, proposed in D10. Boolean occupancy,
+- Axis-aligned Boolean modeling: `BUILD`, frozen in D10. Boolean occupancy,
   temporary grid values and topology reconstruction remain inside
   `microsw_modeling`, preserving `microsw_modeling -> microsw_topology ->
   microsw_geometry -> microsw_math`. No BSP, external Boolean kernel or general
-  intersection dependency is proposed. ADR-0038–0040 are PROPOSED; B11 is not
+  intersection dependency is authorized. ADR-0038–0040 are ACCEPTED; B11 is not
   implemented.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.

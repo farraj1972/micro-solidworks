@@ -599,8 +599,7 @@ CTest tests and manual runtime validation. See `docs/B10_VALIDATION.md`.
 # B11 — Boolean Operations
 
 Estado: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA. D10 — Axis-Aligned Boolean
-Semantics & Non-Convex Solid Validation is PROPOSED / READY FOR REVIEW in
-ADR-0038–0040.
+Semantics & Non-Convex Solid Validation is FROZEN in accepted ADR-0038–0040.
 
 Capacidades:
 

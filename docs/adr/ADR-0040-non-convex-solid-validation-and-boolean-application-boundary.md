@@ -1,6 +1,6 @@
 # ADR-0040 — Non-Convex Solid Validation and Boolean Application Boundary
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

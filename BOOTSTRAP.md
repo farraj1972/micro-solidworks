@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-37/37 ADRs ACCEPTED; ADR-0021–0024 CONFORMANT
+40/40 ADRs ACCEPTED; ADR-0021–0037 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -66,7 +66,14 @@ Latest validated snapshot (B9): 758/758 tests PASS, runtime PASS, 0 warnings
 ADR-0032–0034: CONFORMANT
 D9 — Profile, Extrusion & Modeling Boundary: FROZEN
 ADR-0035–0037: ACCEPTED
-B10 — Extrusion: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA
+B10 — Extrusion: FROZEN
+B10.1–B10.18: COMPLETE
+B10.FREEZE: FROZEN
+Latest validated snapshot (B10): 767/767 tests PASS, runtime PASS, 0 warnings
+ADR-0035–0037: CONFORMANT
+D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation: FROZEN
+ADR-0038–0040: ACCEPTED
+B11 — Boolean Operations: NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

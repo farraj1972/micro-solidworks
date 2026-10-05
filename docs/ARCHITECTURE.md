@@ -91,14 +91,14 @@ Circle/Arc extrusion, feature history and automatic rebuild remain deferred.
 B10 is FROZEN after clean V3, 767/767 tests and runtime validation;
 ADR-0035–0037 are CONFORMANT.
 
-D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation is PROPOSED
-/ READY FOR REVIEW in ADR-0038–0040. It proposes an axis-aligned box input
-contract, explicit BooleanResult states and coordinate-cell decomposition in
-`microsw_modeling`. Cell-derived boundary rectangles reconstruct new shared
-Topology while preserving convex single-wire Faces. The only proposed B7
-extension separates structural manifold validity from convex-only orientation
-validation so one connected non-convex orthogonal Shell can be validated from
-cell-derived outward directions. B11 remains NOT STARTED.
+D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation is FROZEN in
+accepted ADR-0038–0040. It defines an axis-aligned box input contract, explicit
+BooleanResult states and coordinate-cell decomposition in `microsw_modeling`.
+Cell-derived boundary rectangles reconstruct new shared Topology while
+preserving convex single-wire Faces. The authorized B7 extension separates
+structural manifold validity from convex-only orientation validation so one
+connected non-convex orthogonal Shell can be validated from cell-derived
+outward directions. B11 remains NOT STARTED / NEXT ACTIVE FUNCTIONAL AREA.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
@@ -1061,7 +1061,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0037 are **37/37 ACCEPTED**. ADR-0001–0027 remain unchanged.
+ADR-0001 through ADR-0040 are **40/40 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

@@ -1,6 +1,6 @@
 # ADR-0038 — Boolean Operation Scope and Result Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

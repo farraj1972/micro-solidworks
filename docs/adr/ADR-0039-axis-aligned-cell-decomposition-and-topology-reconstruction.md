@@ -1,6 +1,6 @@
 # ADR-0039 — Axis-Aligned Cell Decomposition and Topology Reconstruction
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
