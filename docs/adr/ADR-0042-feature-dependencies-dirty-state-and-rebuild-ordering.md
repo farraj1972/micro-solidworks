@@ -1,6 +1,6 @@
 # ADR-0042 - Feature Dependencies, Dirty State and Rebuild Ordering
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

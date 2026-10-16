@@ -1,6 +1,6 @@
 # ADR-0043 - Transactional Rebuild, Last-Known-Good and Failure Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

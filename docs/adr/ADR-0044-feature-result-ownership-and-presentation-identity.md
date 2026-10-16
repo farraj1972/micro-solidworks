@@ -1,6 +1,6 @@
 # ADR-0044 - Feature Result Ownership and Presentation Identity
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

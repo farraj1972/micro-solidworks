@@ -991,31 +991,32 @@ B0 — Foundation
 STATUS: FROZEN
 ```
 
-Latest decision gate:
+Previous decision gate:
 
 ```text
 D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation
 STATUS: FROZEN
 ```
 
-Proposed decision gate:
+Latest decision gate:
 
 ```text
 D11 — Feature Ownership, Dependency Graph & Transactional Rebuild
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0041–0044: PROPOSED
-B12 — Feature Tree: NOT STARTED
-B13 — Parametric Rebuild: NOT STARTED
+STATUS: FROZEN
+ADR-0041–0044: ACCEPTED
+B12 — Feature Tree: NOT STARTED / NEXT ACTIVE
+B13 — Parametric Rebuild: NOT STARTED / PLANNED IN SAME CAMPAIGN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The inventory has 40 ACCEPTED ADRs; ADR-0041–0044 are PROPOSED. D6 — Topology Ownership,
+FROZEN. The complete inventory is 44/44 ADRs ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
 ADR-0035–0037 are ACCEPTED and freeze D9.
 ADR-0038–0040 are ACCEPTED and freeze D10.
+ADR-0041–0044 are ACCEPTED and freeze D11.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1082,13 +1083,13 @@ SUCCESS/EMPTY/INVALID_INPUT/UNSUPPORTED_CASE/NUMERICAL_FAILURE semantics and a
 limited extension separating non-convex Solid validity from convex-specific
 orientation validation. ADR-0038–0040 are ACCEPTED. B11 is FROZEN after clean configure/full Debug build, zero warnings, 775/775 CTest tests and manual runtime validation. ADR-0038-0040 are CONFORMANT.
 
-D11 proposes project-owned FeatureModel ownership, stable model-local FeatureId,
+Frozen D11 defines project-owned FeatureModel ownership, stable model-local FeatureId,
 ordered history plus explicit backward-only dependencies, deterministic explicit
 rebuild and atomic commit of the affected dirty closure. Failed rebuilds preserve
 last-known-good derived caches and record FAILED/BLOCKED_BY_DEPENDENCY state;
 Presentation identity remains derived from FeatureId after commit. ADR-0041–0044
-are PROPOSED / READY FOR REVIEW. B12 and B13 remain NOT STARTED. No executable
-contract is frozen by this proposal.
+are ACCEPTED. B12 is NOT STARTED / NEXT ACTIVE and B13 is NOT STARTED /
+PLANNED IN SAME CAMPAIGN. The D11 contract is FROZEN.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

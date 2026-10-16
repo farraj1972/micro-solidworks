@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-40/40 ADRs ACCEPTED; ADR-0021–0037 CONFORMANT
+44/44 ADRs ACCEPTED; ADR-0021–0040 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -78,10 +78,10 @@ B11.1-B11.28: COMPLETE
 B11.FREEZE: FROZEN
 Latest validated snapshot (B11): 775/775 tests PASS, runtime PASS, 0 warnings
 ADR-0038-0040: CONFORMANT
-D11 — Feature Ownership, Dependency Graph & Transactional Rebuild: PROPOSED / READY FOR REVIEW
-ADR-0041–0044: PROPOSED
-B12 — Feature Tree: NOT STARTED
-B13 — Parametric Rebuild: NOT STARTED
+D11 — Feature Ownership, Dependency Graph & Transactional Rebuild: FROZEN
+ADR-0041–0044: ACCEPTED
+B12 — Feature Tree: NOT STARTED / NEXT ACTIVE
+B13 — Parametric Rebuild: NOT STARTED / PLANNED IN SAME CAMPAIGN
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

@@ -100,13 +100,13 @@ structural manifold validity from convex-only orientation validation so one
 connected non-convex orthogonal Shell can be validated from cell-derived
 outward directions. B11 is FROZEN: the axis-aligned cell engine reconstructs shared manifold topology and reuses Solid presentation.
 
-D11 — Feature Ownership, Dependency Graph & Transactional Rebuild is PROPOSED /
-READY FOR REVIEW in ADR-0041–0044. The proposal introduces a project-owned
+D11 — Feature Ownership, Dependency Graph & Transactional Rebuild is FROZEN in
+accepted ADR-0041–0044. It defines a project-owned
 `microsw_features` domain module whose `FeatureModel` owns ordered feature
 history, stable model-local `FeatureId` values, explicit backward-only
 dependencies, feature state and derived result caches. Sketch, extrusion and
 Boolean parameters remain authoritative; cached Solids and presentation are
-derived. The proposed core dependency direction is:
+derived. The frozen core dependency direction is:
 
 ```text
 Application / Presentation -> microsw_features
@@ -115,14 +115,14 @@ microsw_features -> pure Sketch-to-Profile adapter -> microsw_modeling
 microsw_modeling -> microsw_topology -> microsw_geometry -> microsw_math
 ```
 
-The proposal keeps Feature core independent of Application, Presentation,
+Feature core remains independent of Application, Presentation,
 Viewer, Rendering and UI. Explicit global rebuild evaluates the affected dirty
 closure in deterministic history order. Candidate results commit atomically for
 that closure; failure preserves last-known-good caches while recording failed
 and dependency-blocked states. Presentation derives stable visual identity from
 `FeatureId` only after a successful commit. Persistence remains deferred.
-B12 and B13 are NOT STARTED; these boundaries are proposals, not accepted
-architecture.
+B12 is NOT STARTED / NEXT ACTIVE and B13 is NOT STARTED / planned in the same
+campaign.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
@@ -1085,7 +1085,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0040 are **40/40 ACCEPTED**. ADR-0001–0027 remain unchanged.
+ADR-0001 through ADR-0044 are **44/44 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

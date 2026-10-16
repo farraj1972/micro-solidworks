@@ -111,15 +111,16 @@ OpenGL 3.3 funcional.
   `microsw_modeling`, preserving `microsw_modeling -> microsw_topology ->
   microsw_geometry -> microsw_math`. No BSP, external Boolean kernel or general
   intersection dependency is authorized. ADR-0038–0040 are ACCEPTED; B11 is FROZEN and the accepted D10 contract is CONFORMANT.
-- Feature history and transactional rebuild: proposed `BUILD` strategy in D11.
-  ADR-0041–0044 propose a project-owned `microsw_features` domain module that
+- Feature history and transactional rebuild: `BUILD`, frozen in D11.
+  ADR-0041–0044 define a project-owned `microsw_features` domain module that
   depends on Constraints, Sketch and Modeling through a pure Sketch-to-Profile
   adapter. No reverse dependency from those core modules is permitted, and
   Feature core must remain independent of Application, Presentation, Viewer,
   Rendering and UI. Ordered history, explicit dependencies, rebuild state and
   derived result caches remain an internal educational implementation; no
-  external feature engine or persistence dependency is proposed. D11 is READY
-  FOR REVIEW; ADR-0041–0044 are PROPOSED and B12/B13 are NOT STARTED.
+  external feature engine or persistence dependency is authorized. D11 is
+  FROZEN; ADR-0041–0044 are ACCEPTED. B12 is NOT STARTED / NEXT ACTIVE and B13
+  is NOT STARTED / planned in the same campaign.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

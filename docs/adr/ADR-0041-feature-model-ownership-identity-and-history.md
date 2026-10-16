@@ -1,6 +1,6 @@
 # ADR-0041 - Feature Model Ownership, Identity and History
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
