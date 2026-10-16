@@ -135,8 +135,10 @@ persistence module separates domain/DTO mapping, JSON mapping and filesystem
 I/O; Application owns the optional current path and coordinates transactional
 session replacement. Only authoritative history, parameters, logical IDs and
 explicit next-ID counters are persisted. Rebuild caches, topology/visual IDs,
-Presentation and transient UI state remain derived or session-local. B14 is NOT
-STARTED and the MVP is NOT FROZEN.
+Presentation and transient UI state remain derived or session-local. B14 now
+implements this boundary in `microsw_persistence`, with JSON confined to its
+private implementation and Application-owned session path/workflow. B14 is a
+CANDIDATE pending final V3; the MVP is CANDIDATE / NOT FROZEN.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:

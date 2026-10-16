@@ -86,8 +86,8 @@ Latest validated snapshot (B12/B13): 785/785 tests PASS, runtime PASS, 0 warning
 ADR-0041–0044: CONFORMANT
 D12 — Persistence Schema, Identity & Transaction Semantics: FROZEN
 ADR-0045–0048: ACCEPTED
-B14 — Persistence: NOT STARTED / NEXT ACTIVE
-MVP: NOT FROZEN
+B14 — Persistence: CANDIDATE; final V3 pending
+MVP: CANDIDATE / NOT FROZEN
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

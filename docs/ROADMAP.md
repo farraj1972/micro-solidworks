@@ -683,7 +683,7 @@ general feature types remain deferred.
 
 # B14 — Persistence
 
-Estado: NOT STARTED / NEXT ACTIVE. D12 — Persistence Schema, Identity &
+Estado: CANDIDATE; final V3 pending. D12 — Persistence Schema, Identity &
 Transaction Semantics is FROZEN in accepted ADR-0045–0048.
 
 Objectivo:
@@ -711,14 +711,16 @@ model. The frozen dependency is
 `microsw_persistence -> microsw_features`, never the reverse.
 
 B14 will use targeted V1 increments, V2 application integration, and one final
-V3 that also validates the executable MVP workflow. B14 remains NOT STARTED /
-NEXT ACTIVE. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
+V3 that also validates the executable MVP workflow. Implementation provides
+JSON v1 roundtrip, persistent logical IDs/counters, validated reconstruction,
+atomic Save, transactional Open, New/Save/Save As/Open session commands and
+automatic rebuild. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 
 ---
 
 # MVP FREEZE
 
-Estado: NOT FROZEN.
+Estado: CANDIDATE / NOT FROZEN; B14 final V3 pending.
 
 O MVP deverá permitir:
 
