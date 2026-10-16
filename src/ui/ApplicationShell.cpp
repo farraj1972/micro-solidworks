@@ -66,7 +66,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
 
 void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool activeTool,
                                   const sketch::Sketch& sketch, const sketch::SketchEntity* selected,
-                                  bool hasActiveSolid)
+                                  bool hasActiveSolid, const features::FeatureModel* featureModel)
 {
     input_ = {};
     sketchToolRequest_.reset();
@@ -79,8 +79,9 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     loadBooleanUnsupportedRequest_ = false;
     assignOperandARequest_ = assignOperandBRequest_ = false;
     booleanRequest_.reset();
+    featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
     drawMainMenu(projectionMode);
-    drawSketchPanel(activeTool, sketch, selected, hasActiveSolid);
+    drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel);
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
@@ -100,7 +101,8 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
 }
 
 void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sketch& model,
-                                       const sketch::SketchEntity* selected, bool hasActiveSolid)
+                                       const sketch::SketchEntity* selected, bool hasActiveSolid,
+                                       const features::FeatureModel* featureModel)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight};
@@ -115,6 +117,60 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGuiWindowFlags_NoBringToFrontOnFocus;
     ImGui::Begin("Model", nullptr, sketchPanelFlags);
     modelPanelWidth_ = ImGui::GetWindowSize().x;
+    if (featureModel)
+    {
+        ImGui::TextUnformatted("Feature Tree");
+        const auto kindName = [](features::FeatureKind kind) {
+            return kind == features::FeatureKind::Sketch ? "Sketch" : kind == features::FeatureKind::Extrude ? "Extrude" : "Boolean";
+        };
+        const auto stateName = [](features::FeatureState state) {
+            switch (state) { case features::FeatureState::Clean: return "CLEAN"; case features::FeatureState::Dirty: return "DIRTY";
+            case features::FeatureState::Failed: return "FAILED"; default: return "BLOCKED"; }
+        };
+        for (const auto& feature : featureModel->history())
+        {
+            ImGui::PushID(static_cast<int>(feature.id().value()));
+            const std::string label = std::to_string(feature.id().value()) + ": " + feature.displayName()
+                + " [" + kindName(feature.kind()) + "] " + stateName(feature.state());
+            if (ImGui::Selectable(label.c_str(), selectedFeature_ == feature.id())) selectedFeature_ = feature.id();
+            if (!feature.dependencies().empty())
+            {
+                ImGui::Indent(); ImGui::TextUnformatted("depends:"); ImGui::SameLine();
+                for (const auto dependency : feature.dependencies()) { ImGui::Text("%u", dependency.value()); ImGui::SameLine(); }
+                ImGui::NewLine(); ImGui::Unindent();
+            }
+            if (!feature.diagnostic().empty()) { ImGui::Indent(); ImGui::TextWrapped("%s", feature.diagnostic().c_str()); ImGui::Unindent(); }
+            ImGui::PopID();
+        }
+        if (selectedFeature_)
+        {
+            const auto& feature = featureModel->find(*selectedFeature_);
+            ImGui::Separator(); ImGui::Text("Selected FeatureId: %u", feature.id().value());
+            ImGui::Text("Derived cache: %s", feature.cache() ? "available" : "none");
+            if (feature.kind() == features::FeatureKind::Sketch)
+            {
+                const auto& sketch = std::get<features::SketchFeature>(feature.data()).sketch;
+                ImGui::Text("Sketch entities: %zu", sketch.size()); ImGui::Text("Constraints: %zu", sketch.constraintCount());
+            }
+            else if (feature.kind() == features::FeatureKind::Extrude)
+            {
+                const auto& extrude = std::get<features::ExtrudeFeature>(feature.data());
+                double distance = extrude.distance;
+                if (ImGui::InputDouble("Feature distance", &distance)) featureDistanceRequest_ = std::pair{feature.id(), distance};
+            }
+            else
+            {
+                const auto& boolean = std::get<features::BooleanFeature>(feature.data());
+                ImGui::Text("Input A/B: %u / %u", boolean.inputA.value(), boolean.inputB.value());
+                if (ImGui::Button("Feature Union")) featureBooleanRequest_ = std::pair{feature.id(), modeling::BooleanOperation::Union};
+                ImGui::SameLine(); if (ImGui::Button("Feature Intersection")) featureBooleanRequest_ = std::pair{feature.id(), modeling::BooleanOperation::Intersection};
+                if (ImGui::Button("Feature Difference")) featureBooleanRequest_ = std::pair{feature.id(), modeling::BooleanOperation::Difference};
+            }
+        }
+        if (ImGui::Button("Rebuild Features")) rebuildFeaturesRequest_ = true;
+        if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
+        ImGui::Separator();
+    }
     ImGui::TextUnformatted("Sketch — Global XY");
     ImGui::Separator();
     const auto toolButton = [&](const char* label, SketchTool tool)
@@ -316,6 +372,15 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (ImGui::Button("Difference A-B")) booleanRequest_ = modeling::BooleanOperation::Difference;
     if (!booleanStatus_.empty()) ImGui::TextWrapped("Boolean: %s", booleanStatus_.c_str());
     ImGui::End();
+}
+
+void ApplicationShell::reportFeatureRebuild(const features::RebuildResult& result)
+{
+    if (result.status == features::RebuildStatus::Success) featureRebuildStatus_ = "Rebuild PASS";
+    else if (result.status == features::RebuildStatus::SuccessEmpty) featureRebuildStatus_ = "Rebuild PASS: final result EMPTY";
+    else featureRebuildStatus_ = "Rebuild FAILED at Feature "
+        + (result.failedFeature ? std::to_string(result.failedFeature->value()) : std::string{"?"})
+        + "; blocked downstream: " + std::to_string(result.blockedCount) + "; " + result.diagnostic;
 }
 
 void ApplicationShell::reportBooleanStatus(modeling::BooleanStatus status)

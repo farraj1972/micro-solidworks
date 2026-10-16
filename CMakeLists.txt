@@ -287,6 +287,7 @@ set_target_properties(micro_solidworks PROPERTIES
 )
 target_link_libraries(micro_solidworks PRIVATE
     microsw_constraints
+    microsw_features
     microsw_sketch_modeling_adapter
     microsw_viewer
     microsw_logging

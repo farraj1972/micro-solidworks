@@ -62,3 +62,29 @@ TEST(SketchEditor, DrawsEverySketchEntityTypeAndToolState)
     EXPECT_FALSE(shell.sketchToolRequest());
     ui.endFrame();
 }
+
+TEST(FeatureTree, DrawsHistoryStatesDependenciesAndParameters)
+{
+    microsw::ApplicationWindow window{900, 700, "Feature tree test"};
+    glfwHideWindow(static_cast<GLFWwindow*>(window.nativeHandle()));
+    microsw::OpenGLContext context{window};
+    microsw::ImGuiLayer ui{window, context};
+    microsw::ApplicationShell shell{window};
+    microsw::features::FeatureModel features;
+    microsw::sketch::Sketch a;
+    (void)a.addRectangle({0, 0}, {4, 4});
+    microsw::sketch::Sketch b{{{2, 2, 1}, {1, 0, 0}, {0, 1, 0}}};
+    (void)b.addRectangle({0, 0}, {4, 4});
+    const auto ea = features.addExtrude(features.addSketch(a), 4);
+    const auto eb = features.addExtrude(features.addSketch(b), 4);
+    (void)features.addBoolean(ea, eb, microsw::modeling::BooleanOperation::Intersection);
+    ASSERT_EQ(features.rebuild().status, microsw::features::RebuildStatus::Success);
+    microsw::sketch::Sketch editorSketch;
+    ui.beginFrame();
+    shell.drawSketch(microsw::ProjectionMode::Perspective,
+        microsw::SketchTool::Select, editorSketch, nullptr, true, &features);
+    EXPECT_FALSE(shell.rebuildFeaturesRequest());
+    EXPECT_FALSE(shell.featureDistanceRequest());
+    EXPECT_FALSE(shell.featureBooleanRequest());
+    ui.endFrame();
+}

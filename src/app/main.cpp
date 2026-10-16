@@ -11,6 +11,8 @@
 #include "app/modeling/ActiveBoolean.h"
 #include "modeling/Extrusion.h"
 #include "core/geometry/GeometricTolerance.h"
+#include "features/FeatureModel.h"
+#include "presentation/FeaturePresentation.h"
 
 #include <exception>
 #include <stdexcept>
@@ -47,7 +49,23 @@ int main()
             microsw::ActiveExtrusion activeExtrusion;
             microsw::ActiveBoolean activeBoolean;
             presentation.regenerate(sketch);
-            microsw::viewer::WorkspaceViewport workspace{presentation.geometry()};
+            microsw::features::FeatureModel featureModel{constraintSolver};
+            microsw::sketch::Sketch sketchA;
+            (void)sketchA.addRectangle({0, 0}, {4, 4});
+            microsw::sketch::Sketch sketchB{{{2, 2, 1}, {1, 0, 0}, {0, 1, 0}}};
+            (void)sketchB.addRectangle({0, 0}, {4, 4});
+            const auto sketchAId = featureModel.addSketch(std::move(sketchA));
+            const auto extrudeAId = featureModel.addExtrude(sketchAId, 4);
+            const auto sketchBId = featureModel.addSketch(std::move(sketchB));
+            const auto extrudeBId = featureModel.addExtrude(sketchBId, 4);
+            (void)featureModel.addBoolean(extrudeAId, extrudeBId,
+                microsw::modeling::BooleanOperation::Intersection);
+            const auto initialRebuild = featureModel.rebuild();
+            if (initialRebuild.status == microsw::features::RebuildStatus::Failed)
+                throw std::runtime_error{"Initial parametric feature rebuild failed"};
+            microsw::presentation::FeaturePresentation featurePresentation;
+            featurePresentation.update(featureModel);
+            microsw::viewer::WorkspaceViewport workspace{featurePresentation.geometry()};
 
             while (!window.shouldClose())
             {
@@ -62,7 +80,25 @@ int main()
                 const auto* selected = selectedSketch && sketch.contains(*selectedSketch)
                     ? &sketch.find(*selectedSketch) : nullptr;
                 shell.drawSketch(workspace.projectionMode(), tools.tool(), sketch, selected,
-                    activeExtrusion.hasSolid());
+                    true, &featureModel);
+                try
+                {
+                    if (shell.featureDistanceRequest()) featureModel.setExtrudeDistance(
+                        shell.featureDistanceRequest()->first, shell.featureDistanceRequest()->second);
+                    if (shell.featureBooleanRequest()) featureModel.setBooleanOperation(
+                        shell.featureBooleanRequest()->first, shell.featureBooleanRequest()->second);
+                    if (shell.rebuildFeaturesRequest())
+                    {
+                        const auto result = featureModel.rebuild();
+                        shell.reportFeatureRebuild(result);
+                        if (result.status != microsw::features::RebuildStatus::Failed)
+                        {
+                            featurePresentation.update(featureModel);
+                            workspace.setPresentation(featurePresentation.geometry());
+                        }
+                    }
+                }
+                catch (const std::exception& error) { shell.reportSketchError(error.what()); }
                 if (shell.sketchToolRequest())
                     tools.setTool(*shell.sketchToolRequest());
                 if (selectedSketch && shell.sketchGeometryRequest())

@@ -5,6 +5,7 @@
 #include "presentation/VisualEntity.h"
 #include "app/sketch/SketchToolController.h"
 #include "modeling/Boolean.h"
+#include "features/FeatureModel.h"
 
 #include <optional>
 #include <string>
@@ -21,7 +22,7 @@ public:
     void draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected = nullptr);
     void drawSketch(ProjectionMode projectionMode, SketchTool activeTool,
                     const sketch::Sketch& sketch, const sketch::SketchEntity* selected = nullptr,
-                    bool hasActiveSolid = false);
+                    bool hasActiveSolid = false, const features::FeatureModel* featureModel = nullptr);
     [[nodiscard]] const std::optional<math::Transform3>& transformRequest() const noexcept { return transformRequest_; }
     void reportTransformError(const std::string& error) { transformError_ = error; }
     [[nodiscard]] const std::optional<SketchTool>& sketchToolRequest() const noexcept { return sketchToolRequest_; }
@@ -43,6 +44,10 @@ public:
     [[nodiscard]] const std::optional<modeling::BooleanOperation>& booleanRequest() const noexcept { return booleanRequest_; }
     void reportBooleanStatus(modeling::BooleanStatus status);
     void reportBooleanOperandsReady() { booleanStatus_ = "Operands A/B ready"; }
+    [[nodiscard]] const std::optional<std::pair<features::FeatureId, math::Scalar>>& featureDistanceRequest() const noexcept { return featureDistanceRequest_; }
+    [[nodiscard]] const std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>>& featureBooleanRequest() const noexcept { return featureBooleanRequest_; }
+    [[nodiscard]] bool rebuildFeaturesRequest() const noexcept { return rebuildFeaturesRequest_; }
+    void reportFeatureRebuild(const features::RebuildResult& result);
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
 
@@ -50,7 +55,8 @@ private:
     void drawMainMenu(ProjectionMode projectionMode);
     void drawModelPanel(const presentation::VisualEntity* selected);
     void drawSketchPanel(SketchTool activeTool, const sketch::Sketch& sketch,
-                         const sketch::SketchEntity* selected, bool hasActiveSolid);
+                         const sketch::SketchEntity* selected, bool hasActiveSolid,
+                         const features::FeatureModel* featureModel);
     void drawWorkspace();
     void drawStatusBar();
     void drawAboutDialog();
@@ -80,6 +86,11 @@ private:
     bool assignOperandBRequest_{};
     std::optional<modeling::BooleanOperation> booleanRequest_;
     std::string booleanStatus_;
+    std::optional<features::FeatureId> selectedFeature_;
+    std::optional<std::pair<features::FeatureId, math::Scalar>> featureDistanceRequest_;
+    std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>> featureBooleanRequest_;
+    bool rebuildFeaturesRequest_{};
+    std::string featureRebuildStatus_;
     float modelPanelWidth_{320.0F};
 };
 }
