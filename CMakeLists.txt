@@ -291,6 +291,7 @@ target_link_libraries(microsw_ui PRIVATE
 
 add_executable(micro_solidworks
     src/app/main.cpp
+    src/app/PersistenceSession.cpp
     src/app/demo/GeometryDemoScene.cpp
     src/app/sketch/SketchToolController.cpp
 )
@@ -330,6 +331,7 @@ if(BUILD_TESTING)
 
     add_executable(micro_solidworks_tests
         src/app/demo/GeometryDemoScene.cpp
+        src/app/PersistenceSession.cpp
         src/app/sketch/SketchToolController.cpp
         tests/constraints/test_constraint_solver.cpp
         tests/app/test_geometry_demo_scene.cpp

@@ -13,6 +13,7 @@
 #include "core/geometry/GeometricTolerance.h"
 #include "features/FeatureModel.h"
 #include "presentation/FeaturePresentation.h"
+#include "app/PersistenceSession.h"
 
 #include <exception>
 #include <stdexcept>
@@ -65,6 +66,7 @@ int main()
                 throw std::runtime_error{"Initial parametric feature rebuild failed"};
             microsw::presentation::FeaturePresentation featurePresentation;
             featurePresentation.update(featureModel);
+            microsw::PersistenceSession session{std::move(featureModel)};
             microsw::viewer::WorkspaceViewport workspace{featurePresentation.geometry()};
 
             while (!window.shouldClose())
@@ -79,21 +81,58 @@ int main()
                     ? presentation.sketchId(*selectedVisual) : std::nullopt;
                 const auto* selected = selectedSketch && sketch.contains(*selectedSketch)
                     ? &sketch.find(*selectedSketch) : nullptr;
+                shell.setCurrentFilePath(session.currentFilePath()
+                    ? session.currentFilePath()->string() : std::string{});
                 shell.drawSketch(workspace.projectionMode(), tools.tool(), sketch, selected,
-                    true, &featureModel);
+                    true, &session.model());
                 try
                 {
-                    if (shell.featureDistanceRequest()) featureModel.setExtrudeDistance(
+                    if (shell.newDocumentRequest())
+                    {
+                        session.newDocument(); sketch = microsw::sketch::Sketch{};
+                        presentation.regenerate(sketch); featurePresentation = {};
+                        workspace.setPresentation(featurePresentation.geometry()); workspace.clearSelection();
+                        tools.setTool(microsw::SketchTool::Select); shell.reportPersistenceStatus("New document");
+                    }
+                    if (shell.saveAsDocumentRequest())
+                    {
+                        const auto result=session.saveAs(shell.documentPathInput());
+                        shell.reportPersistenceStatus(result.status==microsw::persistence::SaveStatus::Success
+                            ? "Save As succeeded" : "Save As failed: "+result.diagnostic);
+                    }
+                    if (shell.saveDocumentRequest())
+                    {
+                        const auto result=session.save();
+                        shell.reportPersistenceStatus(result.status==microsw::persistence::SaveStatus::Success
+                            ? "Save succeeded" : "Save failed: "+result.diagnostic);
+                    }
+                    if (shell.openDocumentRequest())
+                    {
+                        std::string diagnostic; const auto status=session.open(shell.documentPathInput(),&diagnostic);
+                        if(status==microsw::persistence::OpenStatus::SuccessRebuilt
+                            || status==microsw::persistence::OpenStatus::SuccessRebuildFailed)
+                        {
+                            featurePresentation={};
+                            if(status==microsw::persistence::OpenStatus::SuccessRebuilt)
+                                featurePresentation.update(session.model());
+                            workspace.setPresentation(featurePresentation.geometry()); workspace.clearSelection();
+                            tools.setTool(microsw::SketchTool::Select);
+                            shell.reportPersistenceStatus(status==microsw::persistence::OpenStatus::SuccessRebuilt
+                                ? "Open succeeded; model rebuilt" : "File loaded; model rebuild failed: "+diagnostic);
+                        }
+                        else shell.reportPersistenceStatus("Open failed: "+diagnostic);
+                    }
+                    if (shell.featureDistanceRequest()) session.model().setExtrudeDistance(
                         shell.featureDistanceRequest()->first, shell.featureDistanceRequest()->second);
-                    if (shell.featureBooleanRequest()) featureModel.setBooleanOperation(
+                    if (shell.featureBooleanRequest()) session.model().setBooleanOperation(
                         shell.featureBooleanRequest()->first, shell.featureBooleanRequest()->second);
                     if (shell.rebuildFeaturesRequest())
                     {
-                        const auto result = featureModel.rebuild();
+                        const auto result = session.model().rebuild();
                         shell.reportFeatureRebuild(result);
                         if (result.status != microsw::features::RebuildStatus::Failed)
                         {
-                            featurePresentation.update(featureModel);
+                            featurePresentation.update(session.model());
                             workspace.setPresentation(featurePresentation.geometry());
                         }
                     }

@@ -1,4 +1,5 @@
 #include "persistence/Persistence.h"
+#include "app/PersistenceSession.h"
 
 #include <gtest/gtest.h>
 #include <filesystem>
@@ -113,5 +114,33 @@ TEST(Persistence, InvalidPathDoesNotMutateModel)
     const auto result=persistence::saveFeatureModel(model,{});
     EXPECT_EQ(result.status,persistence::SaveStatus::InvalidPath);
     EXPECT_EQ(model.history().size(),count);
+}
+
+TEST(PersistenceSession, SaveAsSaveOpenAndNewOwnCurrentPathTransactionally)
+{
+    const auto path=temporaryFile("micro-solidworks-session.microsw");
+    PersistenceSession session{sampleModel()};
+    ASSERT_EQ(session.save().status,persistence::SaveStatus::InvalidPath);
+    ASSERT_EQ(session.saveAs(path).status,persistence::SaveStatus::Success);
+    ASSERT_EQ(session.currentFilePath(),std::optional{path});
+    session.model().setExtrudeDistance(features::FeatureId{1},5);
+    ASSERT_EQ(session.save().status,persistence::SaveStatus::Success);
+    session.newDocument();
+    EXPECT_TRUE(session.model().history().empty()); EXPECT_FALSE(session.currentFilePath());
+    EXPECT_EQ(session.open(path),persistence::OpenStatus::SuccessRebuilt);
+    EXPECT_EQ(session.currentFilePath(),std::optional{path});
+    EXPECT_EQ(std::get<features::ExtrudeFeature>(session.model().find(features::FeatureId{1}).data()).distance,5);
+    std::filesystem::remove(path);
+}
+
+TEST(PersistenceSession, InvalidOpenPreservesModelAndPath)
+{
+    const auto valid=temporaryFile("micro-solidworks-session-valid.microsw");
+    const auto invalid=temporaryFile("micro-solidworks-session-invalid.microsw");
+    PersistenceSession session{sampleModel()}; ASSERT_EQ(session.saveAs(valid).status,persistence::SaveStatus::Success);
+    const auto count=session.model().history().size(); {std::ofstream out(invalid);out<<"{";}
+    EXPECT_EQ(session.open(invalid),persistence::OpenStatus::ParseError);
+    EXPECT_EQ(session.model().history().size(),count); EXPECT_EQ(session.currentFilePath(),std::optional{valid});
+    std::filesystem::remove(valid);std::filesystem::remove(invalid);
 }
 }

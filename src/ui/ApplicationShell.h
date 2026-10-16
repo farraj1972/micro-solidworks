@@ -9,6 +9,7 @@
 
 #include <optional>
 #include <string>
+#include <array>
 
 namespace microsw
 {
@@ -48,6 +49,13 @@ public:
     [[nodiscard]] const std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>>& featureBooleanRequest() const noexcept { return featureBooleanRequest_; }
     [[nodiscard]] bool rebuildFeaturesRequest() const noexcept { return rebuildFeaturesRequest_; }
     void reportFeatureRebuild(const features::RebuildResult& result);
+    [[nodiscard]] bool newDocumentRequest() const noexcept { return newDocumentRequest_; }
+    [[nodiscard]] bool openDocumentRequest() const noexcept { return openDocumentRequest_; }
+    [[nodiscard]] bool saveDocumentRequest() const noexcept { return saveDocumentRequest_; }
+    [[nodiscard]] bool saveAsDocumentRequest() const noexcept { return saveAsDocumentRequest_; }
+    [[nodiscard]] std::string documentPathInput() const { return documentPathInput_.data(); }
+    void reportPersistenceStatus(std::string status) { persistenceStatus_ = std::move(status); }
+    void setCurrentFilePath(std::string path) { currentFilePath_ = std::move(path); }
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
 
@@ -91,6 +99,13 @@ private:
     std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>> featureBooleanRequest_;
     bool rebuildFeaturesRequest_{};
     std::string featureRebuildStatus_;
+    bool newDocumentRequest_{};
+    bool openDocumentRequest_{};
+    bool saveDocumentRequest_{};
+    bool saveAsDocumentRequest_{};
+    std::array<char, 512> documentPathInput_{};
+    std::string currentFilePath_;
+    std::string persistenceStatus_;
     float modelPanelWidth_{320.0F};
 };
 }

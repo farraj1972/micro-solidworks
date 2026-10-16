@@ -41,6 +41,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
 {
     input_ = {};
     transformRequest_.reset();
+    newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
     drawMainMenu(projectionMode);
     drawModelPanel(selected);
     drawWorkspace();
@@ -80,6 +81,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     assignOperandARequest_ = assignOperandBRequest_ = false;
     booleanRequest_.reset();
     featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
+    newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
     drawMainMenu(projectionMode);
     drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel);
     drawWorkspace();
@@ -117,6 +119,11 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGuiWindowFlags_NoBringToFrontOnFocus;
     ImGui::Begin("Model", nullptr, sketchPanelFlags);
     modelPanelWidth_ = ImGui::GetWindowSize().x;
+    ImGui::TextUnformatted("Document");
+    ImGui::InputText("Path (.microsw)", documentPathInput_.data(), documentPathInput_.size());
+    ImGui::TextWrapped("Current: %s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str());
+    if (!persistenceStatus_.empty()) ImGui::TextWrapped("%s", persistenceStatus_.c_str());
+    ImGui::Separator();
     if (featureModel)
     {
         ImGui::TextUnformatted("Feature Tree");
@@ -404,11 +411,10 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
 
     if (ImGui::BeginMenu("File"))
     {
-        ImGui::BeginDisabled();
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Open...");
-        ImGui::MenuItem("Save");
-        ImGui::EndDisabled();
+        if (ImGui::MenuItem("New")) newDocumentRequest_ = true;
+        if (ImGui::MenuItem("Open...")) openDocumentRequest_ = true;
+        if (ImGui::MenuItem("Save")) saveDocumentRequest_ = true;
+        if (ImGui::MenuItem("Save As...")) saveAsDocumentRequest_ = true;
         ImGui::Separator();
         if (ImGui::MenuItem("Exit"))
         {
@@ -564,7 +570,8 @@ void ApplicationShell::drawStatusBar()
         "Status Bar",
         position,
         ImVec2{viewport->WorkSize.x, statusBarHeight});
-    ImGui::TextUnformatted("Ready");
+    ImGui::Text("%s | %s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str(),
+        persistenceStatus_.empty() ? "Ready" : persistenceStatus_.c_str());
     ImGui::End();
 }
 
