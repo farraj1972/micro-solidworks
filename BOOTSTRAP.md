@@ -86,7 +86,9 @@ Latest validated snapshot (B12/B13): 785/785 tests PASS, runtime PASS, 0 warning
 ADR-0041–0044: CONFORMANT
 D12 — Persistence Schema, Identity & Transaction Semantics: FROZEN
 ADR-0045–0048: ACCEPTED
-B14 — Persistence: CANDIDATE; final V3 pending
+B14 — Persistence: FROZEN
+Latest validated snapshot (B14/MVP executable): 793/793 tests PASS, runtime PASS, 0 warnings
+ADR-0045–0048: CONFORMANT
 MVP: CANDIDATE / NOT FROZEN
 ```
 

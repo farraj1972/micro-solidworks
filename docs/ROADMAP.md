@@ -683,7 +683,7 @@ general feature types remain deferred.
 
 # B14 — Persistence
 
-Estado: CANDIDATE; final V3 pending. D12 — Persistence Schema, Identity &
+Estado: FROZEN. D12 — Persistence Schema, Identity &
 Transaction Semantics is FROZEN in accepted ADR-0045–0048.
 
 Objectivo:
@@ -715,6 +715,10 @@ V3 that also validates the executable MVP workflow. Implementation provides
 JSON v1 roundtrip, persistent logical IDs/counters, validated reconstruction,
 atomic Save, transactional Open, New/Save/Save As/Open session commands and
 automatic rebuild. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
+
+The final B14/MVP executable V3 passed a fresh configure, full Debug build with
+zero project warnings, 793/793 tests and the complete runtime persistence smoke.
+ADR-0045–0048 are CONFORMANT. See `docs/B14_VALIDATION.md`.
 
 ---
 

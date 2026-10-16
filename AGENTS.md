@@ -1014,7 +1014,7 @@ Latest decision gate:
 D12 — Persistence Schema, Identity & Transaction Semantics
 STATUS: FROZEN
 ADR-0045–0048: ACCEPTED
-B14 — Persistence: CANDIDATE; final V3 pending
+B14 — Persistence: FROZEN
 MVP: CANDIDATE / NOT FROZEN
 ```
 
@@ -1110,8 +1110,9 @@ specifies JSON `.microsw` format version 1, persistent aggregate-local logical
 IDs with explicit next-ID counters, atomic Save, transactional Open followed by
 deterministic rebuild, and `microsw_persistence -> microsw_features`. Derived
 modeling caches, topology/visual identities, Presentation and transient session
-state are not persisted. ADR-0045–0048 are ACCEPTED. The B14 implementation
-is CANDIDATE pending final V3; the MVP is CANDIDATE / NOT FROZEN. GAP-GEO-002 and
+state are not persisted. ADR-0045–0048 are ACCEPTED and CONFORMANT. B14 is
+FROZEN after the final V3 passed with zero warnings, 793/793 tests and runtime
+validation. The MVP remains CANDIDATE / NOT FROZEN pending documentary freeze. GAP-GEO-002 and
 GAP-SCENE-002 remain OPEN / deferred.
 
 No increment without explicit authorization.
