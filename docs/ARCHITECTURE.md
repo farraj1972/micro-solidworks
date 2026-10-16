@@ -100,6 +100,30 @@ structural manifold validity from convex-only orientation validation so one
 connected non-convex orthogonal Shell can be validated from cell-derived
 outward directions. B11 is FROZEN: the axis-aligned cell engine reconstructs shared manifold topology and reuses Solid presentation.
 
+D11 — Feature Ownership, Dependency Graph & Transactional Rebuild is PROPOSED /
+READY FOR REVIEW in ADR-0041–0044. The proposal introduces a project-owned
+`microsw_features` domain module whose `FeatureModel` owns ordered feature
+history, stable model-local `FeatureId` values, explicit backward-only
+dependencies, feature state and derived result caches. Sketch, extrusion and
+Boolean parameters remain authoritative; cached Solids and presentation are
+derived. The proposed core dependency direction is:
+
+```text
+Application / Presentation -> microsw_features
+microsw_features -> microsw_constraints -> microsw_sketch
+microsw_features -> pure Sketch-to-Profile adapter -> microsw_modeling
+microsw_modeling -> microsw_topology -> microsw_geometry -> microsw_math
+```
+
+The proposal keeps Feature core independent of Application, Presentation,
+Viewer, Rendering and UI. Explicit global rebuild evaluates the affected dirty
+closure in deterministic history order. Candidate results commit atomically for
+that closure; failure preserves last-known-good caches while recording failed
+and dependency-blocked states. Presentation derives stable visual identity from
+`FeatureId` only after a successful commit. Persistence remains deferred.
+B12 and B13 are NOT STARTED; these boundaries are proposals, not accepted
+architecture.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
 

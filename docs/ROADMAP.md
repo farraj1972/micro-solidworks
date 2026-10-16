@@ -622,6 +622,9 @@ possibly as multiple coplanar Faces. GAP-GEO-002 and GAP-SCENE-002 remain OPEN.
 
 # B12 — Feature Tree
 
+Estado: NOT STARTED. D11 — Feature Ownership, Dependency Graph & Transactional
+Rebuild is PROPOSED / READY FOR REVIEW in ADR-0041–0044; it is not yet frozen.
+
 Objectivo:
 
 Representar a construção histórica do modelo.
@@ -635,9 +638,18 @@ Part
 ├── Sketch002
 └── Cut001
 
+Proposed first slice: a project-owned `FeatureModel` owns an append-only ordered
+history of Sketch, Extrude and Boolean feature records. Stable model-local
+`FeatureId` values, explicit backward-only dependencies, authoritative feature
+parameters and derived result caches keep history separate from Presentation
+and infrastructure. B12 is an implementation checkpoint within the combined
+B12/B13 campaign; it does not independently require V3, freeze or a tag.
+
 ---
 
 # B13 — Parametric Rebuild
+
+Estado: NOT STARTED. D11 remains PROPOSED / READY FOR REVIEW.
 
 Objectivo:
 
@@ -652,6 +664,18 @@ Conceitos:
 - feature validity.
 
 Esta é uma das baselines fundamentais para transformar o modelador 3D num pequeno CAD paramétrico.
+
+Proposed rebuild semantics: edits mark the affected dependency closure dirty;
+an explicit global rebuild evaluates it in deterministic history order. The
+whole affected closure commits atomically. A failed attempt preserves
+last-known-good derived caches while reporting FAILED and
+BLOCKED_BY_DEPENDENCY states. Sketch solving occurs on a copy, and stable
+`FeatureId` to `VisualEntityId` mapping is refreshed only after commit.
+
+The proposed campaign closes with one B13 V3 validation followed by a V0
+documentary freeze for both B12 and B13. If approved, both baseline tags point
+to that same freeze commit. Persistence, undo/redo, suppression, branching and
+general feature types remain deferred.
 
 ---
 

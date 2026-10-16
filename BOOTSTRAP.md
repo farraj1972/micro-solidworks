@@ -78,6 +78,10 @@ B11.1-B11.28: COMPLETE
 B11.FREEZE: FROZEN
 Latest validated snapshot (B11): 775/775 tests PASS, runtime PASS, 0 warnings
 ADR-0038-0040: CONFORMANT
+D11 — Feature Ownership, Dependency Graph & Transactional Rebuild: PROPOSED / READY FOR REVIEW
+ADR-0041–0044: PROPOSED
+B12 — Feature Tree: NOT STARTED
+B13 — Parametric Rebuild: NOT STARTED
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

@@ -998,9 +998,19 @@ D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation
 STATUS: FROZEN
 ```
 
+Proposed decision gate:
+
+```text
+D11 — Feature Ownership, Dependency Graph & Transactional Rebuild
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0041–0044: PROPOSED
+B12 — Feature Tree: NOT STARTED
+B13 — Parametric Rebuild: NOT STARTED
+```
+
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 40/40 ADRs ACCEPTED. D6 — Topology Ownership,
+FROZEN. The inventory has 40 ACCEPTED ADRs; ADR-0041–0044 are PROPOSED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
@@ -1071,6 +1081,14 @@ one connected, hole-free, single-shell orthogonal result. It defines explicit
 SUCCESS/EMPTY/INVALID_INPUT/UNSUPPORTED_CASE/NUMERICAL_FAILURE semantics and a
 limited extension separating non-convex Solid validity from convex-specific
 orientation validation. ADR-0038–0040 are ACCEPTED. B11 is FROZEN after clean configure/full Debug build, zero warnings, 775/775 CTest tests and manual runtime validation. ADR-0038-0040 are CONFORMANT.
+
+D11 proposes project-owned FeatureModel ownership, stable model-local FeatureId,
+ordered history plus explicit backward-only dependencies, deterministic explicit
+rebuild and atomic commit of the affected dirty closure. Failed rebuilds preserve
+last-known-good derived caches and record FAILED/BLOCKED_BY_DEPENDENCY state;
+Presentation identity remains derived from FeatureId after commit. ADR-0041–0044
+are PROPOSED / READY FOR REVIEW. B12 and B13 remain NOT STARTED. No executable
+contract is frozen by this proposal.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.
