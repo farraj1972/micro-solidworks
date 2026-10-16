@@ -1,6 +1,8 @@
 # B14 — Persistence + MVP Executable Validation
 
-Status: CANDIDATE — final V3 pending
+Status: PASS
+
+Validated executable state: `22d6cb9a53035f2856907b75339bf6b34324e46e`
 
 ## Implemented scope
 
@@ -24,7 +26,22 @@ Status: CANDIDATE — final V3 pending
 
 ## Final V3
 
-Pending clean configure, full Debug build, full CTest, runtime smoke,
-architecture/dependency audit, repository hygiene and `git diff --check`.
+- Fresh configure in a new build directory: PASS.
+- Full Debug build: PASS; project warnings: 0.
+- Full CTest: PASS, 793/793 tests.
+- Manual runtime MVP smoke: PASS; normal shutdown confirmed.
+- New, Save As, New/reset, Open with automatic rebuild, Feature Tree/final
+  Solid, upstream edit/Rebuild/Save/reopen, invalid Open preservation and
+  unsupported-version preservation: PASS.
+- Controlled rebuild-failed fixture: PASS in automated coverage.
+- Architecture audit: PASS; JSON is private to Persistence, Features has no
+  reverse dependency, and domain modules have no filesystem/JSON errors.
+- Dependency audit: PASS; only approved nlohmann/json 3.11.3 was added, with
+  vendored MIT license.
+- Repository hygiene and `git diff --check`: PASS.
+
+This single V3 is also the Micro SolidWorks MVP executable validation. The
+following B14 and MVP freezes are documentary V0 steps while executable HEAD
+remains unchanged.
 
 GAP-GEO-002 and GAP-SCENE-002 remain OPEN / outside MVP.
