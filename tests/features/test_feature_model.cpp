@@ -91,3 +91,38 @@ TEST(FeatureModel, SuccessfulEmptyReplacesPreviousCurrentResult)
     EXPECT_TRUE(std::holds_alternative<microsw::features::EmptyFeatureCache>(*model.find(result).cache()));
     EXPECT_EQ(model.find(result).state(), microsw::features::FeatureState::Clean);
 }
+
+TEST(FeatureModel, SolvesSketchCopyWithoutMutatingAuthoritativeGeometry)
+{
+    microsw::features::FeatureModel model;
+    microsw::sketch::Sketch sketch;
+    const auto line = sketch.addLine({{0, 0}, {1, 0}});
+    (void)sketch.addConstraint(microsw::sketch::LineLength{
+        {line, microsw::sketch::SubElementKind::LineBody}, 2});
+    const auto feature = model.addSketch(sketch);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    const auto& authoritative = std::get<microsw::sketch::SketchLine>(
+        std::get<microsw::features::SketchFeature>(model.find(feature).data()).sketch.find(line).geometry()).geometry;
+    const auto& solved = std::get<microsw::sketch::SketchLine>(
+        std::get<microsw::features::SketchFeatureCache>(*model.find(feature).cache()).solvedSketch.find(line).geometry()).geometry;
+    EXPECT_NEAR(authoritative.length(), 1.0, 1e-12);
+    EXPECT_NEAR(solved.length(), 2.0, 1e-7);
+}
+
+TEST(FeatureModel, FailureRollsBackSuccessfulCandidateOnIndependentAffectedBranch)
+{
+    microsw::features::FeatureModel model;
+    const auto sketchA = model.addSketch(rectangle(0, 0, 4, 4));
+    const auto extrudeA = model.addExtrude(sketchA, 4);
+    const auto sketchB = model.addSketch(rectangle(2, 2, 6, 6));
+    const auto extrudeB = model.addExtrude(sketchB, 4);
+    (void)model.addBoolean(extrudeA, extrudeB, microsw::modeling::BooleanOperation::Union);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    const auto* previousB = &*model.find(extrudeB).cache();
+    model.editSketch(sketchA, [](auto& sketch) { sketch.remove(sketch.entityIds().front()); });
+    model.setExtrudeDistance(extrudeB, 6);
+    const auto result = model.rebuild();
+    EXPECT_EQ(result.status, microsw::features::RebuildStatus::Failed);
+    EXPECT_EQ(&*model.find(extrudeB).cache(), previousB);
+    EXPECT_EQ(model.find(extrudeB).state(), microsw::features::FeatureState::Dirty);
+}
