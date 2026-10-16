@@ -1,6 +1,6 @@
 # ADR-0045 - Persistence Boundary and Authoritative State
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

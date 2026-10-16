@@ -1008,25 +1008,26 @@ B12 — Feature Tree: FROZEN
 B13 — Parametric Rebuild: FROZEN
 ```
 
-Current proposed decision gate:
+Latest decision gate:
 
 ```text
 D12 — Persistence Schema, Identity & Transaction Semantics
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0045–0048: PROPOSED
+STATUS: FROZEN
+ADR-0045–0048: ACCEPTED
 B14 — Persistence: NOT STARTED / NEXT ACTIVE
 MVP: NOT FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 44/44 ADRs ACCEPTED. D6 — Topology Ownership,
+FROZEN. The complete inventory is 48/48 ADRs ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
 ADR-0035–0037 are ACCEPTED and freeze D9.
 ADR-0038–0040 are ACCEPTED and freeze D10.
 ADR-0041–0044 are ACCEPTED and freeze D11.
+ADR-0045–0048 are ACCEPTED and freeze D12.
 
 B3.10A corrected closest-point reconstruction robustness identified by the
 first B3.10 validation. The repeated B3.10 validated 549/549 tests and runtime
@@ -1104,12 +1105,12 @@ and manual runtime validation followed by clean shutdown. Tags
 `b12-feature-tree` and `b13-parametric-rebuild` identify the same final freeze
 state. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 
-Proposed D12 preserves FeatureModel as the authoritative persisted aggregate and
+Frozen D12 preserves FeatureModel as the authoritative persisted aggregate and
 specifies JSON `.microsw` format version 1, persistent aggregate-local logical
 IDs with explicit next-ID counters, atomic Save, transactional Open followed by
 deterministic rebuild, and `microsw_persistence -> microsw_features`. Derived
 modeling caches, topology/visual identities, Presentation and transient session
-state are not persisted. ADR-0045–0048 remain PROPOSED pending approval; B14 is
+state are not persisted. ADR-0045–0048 are ACCEPTED; B14 is
 NOT STARTED / NEXT ACTIVE and the MVP is NOT FROZEN. GAP-GEO-002 and
 GAP-SCENE-002 remain OPEN / deferred.
 

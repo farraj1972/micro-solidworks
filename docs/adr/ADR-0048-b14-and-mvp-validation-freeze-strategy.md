@@ -1,6 +1,6 @@
 # ADR-0048 - B14 and MVP Validation/Freeze Strategy
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

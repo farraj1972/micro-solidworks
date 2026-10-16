@@ -684,7 +684,7 @@ general feature types remain deferred.
 # B14 — Persistence
 
 Estado: NOT STARTED / NEXT ACTIVE. D12 — Persistence Schema, Identity &
-Transaction Semantics is PROPOSED / READY FOR REVIEW in ADR-0045–0048.
+Transaction Semantics is FROZEN in accepted ADR-0045–0048.
 
 Objectivo:
 
@@ -700,20 +700,19 @@ Capacidades:
 - serialization;
 - validation.
 
-Proposed first slice: persist the authoritative `FeatureModel` as deterministic
+Approved first slice: persist the authoritative `FeatureModel` as deterministic
 JSON `.microsw` format version 1. Persistent aggregate-local feature, entity and
 constraint IDs and their explicit next-ID counters survive Save/Open; derived
 modeling caches, topology/visual identities and session state do not. Save is
 atomic and accepts failed or dirty authoritative work. Open validates into a
 temporary model, rebuilds deterministically, and replaces the session only after
 structural success. A rebuild failure remains a successfully loaded repairable
-model. The proposed dependency is
+model. The frozen dependency is
 `microsw_persistence -> microsw_features`, never the reverse.
 
 B14 will use targeted V1 increments, V2 application integration, and one final
-V3 that also validates the executable MVP workflow. B14 remains NOT STARTED
-until D12 is approved and frozen. GAP-GEO-002 and GAP-SCENE-002 remain OPEN /
-deferred.
+V3 that also validates the executable MVP workflow. B14 remains NOT STARTED /
+NEXT ACTIVE. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 
 ---
 
@@ -740,8 +739,8 @@ MVP FREEZE apenas quando todo este workflow estiver funcional e validado,
 mediante autorização explícita. Só então o repositório poderá ser marcado
 com uma baseline/tag MVP estável.
 
-Proposed D12 policy: after the final B14 V3, an unchanged executable state allows
-B14.FREEZE and MVP.FREEZE to run as V0 documentary steps. Their proposed tags
+D12 policy: after the final B14 V3, an unchanged executable state allows
+B14.FREEZE and MVP.FREEZE to run as V0 documentary steps. Their frozen tags
 are `b14-persistence` and annotated `mvp-1.0` with message
 `Micro SolidWorks — MVP 1.0`.
 

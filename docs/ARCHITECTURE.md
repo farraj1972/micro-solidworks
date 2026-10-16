@@ -128,8 +128,8 @@ FeatureModel-owned caches and result identity, and a Presentation-owned stable
 publishes Presentation only after successful rebuild commit. The combined V3
 passed 785/785 tests, zero warnings and runtime validation.
 
-D12 — Persistence Schema, Identity & Transaction Semantics is PROPOSED / READY
-FOR REVIEW in ADR-0045–0048. It keeps `FeatureModel` authoritative and proposes
+D12 — Persistence Schema, Identity & Transaction Semantics is FROZEN in accepted
+ADR-0045–0048. It keeps `FeatureModel` authoritative and defines
 `microsw_persistence -> microsw_features`, with no reverse dependency. The
 persistence module separates domain/DTO mapping, JSON mapping and filesystem
 I/O; Application owns the optional current path and coordinates transactional
@@ -1099,7 +1099,7 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0044 are **44/44 ACCEPTED**. ADR-0001–0027 remain unchanged.
+ADR-0001 through ADR-0048 are **48/48 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

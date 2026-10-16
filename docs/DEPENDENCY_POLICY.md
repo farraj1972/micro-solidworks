@@ -124,13 +124,13 @@ OpenGL 3.3 funcional.
   `microsw_features -> microsw_constraints / microsw_sketch /
   microsw_modeling`, while Presentation, UI and Application consume Features.
 - Persistence: `BUILD` project-owned mapping, validation, transaction and
-  filesystem boundary with an `INTEGRATE` JSON implementation, proposed in D12.
+  filesystem boundary with an `INTEGRATE` JSON implementation, frozen in D12.
   ADR-0045–0048 authorize a reproducibly pinned MIT-licensed `nlohmann/json`
   release isolated inside the future `microsw_persistence` target. No JSON type
-  may cross its public API. The proposed dependency is
+  may cross its public API. The frozen dependency is
   `microsw_persistence -> microsw_features`; Features and lower domain modules
-  must not depend on Persistence. D12 is PROPOSED / READY FOR REVIEW, so no
-  dependency is integrated and B14 remains NOT STARTED.
+  must not depend on Persistence. D12 is FROZEN; no dependency is integrated
+  yet and B14 remains NOT STARTED.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

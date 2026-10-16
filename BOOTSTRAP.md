@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-44/44 ADRs ACCEPTED; ADR-0021–0040 CONFORMANT
+48/48 ADRs ACCEPTED; ADR-0021–0040 CONFORMANT
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -84,8 +84,8 @@ B12 — Feature Tree: FROZEN
 B13 — Parametric Rebuild: FROZEN
 Latest validated snapshot (B12/B13): 785/785 tests PASS, runtime PASS, 0 warnings
 ADR-0041–0044: CONFORMANT
-D12 — Persistence Schema, Identity & Transaction Semantics: PROPOSED / READY FOR REVIEW
-ADR-0045–0048: PROPOSED
+D12 — Persistence Schema, Identity & Transaction Semantics: FROZEN
+ADR-0045–0048: ACCEPTED
 B14 — Persistence: NOT STARTED / NEXT ACTIVE
 MVP: NOT FROZEN
 ```

@@ -1,6 +1,6 @@
 # ADR-0047 - Transactional Save/Open and Rebuild Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

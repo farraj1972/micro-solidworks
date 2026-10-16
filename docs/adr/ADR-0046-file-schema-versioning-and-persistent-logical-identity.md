@@ -1,6 +1,6 @@
 # ADR-0046 - File Schema, Versioning and Persistent Logical Identity
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -30,9 +30,11 @@ and angles radians.
 Load validates version, required fields/types, finite values, unique and valid
 IDs, counters, backward dependencies, compatible feature kinds, result identity,
 SketchPlane invariants through domain APIs, entity invariants, constraints and
-references, and feature parameters. Defensive limits are centralized: 64 MiB
-per file, 100,000 features, 250,000 entities per Sketch, and 250,000 constraints
-per Sketch. Limits are checked before proportional allocation.
+references, and feature parameters. Defensive limits are centralized and
+required for file size, feature count, entities per Sketch, and constraints per
+Sketch. Initial values may use 64 MiB, 100,000 features, and 250,000 Sketch
+entities or constraints; these values are adjustable implementation policy.
+Limits are checked before proportional allocation.
 
 Output ordering is deterministic: feature history order, stable entity and
 constraint order, and stable field order where supported.
