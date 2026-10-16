@@ -58,6 +58,14 @@ struct RebuildResult
     std::string diagnostic;
 };
 
+struct PersistedFeature
+{
+    FeatureId id;
+    FeatureKind kind;
+    std::string displayName;
+    FeatureData data;
+};
+
 class FeatureModel
 {
 public:
@@ -75,6 +83,10 @@ public:
     [[nodiscard]] const std::vector<FeatureRecord>& history() const noexcept { return records_; }
     [[nodiscard]] const FeatureRecord& find(FeatureId id) const;
     [[nodiscard]] RebuildResult rebuild();
+    [[nodiscard]] FeatureId::Value nextFeatureId() const noexcept { return nextFeatureId_; }
+    [[nodiscard]] static FeatureModel restore(std::vector<PersistedFeature> features,
+        FeatureId resultFeatureId, FeatureId::Value nextFeatureId,
+        constraints::ConstraintSolver solver = constraints::ConstraintSolver{constraints::SolverPolicy{}});
 private:
     FeatureRecord& mutableFind(FeatureId id);
     void markDirtyClosure(FeatureId id);
@@ -83,5 +95,6 @@ private:
     constraints::ConstraintSolver solver_;
     std::vector<FeatureRecord> records_;
     FeatureId resultFeatureId_;
+    FeatureId::Value nextFeatureId_{};
 };
 }

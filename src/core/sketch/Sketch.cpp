@@ -10,6 +10,38 @@
 namespace microsw::sketch
 {
 
+Sketch Sketch::restore(const SketchPlane& plane,
+                       std::vector<SketchEntity> entities,
+                       SketchEntityId::Value nextEntityId,
+                       std::vector<SketchConstraint> constraints,
+                       SketchConstraintId::Value nextConstraintId)
+{
+    if (nextEntityId == SketchEntityId::invalidValue
+        || nextConstraintId == SketchConstraintId::invalidValue)
+        throw std::invalid_argument{"Invalid persisted Sketch ID counter"};
+    Sketch result{plane};
+    result.entities_.resize(nextEntityId);
+    for (auto& entity : entities)
+    {
+        const auto id = entity.id();
+        if (!id.isValid() || id.value() >= nextEntityId || result.entities_[id.value()])
+            throw std::invalid_argument{"Invalid or duplicate persisted SketchEntityId"};
+        result.entities_[id.value()] = std::move(entity);
+        ++result.activeCount_;
+    }
+    result.constraints_.resize(nextConstraintId);
+    for (auto& constraint : constraints)
+    {
+        const auto id = constraint.id();
+        if (!id.isValid() || id.value() >= nextConstraintId || result.constraints_[id.value()])
+            throw std::invalid_argument{"Invalid or duplicate persisted SketchConstraintId"};
+        result.validateConstraint(constraint.value());
+        result.constraints_[id.value()] = std::move(constraint);
+        ++result.activeConstraintCount_;
+    }
+    return result;
+}
+
 SketchEntityId Sketch::add(SketchGeometry geometry)
 {
     const auto id = SketchEntityId{static_cast<SketchEntityId::Value>(entities_.size())};

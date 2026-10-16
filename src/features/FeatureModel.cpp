@@ -34,9 +34,10 @@ std::string FeatureModel::nextName(FeatureKind kind) const
 
 FeatureId FeatureModel::addSketch(sketch::Sketch sketch)
 {
-    const auto id = FeatureId{static_cast<FeatureId::Value>(records_.size())};
+    const auto id = FeatureId{nextFeatureId_};
     if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
     records_.push_back(FeatureRecord{id, FeatureKind::Sketch, nextName(FeatureKind::Sketch), SketchFeature{std::move(sketch)}});
+    ++nextFeatureId_;
     return id;
 }
 
@@ -46,8 +47,10 @@ FeatureId FeatureModel::addExtrude(FeatureId sketchId, math::Scalar distance)
         throw std::invalid_argument{"Extrude source must be an earlier SketchFeature"};
     if (!std::isfinite(distance) || distance <= geometry::defaultGeometricTolerance)
         throw std::invalid_argument{"Extrusion distance must exceed geometric tolerance"};
-    const auto id = FeatureId{static_cast<FeatureId::Value>(records_.size())};
+    const auto id = FeatureId{nextFeatureId_};
+    if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
     records_.push_back(FeatureRecord{id, FeatureKind::Extrude, nextName(FeatureKind::Extrude), ExtrudeFeature{sketchId, distance}});
+    ++nextFeatureId_;
     resultFeatureId_ = id;
     return id;
 }
@@ -56,8 +59,10 @@ FeatureId FeatureModel::addBoolean(FeatureId inputA, FeatureId inputB, modeling:
 {
     if (!isSolidProducer(inputA) || !isSolidProducer(inputB))
         throw std::invalid_argument{"Boolean inputs must be earlier Solid-producing features"};
-    const auto id = FeatureId{static_cast<FeatureId::Value>(records_.size())};
+    const auto id = FeatureId{nextFeatureId_};
+    if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
     records_.push_back(FeatureRecord{id, FeatureKind::Boolean, nextName(FeatureKind::Boolean), BooleanFeature{inputA, inputB, operation}});
+    ++nextFeatureId_;
     resultFeatureId_ = id;
     return id;
 }
@@ -196,5 +201,60 @@ RebuildResult FeatureModel::rebuild()
         && std::holds_alternative<EmptyFeatureCache>(*find(resultFeatureId_).cache()))
         return {RebuildStatus::SuccessEmpty, {}, 0, {}};
     return {};
+}
+
+FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
+                                   FeatureId resultFeatureId,
+                                   FeatureId::Value nextFeatureId,
+                                   constraints::ConstraintSolver solver)
+{
+    if (nextFeatureId == FeatureId::invalidValue || nextFeatureId != features.size())
+        throw std::invalid_argument{"Invalid persisted FeatureId counter"};
+    FeatureModel result{std::move(solver)};
+    for (std::size_t index = 0; index < features.size(); ++index)
+    {
+        auto& feature = features[index];
+        if (!feature.id.isValid() || feature.id.value() != index || feature.displayName.empty())
+            throw std::invalid_argument{"Invalid persisted feature identity or name"};
+        const auto dataKind = std::visit([](const auto& value) {
+            using T = std::decay_t<decltype(value)>;
+            if constexpr (std::is_same_v<T, SketchFeature>) return FeatureKind::Sketch;
+            if constexpr (std::is_same_v<T, ExtrudeFeature>) return FeatureKind::Extrude;
+            return FeatureKind::Boolean;
+        }, feature.data);
+        if (dataKind != feature.kind) throw std::invalid_argument{"Feature kind/data mismatch"};
+        for (const auto dependency : FeatureRecord{feature.id, feature.kind,
+                 feature.displayName, feature.data}.dependencies())
+            if (!dependency.isValid() || dependency.value() >= index)
+                throw std::invalid_argument{"Feature dependency must reference an earlier feature"};
+        if (feature.kind == FeatureKind::Extrude)
+        {
+            const auto& data = std::get<ExtrudeFeature>(feature.data);
+            if (!std::isfinite(data.distance) || data.distance <= geometry::defaultGeometricTolerance
+                || features[data.sourceSketchFeatureId.value()].kind != FeatureKind::Sketch)
+                throw std::invalid_argument{"Invalid persisted ExtrudeFeature"};
+        }
+        if (feature.kind == FeatureKind::Boolean)
+        {
+            const auto& data = std::get<BooleanFeature>(feature.data);
+            const auto isSolid = [&](FeatureId id) {
+                const auto kind = features[id.value()].kind;
+                return kind == FeatureKind::Extrude || kind == FeatureKind::Boolean;
+            };
+            if (!isSolid(data.inputA) || !isSolid(data.inputB))
+                throw std::invalid_argument{"Invalid persisted BooleanFeature inputs"};
+        }
+        result.records_.push_back(FeatureRecord{feature.id, feature.kind,
+            std::move(feature.displayName), std::move(feature.data)});
+    }
+    result.nextFeatureId_ = nextFeatureId;
+    if (resultFeatureId.isValid())
+    {
+        if (resultFeatureId.value() >= result.records_.size()
+            || !result.isSolidProducer(resultFeatureId))
+            throw std::invalid_argument{"Invalid persisted resultFeatureId"};
+        result.resultFeatureId_ = resultFeatureId;
+    }
+    return result;
 }
 }

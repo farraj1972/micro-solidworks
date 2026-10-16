@@ -30,6 +30,7 @@ FetchContent_Declare(
     GIT_TAG f5befd2d29e66809cd1110a152e375a7f1981f06
 )
 
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -39,6 +40,11 @@ FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(glad)
 FetchContent_MakeAvailable(imgui)
+
+# Vendored nlohmann/json 3.11.3 single header (MIT). This private target is
+# consumed only by microsw_persistence; JSON types do not cross its API.
+add_library(microsw_nlohmann_json INTERFACE)
+target_include_directories(microsw_nlohmann_json INTERFACE third_party)
 
 glad_add_library(glad_gl_core_33 REPRODUCIBLE LOADER API gl:core=3.3)
 if(MSVC)
@@ -168,6 +174,14 @@ target_link_libraries(microsw_features PUBLIC
     microsw_modeling
 )
 
+add_library(microsw_persistence STATIC
+    src/persistence/Persistence.cpp
+)
+target_compile_features(microsw_persistence PUBLIC cxx_std_20)
+set_target_properties(microsw_persistence PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_persistence PUBLIC src)
+target_link_libraries(microsw_persistence PUBLIC microsw_features PRIVATE microsw_nlohmann_json)
+
 add_library(microsw_sketch_modeling_adapter STATIC
     src/app/modeling/ActiveExtrusion.cpp
     src/app/modeling/ActiveBoolean.cpp
@@ -288,6 +302,7 @@ set_target_properties(micro_solidworks PROPERTIES
 target_link_libraries(micro_solidworks PRIVATE
     microsw_constraints
     microsw_features
+    microsw_persistence
     microsw_sketch_modeling_adapter
     microsw_viewer
     microsw_logging
@@ -356,6 +371,7 @@ if(BUILD_TESTING)
         tests/modeling/test_profile_extrusion.cpp
         tests/modeling/test_boolean.cpp
         tests/features/test_feature_model.cpp
+        tests/persistence/test_persistence.cpp
         tests/topology/test_topology.cpp
         tests/topology/test_topology_integration.cpp
         tests/sketch/test_sketch_plane.cpp
@@ -401,6 +417,7 @@ if(BUILD_TESTING)
         microsw_ui
         microsw_geometry
         microsw_features
+        microsw_persistence
         microsw_logging
         microsw_math
         microsw_modeling

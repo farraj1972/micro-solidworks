@@ -48,6 +48,19 @@ public:
     using Replacement = std::pair<SketchEntityId, SketchGeometry>;
     void replaceMany(const std::vector<Replacement>& replacements);
 
+    // Controlled reconstruction boundary for persistence. Live records retain
+    // their explicit aggregate-local IDs; omitted slots remain tombstones.
+    [[nodiscard]] static Sketch restore(
+        const SketchPlane& plane,
+        std::vector<SketchEntity> entities,
+        SketchEntityId::Value nextEntityId,
+        std::vector<SketchConstraint> constraints,
+        SketchConstraintId::Value nextConstraintId);
+    [[nodiscard]] SketchEntityId::Value nextEntityId() const noexcept
+        { return static_cast<SketchEntityId::Value>(entities_.size()); }
+    [[nodiscard]] SketchConstraintId::Value nextConstraintId() const noexcept
+        { return static_cast<SketchConstraintId::Value>(constraints_.size()); }
+
 private:
     SketchEntityId add(SketchGeometry geometry);
     void replace(SketchEntityId id, SketchEntityType expected, SketchGeometry geometry);
