@@ -155,6 +155,19 @@ set_target_properties(microsw_modeling PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_modeling PUBLIC src)
 target_link_libraries(microsw_modeling PUBLIC microsw_topology)
 
+add_library(microsw_features STATIC
+    src/features/FeatureModel.cpp
+    src/features/SketchProfileAdapter.cpp
+)
+target_compile_features(microsw_features PUBLIC cxx_std_20)
+set_target_properties(microsw_features PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_features PUBLIC src)
+target_link_libraries(microsw_features PUBLIC
+    microsw_constraints
+    microsw_sketch
+    microsw_modeling
+)
+
 add_library(microsw_sketch_modeling_adapter STATIC
     src/app/modeling/ActiveExtrusion.cpp
     src/app/modeling/ActiveBoolean.cpp
@@ -170,6 +183,7 @@ target_link_libraries(microsw_sketch_modeling_adapter PUBLIC
 )
 
 add_library(microsw_presentation STATIC
+    src/presentation/FeaturePresentation.cpp
     src/presentation/GeometryPresentation.cpp
     src/presentation/Polyline3.cpp
     src/presentation/SegmentSet3.cpp
@@ -180,7 +194,7 @@ add_library(microsw_presentation STATIC
 target_compile_features(microsw_presentation PUBLIC cxx_std_20)
 set_target_properties(microsw_presentation PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_presentation PUBLIC src)
-target_link_libraries(microsw_presentation PUBLIC microsw_geometry microsw_sketch microsw_topology)
+target_link_libraries(microsw_presentation PUBLIC microsw_features microsw_geometry microsw_sketch microsw_topology)
 
 add_library(microsw_viewer STATIC
     src/viewer/GeometryPicker.cpp
@@ -340,6 +354,7 @@ if(BUILD_TESTING)
         tests/math/test_vector3.cpp
         tests/modeling/test_profile_extrusion.cpp
         tests/modeling/test_boolean.cpp
+        tests/features/test_feature_model.cpp
         tests/topology/test_topology.cpp
         tests/topology/test_topology_integration.cpp
         tests/sketch/test_sketch_plane.cpp
@@ -366,6 +381,7 @@ if(BUILD_TESTING)
         tests/rendering/test_line_renderer.cpp
         tests/rendering/test_point_renderer.cpp
         tests/presentation/test_geometry_presentation.cpp
+        tests/presentation/test_feature_presentation.cpp
         tests/presentation/test_sketch_presentation.cpp
         tests/presentation/test_solid_presentation.cpp
         tests/presentation/test_visual_entity.cpp
@@ -383,6 +399,7 @@ if(BUILD_TESTING)
         microsw_constraints
         microsw_ui
         microsw_geometry
+        microsw_features
         microsw_logging
         microsw_math
         microsw_modeling
