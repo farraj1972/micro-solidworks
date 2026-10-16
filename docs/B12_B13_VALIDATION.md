@@ -35,10 +35,13 @@ Validation level: V3 — combined B12/B13 baseline validation.
 - ADR-0044: CONFORMANT.
 - GAP-GEO-002: OPEN / deferred.
 - GAP-SCENE-002: OPEN / deferred.
-- Runtime: PENDING manual smoke because the native Computer Use inventory did
-  not expose the running application window.
+- Runtime: PASS by manual observation because the native Computer Use inventory
+  did not expose the running application window.
+- Normal shutdown: PASS; application process exited.
 
-The runtime smoke must confirm the visible Feature Tree and Boolean result,
-upstream distance edit and DIRTY state, explicit rebuild, failure/last-known-good
-and recovery, selection coherence, normal navigation/projection/UI behavior and
-clean shutdown. Freeze and tags remain pending until this smoke passes.
+The runtime smoke confirmed the visible Feature Tree and Boolean result,
+upstream distance edit and DIRTY propagation, explicit rebuild, Boolean
+operation editing, downstream regeneration, selection coherence, normal
+navigation/projection/resize/UI behavior and clean shutdown. Automated tests
+cover failure, blocking, last-known-good preservation, atomic rollback and
+recovery. B12 and B13 are frozen at this validated executable state.

@@ -121,11 +121,12 @@ closure in deterministic history order. Candidate results commit atomically for
 that closure; failure preserves last-known-good caches while recording failed
 and dependency-blocked states. Presentation derives stable visual identity from
 `FeatureId` only after a successful commit. Persistence remains deferred.
-B12 is CHECKPOINT COMPLETE and B13 is a baseline candidate. The implementation
+B12 and B13 are FROZEN. The implementation
 conforms through `microsw_features`, a pure Sketch-to-Profile adapter,
 FeatureModel-owned caches and result identity, and a Presentation-owned stable
 `FeatureId -> VisualEntityId` mapping. Application observes FeatureModel and
-publishes Presentation only after successful rebuild commit.
+publishes Presentation only after successful rebuild commit. The combined V3
+passed 785/785 tests, zero warnings and runtime validation.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:

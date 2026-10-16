@@ -1004,8 +1004,8 @@ Latest decision gate:
 D11 — Feature Ownership, Dependency Graph & Transactional Rebuild
 STATUS: FROZEN
 ADR-0041–0044: ACCEPTED
-B12 — Feature Tree: CHECKPOINT COMPLETE
-B13 — Parametric Rebuild: CANDIDATE / V3 AUTOMATED PASS / RUNTIME PENDING
+B12 — Feature Tree: FROZEN
+B13 — Parametric Rebuild: FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
@@ -1088,10 +1088,11 @@ ordered history plus explicit backward-only dependencies, deterministic explicit
 rebuild and atomic commit of the affected dirty closure. Failed rebuilds preserve
 last-known-good derived caches and record FAILED/BLOCKED_BY_DEPENDENCY state;
 Presentation identity remains derived from FeatureId after commit. ADR-0041–0044
-are ACCEPTED and CONFORMANT. B12 is CHECKPOINT COMPLETE and B13 is a
-baseline candidate. The combined V3 fresh configure/full Debug build passed
-with zero warnings and 785/785 CTest tests. Runtime smoke remains pending before
-the joint freeze. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
+are ACCEPTED and CONFORMANT. B12 and B13 are FROZEN. Their combined V3
+fresh configure/full Debug build passed with zero warnings, 785/785 CTest tests
+and manual runtime validation followed by clean shutdown. Tags
+`b12-feature-tree` and `b13-parametric-rebuild` identify the same final freeze
+state. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.
