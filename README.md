@@ -13,10 +13,20 @@ product.
 | B1 — Mathematical Foundation | FROZEN | `b1-mathematical-foundation` |
 | B2 — 3D Viewer | FROZEN | `b2-3d-viewer` |
 | B3 — Geometric Primitives | FROZEN | `b3-geometric-primitives` |
-| B4 — Geometry Visualization & Selection | FROZEN | — |
+| B4 — Geometry Visualization & Selection | FROZEN | `b4-geometry-visualization-selection` |
 | B6 — Transformations | FROZEN | `b6-transformations` |
+| B7 — Topological Model | FROZEN | — |
+| B8 — Sketcher | FROZEN | `b8-sketcher` |
+| B9 — Constraint System | FROZEN | `b9-constraint-system` |
+| B10 — Extrusion | FROZEN | `b10-extrusion` |
+| B11 — Boolean Operations | FROZEN | `b11-boolean-operations` |
+| B12 — Feature Tree | FROZEN | `b12-feature-tree` |
+| B13 — Parametric Rebuild | FROZEN | `b13-parametric-rebuild` |
+| B14 — Persistence | FROZEN | `b14-persistence` |
+| Micro SolidWorks MVP 1.0 | FROZEN | `mvp-1.0` |
 
-B6 is the latest stable baseline. B3 supplies Point2/3, Segment2/3,
+B14 is the latest stable baseline and Micro SolidWorks MVP 1.0 is FROZEN.
+B3 supplies Point2/3, Segment2/3,
 Line2/3, Ray2/3 and Plane, queries, metrics and geometric tolerance over internal
 Math. Geometry remains model-only, independent of graphics and UI.
 Point3 is not a Vertex, Segment3 is not an Edge, and Plane is not a Face.
@@ -81,6 +91,10 @@ build, 708/708 tests and runtime PASS. See [B6 validation](docs/B6_VALIDATION.md
 | Selected entity Transform panel | Edit XYZ translation, rotation in degrees and positive scale; valid edits apply immediately |
 | View → Projection | Perspective / Orthographic; each preserves its zoom state |
 | Help → About | Application information |
+| Document path + File → Save As | Atomically save the parametric model as `.microsw` |
+| File → Save | Save to the current session path |
+| Document path + File → Open | Transactionally load and rebuild a `.microsw` model |
+| File → New | Reset model, path, presentation and transient interaction state |
 | File → Exit or native X | Close the application |
 
 Re-clicking a selected entity preserves it. Clicks outside the Workspace or

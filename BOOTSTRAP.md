@@ -89,7 +89,7 @@ ADR-0045–0048: ACCEPTED
 B14 — Persistence: FROZEN
 Latest validated snapshot (B14/MVP executable): 793/793 tests PASS, runtime PASS, 0 warnings
 ADR-0045–0048: CONFORMANT
-MVP: CANDIDATE / NOT FROZEN
+MICRO SOLIDWORKS MVP 1.0: FROZEN
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

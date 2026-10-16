@@ -724,7 +724,7 @@ ADR-0045–0048 are CONFORMANT. See `docs/B14_VALIDATION.md`.
 
 # MVP FREEZE
 
-Estado: CANDIDATE / NOT FROZEN; B14 final V3 pending.
+Estado: FROZEN — MICRO SOLIDWORKS MVP 1.0.
 
 O MVP deverá permitir:
 
@@ -749,6 +749,23 @@ D12 policy: after the final B14 V3, an unchanged executable state allows
 B14.FREEZE and MVP.FREEZE to run as V0 documentary steps. Their frozen tags
 are `b14-persistence` and annotated `mvp-1.0` with message
 `Micro SolidWorks — MVP 1.0`.
+
+Frozen MVP capabilities:
+
+- Foundation and internal Math;
+- 3D Viewer;
+- Geometry and Presentation/Selection;
+- Transformations;
+- Topology;
+- Sketcher and Constraints;
+- Extrusion and Boolean Operations;
+- Feature Tree and Parametric Rebuild;
+- Persistence.
+
+The B14 final V3 is the MVP executable validation: fresh configure, full Debug
+build, zero warnings, 793/793 tests and complete runtime smoke passed. The MVP
+freeze changes documentation only and does not repeat V3. GAP-GEO-002 and
+GAP-SCENE-002 remain OPEN / outside MVP.
 
 ---
 

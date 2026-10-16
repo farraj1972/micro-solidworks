@@ -139,7 +139,8 @@ Presentation and transient UI state remain derived or session-local. B14 now
 implements this boundary in `microsw_persistence`, with JSON confined to its
 private implementation and Application-owned session path/workflow. B14 is a
 FROZEN after its final V3 passed 793/793 tests, zero warnings and runtime
-validation; the MVP remains CANDIDATE / NOT FROZEN pending documentary freeze.
+validation. That same unchanged executable state validates MICRO SOLIDWORKS MVP
+1.0, now FROZEN. GAP-GEO-002 and GAP-SCENE-002 remain explicitly outside MVP.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:

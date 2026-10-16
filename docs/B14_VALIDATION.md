@@ -1,6 +1,6 @@
 # B14 — Persistence + MVP Executable Validation
 
-Status: PASS — B14 FROZEN; MVP documentary freeze pending
+Status: PASS — B14 FROZEN; MICRO SOLIDWORKS MVP 1.0 FROZEN
 
 Validated executable state: `22d6cb9a53035f2856907b75339bf6b34324e46e`
 

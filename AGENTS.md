@@ -1015,7 +1015,7 @@ D12 — Persistence Schema, Identity & Transaction Semantics
 STATUS: FROZEN
 ADR-0045–0048: ACCEPTED
 B14 — Persistence: FROZEN
-MVP: CANDIDATE / NOT FROZEN
+MICRO SOLIDWORKS MVP 1.0: FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
@@ -1112,7 +1112,11 @@ deterministic rebuild, and `microsw_persistence -> microsw_features`. Derived
 modeling caches, topology/visual identities, Presentation and transient session
 state are not persisted. ADR-0045–0048 are ACCEPTED and CONFORMANT. B14 is
 FROZEN after the final V3 passed with zero warnings, 793/793 tests and runtime
-validation. The MVP remains CANDIDATE / NOT FROZEN pending documentary freeze. GAP-GEO-002 and
+validation. MICRO SOLIDWORKS MVP 1.0 is FROZEN over the same validated
+executable state without repeating V3. Its capabilities span Foundation, Math,
+3D Viewer, Geometry, Presentation/Selection, Transformations, Topology,
+Sketcher, Constraints, Extrusion, Boolean Operations, Feature Tree, Parametric
+Rebuild and Persistence. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / outside MVP. GAP-GEO-002 and
 GAP-SCENE-002 remain OPEN / deferred.
 
 No increment without explicit authorization.
