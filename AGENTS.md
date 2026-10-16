@@ -998,7 +998,7 @@ D10 — Axis-Aligned Boolean Semantics & Non-Convex Solid Validation
 STATUS: FROZEN
 ```
 
-Latest decision gate:
+Latest frozen decision gate:
 
 ```text
 D11 — Feature Ownership, Dependency Graph & Transactional Rebuild
@@ -1006,6 +1006,16 @@ STATUS: FROZEN
 ADR-0041–0044: ACCEPTED
 B12 — Feature Tree: FROZEN
 B13 — Parametric Rebuild: FROZEN
+```
+
+Current proposed decision gate:
+
+```text
+D12 — Persistence Schema, Identity & Transaction Semantics
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0045–0048: PROPOSED
+B14 — Persistence: NOT STARTED / NEXT ACTIVE
+MVP: NOT FROZEN
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
@@ -1093,6 +1103,15 @@ fresh configure/full Debug build passed with zero warnings, 785/785 CTest tests
 and manual runtime validation followed by clean shutdown. Tags
 `b12-feature-tree` and `b13-parametric-rebuild` identify the same final freeze
 state. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / deferred.
+
+Proposed D12 preserves FeatureModel as the authoritative persisted aggregate and
+specifies JSON `.microsw` format version 1, persistent aggregate-local logical
+IDs with explicit next-ID counters, atomic Save, transactional Open followed by
+deterministic rebuild, and `microsw_persistence -> microsw_features`. Derived
+modeling caches, topology/visual identities, Presentation and transient session
+state are not persisted. ADR-0045–0048 remain PROPOSED pending approval; B14 is
+NOT STARTED / NEXT ACTIVE and the MVP is NOT FROZEN. GAP-GEO-002 and
+GAP-SCENE-002 remain OPEN / deferred.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

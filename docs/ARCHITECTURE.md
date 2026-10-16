@@ -128,6 +128,16 @@ FeatureModel-owned caches and result identity, and a Presentation-owned stable
 publishes Presentation only after successful rebuild commit. The combined V3
 passed 785/785 tests, zero warnings and runtime validation.
 
+D12 — Persistence Schema, Identity & Transaction Semantics is PROPOSED / READY
+FOR REVIEW in ADR-0045–0048. It keeps `FeatureModel` authoritative and proposes
+`microsw_persistence -> microsw_features`, with no reverse dependency. The
+persistence module separates domain/DTO mapping, JSON mapping and filesystem
+I/O; Application owns the optional current path and coordinates transactional
+session replacement. Only authoritative history, parameters, logical IDs and
+explicit next-ID counters are persisted. Rebuild caches, topology/visual IDs,
+Presentation and transient UI state remain derived or session-local. B14 is NOT
+STARTED and the MVP is NOT FROZEN.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
 

@@ -84,6 +84,10 @@ B12 — Feature Tree: FROZEN
 B13 — Parametric Rebuild: FROZEN
 Latest validated snapshot (B12/B13): 785/785 tests PASS, runtime PASS, 0 warnings
 ADR-0041–0044: CONFORMANT
+D12 — Persistence Schema, Identity & Transaction Semantics: PROPOSED / READY FOR REVIEW
+ADR-0045–0048: PROPOSED
+B14 — Persistence: NOT STARTED / NEXT ACTIVE
+MVP: NOT FROZEN
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
