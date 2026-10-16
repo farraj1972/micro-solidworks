@@ -80,8 +80,8 @@ Latest validated snapshot (B11): 775/775 tests PASS, runtime PASS, 0 warnings
 ADR-0038-0040: CONFORMANT
 D11 — Feature Ownership, Dependency Graph & Transactional Rebuild: FROZEN
 ADR-0041–0044: ACCEPTED
-B12 — Feature Tree: NOT STARTED / NEXT ACTIVE
-B13 — Parametric Rebuild: NOT STARTED / PLANNED IN SAME CAMPAIGN
+B12 — Feature Tree: CHECKPOINT COMPLETE
+B13 — Parametric Rebuild: CANDIDATE / V3 AUTOMATED PASS / RUNTIME PENDING
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

@@ -622,7 +622,7 @@ possibly as multiple coplanar Faces. GAP-GEO-002 and GAP-SCENE-002 remain OPEN.
 
 # B12 — Feature Tree
 
-Estado: NOT STARTED / NEXT ACTIVE. D11 — Feature Ownership, Dependency Graph &
+Estado: CHECKPOINT COMPLETE. D11 — Feature Ownership, Dependency Graph &
 Transactional Rebuild is FROZEN in accepted ADR-0041–0044.
 
 Objectivo:
@@ -649,7 +649,8 @@ B12/B13 campaign; it does not independently require V3, freeze or a tag.
 
 # B13 — Parametric Rebuild
 
-Estado: NOT STARTED / PLANNED IN SAME CAMPAIGN. D11 is FROZEN.
+Estado: CANDIDATE. D11 is FROZEN. The combined V3 automated validation passed
+785/785 tests; runtime validation remains pending before the joint freeze.
 
 Objectivo:
 

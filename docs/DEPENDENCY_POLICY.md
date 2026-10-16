@@ -119,8 +119,10 @@ OpenGL 3.3 funcional.
   Rendering and UI. Ordered history, explicit dependencies, rebuild state and
   derived result caches remain an internal educational implementation; no
   external feature engine or persistence dependency is authorized. D11 is
-  FROZEN; ADR-0041–0044 are ACCEPTED. B12 is NOT STARTED / NEXT ACTIVE and B13
-  is NOT STARTED / planned in the same campaign.
+  FROZEN; ADR-0041–0044 are ACCEPTED and CONFORMANT. B12 is CHECKPOINT COMPLETE
+  and B13 is a baseline candidate. The implemented dependency is
+  `microsw_features -> microsw_constraints / microsw_sketch /
+  microsw_modeling`, while Presentation, UI and Application consume Features.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no
