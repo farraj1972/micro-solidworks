@@ -9,6 +9,8 @@
 #include "app/window/ApplicationWindow.h"
 #include "rendering/OpenGLContext.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/FeaturePresentation.h"
+#include "features/FeatureModel.h"
 
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
@@ -126,6 +128,32 @@ TEST_F(WorkspaceViewportTest, ConstructsRendersResizesAndDestroys)
         EXPECT_EQ(glGetError(), GL_NO_ERROR);
     }
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
+TEST_F(WorkspaceViewportTest, FaceHoverAfterExtrudeRestoresBaseShaderForWirePresentation)
+{
+    microsw::sketch::Sketch sketch;
+    (void)sketch.addRectangle({-1,-1},{1,1});
+    microsw::features::FeatureModel model;
+    const auto feature = model.addExtrude(model.addSketch(std::move(sketch)),2);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    microsw::presentation::FeaturePresentation presentation;
+    presentation.update(model);
+
+    WorkspaceViewport viewport{presentation.geometry()};
+    viewport.setFeaturePresentation(&presentation);
+    const WorkspaceLayout layout{0,0,128,128,128,128};
+    microsw::WorkspaceInput input{};
+    input.x=64;
+    input.y=64;
+    input.focused=true;
+    input.pointerValid=true;
+    input.workspaceHovered=true;
+    viewport.updateHover(layout,input,128,128);
+    ASSERT_TRUE(viewport.hoveredSolidTarget());
+    EXPECT_NO_THROW(viewport.render(layout,128,128));
+    EXPECT_EQ(glGetError(),GL_NO_ERROR);
+    EXPECT_TRUE(presentation.visualId(feature));
 }
 
 TEST_F(WorkspaceViewportTest, GridAndAxesUploadAndDrawInOneDepthPass)

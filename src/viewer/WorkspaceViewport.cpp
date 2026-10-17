@@ -474,6 +474,13 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
             if(const auto*face=std::get_if<interaction::TopologyFaceTarget>(&*target)){std::vector<rendering::LitVertex>v;for(const auto&t:display.triangles)if(t.target==*face)for(const auto&p:t.points)v.push_back({{p.x(),p.y(),p.z()},t.normal});impl_->triangles.setVertices(v);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->triangles.draw();}
             else if(const auto*edge=std::get_if<interaction::TopologyEdgeTarget>(&*target)){std::vector<math::Vector3>v;for(const auto&e:display.edges)if(e.target==*edge)for(std::size_t i=1;i<e.points.size();++i){v.push_back({e.points[i-1].x(),e.points[i-1].y(),e.points[i-1].z()});v.push_back({e.points[i].x(),e.points[i].y(),e.points[i].z()});}impl_->solidEdges.setVertices(v);impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->shader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();}glDepthFunc(GL_LESS);};
         drawState(impl_->solidHover,{0.25,0.9,1.0});drawState(impl_->solidSelection,{1.0,0.48,0.08});
+        // Face highlights use the lit program. The wire presentation below
+        // shares this pass and requires the base program to be current again.
+        impl_->shader.bind();
+        impl_->shader.setMatrix4("uModel",math::Matrix4::identity());
+        impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));
+        impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(
+            impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
     }
 
     // Reuse three generic GPU buffers for successive state batches. IDs stay on CPU.
