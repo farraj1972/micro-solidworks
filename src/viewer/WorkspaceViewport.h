@@ -14,6 +14,11 @@ namespace microsw::math { class Transform3; }
 namespace microsw::viewer
 {
 enum class SolidDisplayMode { ShadedWithEdges, Wireframe, Shaded };
+struct SolidDisplayPasses { bool faces; bool topologyEdges; };
+[[nodiscard]] constexpr SolidDisplayPasses displayPasses(SolidDisplayMode mode) noexcept
+{
+    return {mode != SolidDisplayMode::Wireframe, mode != SolidDisplayMode::Shaded};
+}
 enum class StandardView { Front, Back, Left, Right, Top, Bottom, Isometric };
 
 struct ViewportRect

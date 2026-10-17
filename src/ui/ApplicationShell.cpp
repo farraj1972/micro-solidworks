@@ -3,10 +3,12 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
 #include "features/PlanarRegion.h"
+#include "ui/FeatureTreeModel.h"
 
 #include <imgui.h>
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <numbers>
 #include <string_view>
 #include <stdexcept>
@@ -76,6 +78,30 @@ void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
         draw->AddRect({x-11,y-5},{x+3,y+9},color,0,0,2); draw->AddRect({x-3,y-11},{x+11,y+3},color,0,0,2);
         line(-11,-5,-3,-11); line(3,-5,11,-11); line(3,9,11,3); break;
     }
+}
+
+bool displayModeButton(microsw::DisplayModeRequest mode)
+{
+    const ImVec2 size{38, 24};
+    const ImVec2 min=ImGui::GetCursorScreenPos();
+    const ImVec2 max{min.x+size.x,min.y+size.y};
+    const bool pressed=ImGui::InvisibleButton("##display-mode",size);
+    auto* draw=ImGui::GetWindowDrawList();
+    const auto border=ImGui::GetColorU32(ImGui::IsItemHovered()?ImGuiCol_ButtonHovered:ImGuiCol_Button);
+    draw->AddRectFilled(min,max,border,4);
+    const ImVec2 a{min.x+9,min.y+6},b{max.x-9,max.y-6};
+    if(mode!=microsw::DisplayModeRequest::Wireframe)
+        draw->AddRectFilled(a,b,IM_COL32(95,145,195,255),2);
+    if(mode!=microsw::DisplayModeRequest::Shaded)
+        draw->AddRect(a,b,IM_COL32(25,30,38,255),2,0,2);
+    if(mode==microsw::DisplayModeRequest::Wireframe)
+        draw->AddLine(a,b,IM_COL32(25,30,38,255),2);
+    if(ImGui::IsItemHovered()){
+        const char* active=mode==microsw::DisplayModeRequest::Shaded?"Shaded"
+            :mode==microsw::DisplayModeRequest::Wireframe?"Wireframe":"Shaded With Edges";
+        ImGui::SetTooltip("Display mode: %s",active);
+    }
+    return pressed;
 }
 
 constexpr ImGuiWindowFlags structuralWindowFlags =
@@ -297,34 +323,60 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     ImGui::Separator();
     if (featureModel)
     {
-        ImGui::TextUnformatted("Model history");
-        ImGui::TextDisabled("Sketches and created shapes");
-        const auto stateName = [](features::FeatureState state) {
-            switch (state) { case features::FeatureState::Clean: return "OK"; case features::FeatureState::Dirty: return "Needs rebuild";
-            case features::FeatureState::Failed: return "Failed"; default: return "Blocked"; }
+        const auto tree = ui::deriveFeatureTree(*featureModel, editor);
+        ImGui::TextUnformatted("Feature Manager");
+        ImGui::TextDisabled("How this part was built");
+        const auto statusCue=[](const ui::FeatureTreeNode& node)
+            -> std::pair<const char*,const char*>{
+            if(node.activeEditing)return {"[*]","This sketch is being edited"};
+            if(node.displayState==interaction::DisplayState::Hidden)return {"[-]","Hidden in the Graphics Area"};
+            switch(node.state){
+            case features::FeatureState::Dirty:return {"[~]","Needs rebuild"};
+            case features::FeatureState::Failed:return {"[!]","This feature failed; inspect its message"};
+            case features::FeatureState::BlockedByDependency:return {"[x]","Blocked by an earlier failed feature"};
+            default:return {nullptr,nullptr};}
         };
-        for (const auto& feature : featureModel->history())
-        {
-            ImGui::PushID(static_cast<int>(feature.id().value()));
-            const auto display = editor ? editor->displayState(feature.id()) : interaction::DisplayState::Visible;
-            const std::string label = std::string{display == interaction::DisplayState::Hidden ? "[ ] " : "[o] "}
-                + feature.displayName() + "  -  " + stateName(feature.state());
-            if (ImGui::Selectable(label.c_str(), selectedFeature_ == feature.id()))
-            {
-                selectedFeature_ = feature.id();
-                if (editor) editor->select(interaction::LogicalTarget{feature.id()});
+        std::function<void(const ui::FeatureTreeNode&)> drawNode;
+        drawNode=[&](const ui::FeatureTreeNode& node){
+            ImGui::PushID(static_cast<int>(node.featureId.value()));
+            auto flags=ImGuiTreeNodeFlags_SpanAvailWidth|ImGuiTreeNodeFlags_OpenOnArrow;
+            if(selectedFeature_==node.featureId)flags|=ImGuiTreeNodeFlags_Selected;
+            if(node.children.empty())flags|=ImGuiTreeNodeFlags_Leaf|ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            const bool open=ImGui::TreeNodeEx(node.displayName.c_str(),flags);
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
+                selectedFeature_=node.featureId;
+                if(editor)editor->select(interaction::LogicalTarget{node.featureId});
             }
-            if (ImGui::BeginPopupContextItem("Feature actions"))
-            {
-                if (feature.kind() == features::FeatureKind::Sketch && ImGui::MenuItem("Edit Sketch"))
-                { selectedFeature_ = feature.id(); enterSketchRequest_ = true; propertyManagerVisible_ = true; }
-                if (feature.kind() == features::FeatureKind::Sketch && ImGui::MenuItem("Extrude"))
-                { selectedFeature_ = feature.id(); editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
-                if (ImGui::MenuItem(display == interaction::DisplayState::Hidden ? "Show" : "Hide"))
-                    visibilityToggleRequest_ = feature.id();
+            if(ImGui::IsItemHovered()&&ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)){
+                selectedFeature_=node.featureId;propertyManagerVisible_=true;
+                if(node.kind==features::FeatureKind::Sketch)enterSketchRequest_=true;
+            }
+            if(ImGui::BeginPopupContextItem("Feature actions")){
+                if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Edit Sketch"))
+                    {selectedFeature_=node.featureId;enterSketchRequest_=true;propertyManagerVisible_=true;}
+                if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Extrude"))
+                    {selectedFeature_=node.featureId;editorCommandRequest_=interaction::EditorCommand::Extrude;propertyManagerVisible_=true;}
+                if(node.kind==features::FeatureKind::Extrude&&ImGui::MenuItem("Edit"))
+                    {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                if(node.kind==features::FeatureKind::Boolean&&ImGui::MenuItem("Inspect"))
+                    {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide"))
+                    visibilityToggleRequest_=node.featureId;
                 ImGui::EndPopup();
             }
+            if(const auto cue=statusCue(node);cue.first){
+                ImGui::SameLine();ImGui::TextDisabled("%s",cue.first);
+                if(ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::TextUnformatted(cue.second);ImGui::EndTooltip();}
+            }
+            if(open&&!node.children.empty()){
+                for(const auto& child:node.children)drawNode(child);
+                ImGui::TreePop();
+            }
             ImGui::PopID();
+        };
+        if(ImGui::TreeNodeEx(tree.rootName.c_str(),ImGuiTreeNodeFlags_DefaultOpen|ImGuiTreeNodeFlags_SpanAvailWidth)){
+            for(const auto& node:tree.roots)drawNode(node);
+            ImGui::TreePop();
         }
         if (selectedFeature_)
         {
@@ -687,7 +739,9 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
             if(ImGui::MenuItem("Left"))viewCommandRequest_=ViewCommand::Left;if(ImGui::MenuItem("Right"))viewCommandRequest_=ViewCommand::Right;
             if(ImGui::MenuItem("Top"))viewCommandRequest_=ViewCommand::Top;if(ImGui::MenuItem("Bottom"))viewCommandRequest_=ViewCommand::Bottom;
             if(ImGui::MenuItem("Isometric"))viewCommandRequest_=ViewCommand::Isometric;ImGui::EndMenu();}
-        if(ImGui::BeginMenu("Display Mode")){if(ImGui::MenuItem("Shaded With Edges"))displayModeRequest_=DisplayModeRequest::ShadedWithEdges;if(ImGui::MenuItem("Wireframe"))displayModeRequest_=DisplayModeRequest::Wireframe;if(ImGui::MenuItem("Shaded"))displayModeRequest_=DisplayModeRequest::Shaded;ImGui::EndMenu();}
+    if(ImGui::BeginMenu("Display Mode")){
+        const auto mode=[&](const char* label,DisplayModeRequest value){if(ImGui::MenuItem(label,nullptr,displayMode_==value)){displayMode_=value;displayModeRequest_=value;}};
+        mode("Shaded",DisplayModeRequest::Shaded);mode("Shaded With Edges",DisplayModeRequest::ShadedWithEdges);mode("Wireframe",DisplayModeRequest::Wireframe);ImGui::EndMenu();}
         if (ImGui::BeginMenu("Projection"))
         {
             if (ImGui::MenuItem("Perspective", nullptr, projectionMode == ProjectionMode::Perspective))
@@ -811,8 +865,10 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
     ImGui::SameLine();ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(),size.x-235));
     if(ImGui::SmallButton("Fit"))viewCommandRequest_=ViewCommand::Fit;if(ImGui::IsItemHovered())ImGui::SetTooltip("Fit visible modeled geometry");
     ImGui::SameLine();if(ImGui::SmallButton("ISO"))viewCommandRequest_=ViewCommand::Isometric;if(ImGui::IsItemHovered())ImGui::SetTooltip("Isometric view");
-    ImGui::SameLine();if(ImGui::SmallButton("Display"))ImGui::OpenPopup("Display mode");if(ImGui::IsItemHovered())ImGui::SetTooltip("Choose solid display mode");
-    if(ImGui::BeginPopup("Display mode")){if(ImGui::MenuItem("Shaded With Edges"))displayModeRequest_=DisplayModeRequest::ShadedWithEdges;if(ImGui::MenuItem("Wireframe"))displayModeRequest_=DisplayModeRequest::Wireframe;if(ImGui::MenuItem("Shaded"))displayModeRequest_=DisplayModeRequest::Shaded;ImGui::EndPopup();}
+    ImGui::SameLine();if(displayModeButton(displayMode_))ImGui::OpenPopup("Display mode");
+    if(ImGui::BeginPopup("Display mode")){
+        const auto mode=[&](const char* label,DisplayModeRequest value){if(ImGui::MenuItem(label,nullptr,displayMode_==value)){displayMode_=value;displayModeRequest_=value;}};
+        mode("Shaded",DisplayModeRequest::Shaded);mode("Shaded With Edges",DisplayModeRequest::ShadedWithEdges);mode("Wireframe",DisplayModeRequest::Wireframe);ImGui::EndPopup();}
     input_.workspaceHovered = ImGui::IsWindowHovered();
     if (input_.workspaceHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) ImGui::OpenPopup("Graphics context");
     if (ImGui::BeginPopup("Graphics context"))

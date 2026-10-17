@@ -133,6 +133,7 @@ private:
     std::optional<features::FeatureId> visibilityToggleRequest_;
     std::optional<ViewCommand> viewCommandRequest_;
     std::optional<DisplayModeRequest> displayModeRequest_;
+    DisplayModeRequest displayMode_{DisplayModeRequest::ShadedWithEdges};
     std::array<char, 512> documentPathInput_{};
     std::string currentFilePath_;
     std::string persistenceStatus_;

@@ -180,6 +180,17 @@ TEST_F(WorkspaceViewportTest, ActiveSketchPickingWinsWhileExistingSolidRemainsCo
     EXPECT_EQ(glGetError(),GL_NO_ERROR);
 }
 
+TEST(SolidDisplayMode, MapsToExplicitFaceAndTopologyEdgePasses)
+{
+    using microsw::viewer::SolidDisplayMode;
+    const auto shaded=microsw::viewer::displayPasses(SolidDisplayMode::Shaded);
+    EXPECT_TRUE(shaded.faces);EXPECT_FALSE(shaded.topologyEdges);
+    const auto edged=microsw::viewer::displayPasses(SolidDisplayMode::ShadedWithEdges);
+    EXPECT_TRUE(edged.faces);EXPECT_TRUE(edged.topologyEdges);
+    const auto wire=microsw::viewer::displayPasses(SolidDisplayMode::Wireframe);
+    EXPECT_FALSE(wire.faces);EXPECT_TRUE(wire.topologyEdges);
+}
+
 TEST_F(WorkspaceViewportTest, GridAndAxesUploadAndDrawInOneDepthPass)
 {
     const microsw::viewer::ReferenceGrid grid;

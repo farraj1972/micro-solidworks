@@ -460,14 +460,15 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     if(impl_->featurePresentation)
     {
         const auto& display=impl_->featurePresentation->solidDisplay();
-        if(impl_->displayMode!=SolidDisplayMode::Wireframe)
+        const auto passes=displayPasses(impl_->displayMode);
+        if(passes.faces)
         {
             std::vector<rendering::LitVertex> vertices;vertices.reserve(display.triangles.size()*3);
             for(const auto&t:display.triangles)for(const auto&p:t.points)vertices.push_back({{p.x(),p.y(),p.z()},t.normal});
             impl_->triangles.setVertices(vertices);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",{0.52,0.64,0.78});impl_->triangles.draw();
             impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
         }
-        if(impl_->displayMode!=SolidDisplayMode::Shaded)
+        if(passes.topologyEdges)
         {
             std::vector<math::Vector3> vertices;for(const auto&e:display.edges)for(std::size_t i=1;i<e.points.size();++i){const auto&a=e.points[i-1];const auto&b=e.points[i];vertices.push_back({a.x(),a.y(),a.z()});vertices.push_back({b.x(),b.y(),b.z()});}
             impl_->solidEdges.setVertices(vertices);impl_->shader.setVector3("uColor",{0.08,0.1,0.13});glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();glDepthFunc(GL_LESS);
@@ -489,6 +490,15 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     const auto upload = [&](VisualState state)
     {
         if (!impl_->presentation) return;
+        const bool solidWirePresentation = impl_->featurePresentation
+            && impl_->presentation == &impl_->featurePresentation->geometry();
+        if (solidWirePresentation && state == VisualState::Normal)
+        {
+            impl_->lines.setVertices({});
+            impl_->segments.setVertices({});
+            impl_->points.setVertices({});
+            return;
+        }
         const VisualStateFilter filter{state, impl_->hover.hovered(), impl_->selection.selected()};
         impl_->lines.setVertices(presentedLineVertices(*impl_->presentation, lineContext, filter));
         impl_->segments.setVertices(presentedSegmentVertices(*impl_->presentation, filter));
