@@ -1157,7 +1157,8 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
 At the later MVP freeze, ADR-0001 through ADR-0048 were **48/48 ACCEPTED**.
-Frozen D13 extends the current inventory to **52/52 ACCEPTED**. ADR-0001–0027 remain unchanged.
+Frozen D13 extended the inventory to 52 accepted ADRs. Frozen D14 now extends
+the current inventory to **55/55 ACCEPTED**. ADR-0001–0052 remain historically unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and
@@ -1391,3 +1392,29 @@ micro-solidworks/
 └── examples/
 
 Esta estrutura poderá evoluir. Não deverá ser expandida preventivamente sem necessidade.
+
+## D14 — General Planar Profiles and Curved Extrusion
+
+D14 is FROZEN in accepted ADR-0053–0055. It preserves ADR-0035–0037 as the
+correct history of the MVP's single, line-only, strictly-convex, single-Solid
+slice, then extends and supersedes those limitations for authorized post-MVP
+work. The accepted architecture derives nonpersistent `PlanarRegionSet` values
+from solved authoritative Sketch entities and constraints. Regions use nesting
+parity, support multiple disjoint material contours, holes and concavity, and
+support exact Line/Arc/Circle boundaries with structured invalid-profile
+diagnostics. Open contours require the deferred Thin Feature behavior.
+
+Topology is authorized to add exact LineSegment/CircularArc Edge geometry,
+Plane/Cylinder Face support and planar Faces with inner Wires. Full circles use
+a deterministic exact arc split. Curved and holed topology remains CAD
+authority; tessellation is derived Presentation/Rendering data only. Closed
+2-manifold validation may support nonzero genus.
+
+General Extrude is a transactional multi-region operation returning one or more
+derived Solids under one logical FeatureId. No partial result commits. D11
+last-known-good behavior, B11 Boolean limitations and persistence version 1
+policy remain unchanged. General profiles, curved topology and multiple solids
+are DECIDED / NOT IMPLEMENTED. GAP-GEO-002 is OPEN / ACTIVE; GAP-SCENE-002 is
+unchanged. The implementation sequence is intersections/classification,
+region extraction, exact curved topology, multi-body extrusion, Presentation,
+then CAD workflow acceptance.

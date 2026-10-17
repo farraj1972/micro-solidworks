@@ -1029,9 +1029,31 @@ V1.1-C1 — CAD Workspace & Guided Sketching:
 STATUS: NOT STARTED / NEXT ACTIVE
 ```
 
+Latest frozen post-MVP decision gate:
+
+`	ext
+D14 - General Planar Profiles & Curved Extrusion Semantics
+STATUS: FROZEN
+ADR-0053-0055: ACCEPTED
+ADR-0001-0055: 55/55 ACCEPTED
+GAP-GEO-002: OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION
+GAP-SCENE-002: unchanged
+V1.1-C1: NOT STARTED / NEXT ACTIVE
+`
+
+D14 preserves ADR-0035-0037 as the historically correct MVP extrusion slice
+and extends its initial line-only, strictly-convex and single-Solid limitations
+for future authorized work. General profiles, exact curved topology and
+multiple-Solid extrusion are DECIDED / NOT IMPLEMENTED. The path to final C1
+Extrude acceptance is Geometry intersection/classification, derived planar
+region extraction, exact curved topology, transactional general/multiple-body
+extrusion, Presentation integration and CAD workflow validation. The D14 freeze
+does not by itself authorize implementation.
+
+
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete ADR inventory is 52/52 ACCEPTED. D6 — Topology Ownership,
+FROZEN. The complete ADR inventory is 55/55 ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.

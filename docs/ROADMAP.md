@@ -91,7 +91,7 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | ID | Gap | Blocking now | Expected closure |
 | --- | --- | --- | --- |
 | GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
-| GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | When an authorized non-convex/general operation requires them |
+| GAP-GEO-002 | OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION — required Line/Arc/Circle intersections and classification are not implemented | YES for final C1 Extrude acceptance | Implement and validate the D14-required subset before general profile extraction |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
 | GAP-SCENE-002 | PARTIALLY CLOSED AT ARCHITECTURE / DECISION LEVEL — ownership, visibility semantics, active editing context and deterministic display lifecycle frozen by D13 | YES for executable v1.1 UX | V1.1-C1 implements active Sketch, show/hide, context display and deterministic editing lifecycle; general scene graph remains deferred |
 
@@ -872,3 +872,59 @@ sensitivity, Feature Manager coherence, parameter editing and error/recovery
 clarity. Technical V0/V1/V2/V3 validation and the Experience Gate are both
 required evidence; neither substitutes for the other. V1.1-C1 must pass this
 gate before its campaign freeze.
+
+## D14 — General Planar Profiles & Curved Extrusion Semantics
+
+```text
+STATUS: FROZEN
+TRIGGER: V1.1-C1 Experience Gate revealed that Circle and other valid closed
+         Sketch regions cannot enter the frozen line-only B10 extrusion path.
+```
+
+The product requirement is SOLIDWORKS-compatible sketch eligibility for normal
+solid Boss/Base extrusion. The accepted contract is recorded in ADR-0053–0055:
+
+- eligibility derives from closed planar regions rather than entity count;
+- multiple disjoint and nested closed contours are valid;
+- Line, Arc and Circle boundaries are authoritative curves;
+- open contours require a future Thin Feature or surface operation;
+- branches, ambiguity, degeneracy and self-intersection produce localized
+  diagnostics;
+- curved topology and surfaces remain exact CAD state, with tessellation
+  derived only for presentation and picking;
+- multi-region extrusion commits all result bodies transactionally.
+
+D14 preserves ADR-0035–0037 as the correct historical record of the MVP slice.
+Accepted ADR-0053–0055 extend and supersede their line-only, strictly-convex,
+single-Solid limitations for authorized post-MVP general-profile work.
+
+```text
+ADR-0001–0055: 55/55 ACCEPTED
+general profiles: DECIDED / NOT IMPLEMENTED
+curved topology: DECIDED / NOT IMPLEMENTED
+multiple solids: DECIDED / NOT IMPLEMENTED
+GAP-GEO-002: OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION
+GAP-SCENE-002: unchanged
+V1.1-C1: NOT STARTED / NEXT ACTIVE
+```
+
+V1.1-C1 remains the active product campaign and its workspace/sketch work may
+advance, but its Extrude workflow cannot be accepted as product-complete while
+limited to the old profile contract. The required foundation sequence is:
+
+```text
+Geometry intersections/classification
+-> Planar region extraction
+-> exact curved topology
+-> general/multi-body extrusion
+-> Presentation integration
+-> CAD Extrude workflow acceptance
+```
+
+The implementation must cover the required robust classification subset for
+segment/segment, segment/circle, segment/arc, circle/circle, circle/arc and
+arc/arc, including crossings, endpoint and tangent contacts, and
+coincident/overlap classification. GAP-GEO-002 closes only after implementation
+and validation. Thin Feature, Selected Contours UI, persistent region naming,
+advanced curves, surface/revolve/cut features, implicit body merge, general
+Booleans and persistent body/subshape naming remain deferred.

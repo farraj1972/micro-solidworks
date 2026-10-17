@@ -161,3 +161,22 @@ GLM, Eigen, CGAL, OpenCascade, Qt, SDL e Vulkan não fazem parte da tecnologia
 actual e não podem ser introduzidos sem decisão explícita. `Deferred` não
 significa exclusão permanente; significa que uma avaliação futura deve ser
 justificada e aprovada no contexto do roadmap.
+
+## 7. D14 general-profile strategy
+
+General planar region extraction, the required Line/Arc/Circle intersection and
+classification subset, exact curved topology and general extrusion remain
+`BUILD`. This preserves their educational value and the internal Geometry and
+Topology decisions. The dependency direction remains:
+
+```text
+features/integration -> sketch + modeling
+modeling -> topology -> geometry -> math
+presentation/rendering -> derived topology tessellation
+```
+
+No external geometry kernel or computational-geometry library is authorized.
+Tessellation libraries cannot become authoritative CAD representation.
+Persistence continues to store feature definitions rather than derived regions,
+Solids or tessellation. Any demonstrated need for schema version 2 or a new
+dependency is a hard stop and requires a separate decision.

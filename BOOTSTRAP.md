@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-ADR inventory: 52/52 ACCEPTED
+ADR inventory: 55/55 ACCEPTED
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -92,6 +92,10 @@ ADR-0045–0048: CONFORMANT
 MICRO SOLIDWORKS MVP 1.0: FROZEN
 D13 — Editor Ownership, Selection Identity & CAD Interaction Model: FROZEN
 ADR-0049–0052: ACCEPTED
+D14 — General Planar Profiles & Curved Extrusion Semantics: FROZEN
+ADR-0053–0055: ACCEPTED (55/55 total)
+General profiles / curved topology / multiple solids: DECIDED / NOT IMPLEMENTED
+GAP-GEO-002: OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION
 V1.1-C1 — CAD Workspace & Guided Sketching: NOT STARTED / NEXT ACTIVE
 ```
 
@@ -175,6 +179,9 @@ Before changing the repository, read the following documents in this order:
 55. docs/adr/ADR-0050-logical-selection-identity-and-presentation-mapping.md
 56. docs/adr/ADR-0051-scene-visibility-and-display-lifecycle.md
 57. docs/adr/ADR-0052-editor-command-transactions-and-undo-redo-compatibility.md
+58. docs/adr/ADR-0053-sketch-regions-and-extrusion-eligibility.md
+59. docs/adr/ADR-0054-curved-topology-and-derived-tessellation.md
+60. docs/adr/ADR-0055-general-profile-extrusion-results-and-transactions.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.
