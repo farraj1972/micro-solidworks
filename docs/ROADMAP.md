@@ -93,15 +93,16 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
 | GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | When an authorized non-convex/general operation requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
-| GAP-SCENE-002 | PARTIALLY CLOSED BY D13 PROPOSAL — Closure scope is feature/sketch visibility, active editing context and deterministic display lifecycle; implementation pending approval/V1.1-C1 | YES for v1.1 UX | V1.1-C1 after D13 approval; general scene graph remains outside the closure claim |
+| GAP-SCENE-002 | OPEN — D13 PROPOSES architecture-level partial closure; proposal is non-normative and implementation is absent | YES for v1.1 UX | D13 freeze defines ownership/display semantics; V1.1-C1 implements active Sketch, show/hide, context display and deterministic editing lifecycle |
 
 Circle2 is implemented and GAP-GEO-001 is CLOSED. Basic intersections remain
 GAP-GEO-002 deferred; frozen D9 confirms it does not block the strict-convex
 B10 slice or V1.1-C1. Each future closure requires authorized scope. Proposed
-D13 partially closes GAP-SCENE-002 at the decision level by defining explicit
-feature/sketch visibility, active editing context and deterministic display
-lifecycle. Executable closure awaits D13 approval and V1.1-C1; general scene
-graph and broader object lifecycle remain deferred.
+D13 proposes an architecture-level partial closure of GAP-SCENE-002 through
+explicit feature/sketch visibility ownership, active editing context and
+deterministic display lifecycle. The proposal is not normative closure. D13
+freeze would establish the semantics; V1.1-C1 would provide executable partial
+closure. General scene graph and broader object lifecycle remain deferred.
 
 ## Delivered Functional Slice — B6
 
@@ -779,25 +780,67 @@ are not normative until explicit approval. The initial v1.1 roadmap is:
 
 | Campaign | State | Functional direction |
 | --- | --- | --- |
-| V1.1-C1 — Guided Sketching & Constraint Interaction | NOT STARTED / NEXT ACTIVE AFTER D13 APPROVAL | Snap/infer Sketch creation, logical entity/sub-element selection, constraint workflow without numeric-ID entry, glyphs/diagnostics, rebuild and extrusion |
+| V1.1-C1 — CAD Workspace & Guided Sketching | NOT STARTED / NEXT ACTIVE AFTER D13 FREEZE | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, rebuild and extrusion |
 | V1.1-C2 — Solid Visualization & Selection | PLANNED / SUBJECT TO REVIEW | Product-oriented solid display and selection |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
-V1.1-C1 functional slice:
+V1.1-C1 is graphics-area centric, mouse-first, context-sensitive and icon/tool
+driven. Its conceptual workspace is:
 
 ```text
-New
-→ create/edit active Sketch
-→ snap/infer rectangle/circle geometry
-→ select entities/sub-elements directly
-→ apply constraints without numeric IDs
-→ see constraint associations/glyphs
-→ edit dimension
-→ Rebuild
-→ Extrude
++------------------------------------------------------+
+| Menu / Application commands                         |
++------------------------------------------------------+
+| CAD Command Bar / tabbed tool groups                |
++----------------------+-------------------------------+
+| Feature / Property   |                               |
+| Manager              |        Graphics Area          |
+|                      |                               |
++----------------------+-------------------------------+
+| Status / contextual hints                           |
++------------------------------------------------------+
 ```
+
+The Graphics Area keeps most screen space. The CAD Command Bar supplies the
+required General, Sketch, minimal Features and minimal View commands with
+project-owned icons/tooltips and state-derived availability. The Feature
+Manager uses human-readable names, status and visibility rather than IDs. The
+Property/Tool Manager owns parameters, current selections, validation,
+Confirm/Cancel and guidance. Context toolbar/menu expose only relevant actions.
+
+Minimum C1 commands are New, Open, Save, Save As, Select and Rebuild; Line,
+Rectangle, Circle, Dimension, Horizontal, Vertical and Coincident; and Extrude.
+Existing Viewer navigation remains authoritative. Fit, standard views and
+display-mode heads-up controls are prepared conceptually and added in C1 only
+where low-risk and necessary.
+
+V1.1-C1 target workflow:
+
+```text
+Launch → New
+→ Sketch command → active Sketch mode
+→ Rectangle in Graphics Area with visible snap/inference
+→ mouse-select lines/endpoints
+→ Horizontal/Vertical/Coincident from context or Command Bar
+→ inspect glyphs and graphically edit a driving dimension
+→ exit Sketch
+→ select Sketch in Graphics Area or Feature Manager
+→ Extrude → Property/Tool Manager → distance → Confirm
+→ inspect result and synchronized Feature Manager selection
+→ use relevant right-click context actions
+→ Save
+```
+
+Normal operation never requires manual internal ID entry. Existing controls
+that expose Feature, entity, constraint or result IDs must be classified during
+C1 as `REMOVE FROM NORMAL UX`, `MOVE TO DEBUG/DIAGNOSTICS` or
+`KEEP BECAUSE USER-FACING`. Line, Rectangle, Circle, Select, Dimension,
+Horizontal, Vertical, Coincident, Extrude and Rebuild are direct tools. Hover
+pre-highlights the next logical pick; active tools provide cursor/status hints;
+Escape cancels transient steps and returns toward Select without partial commit.
+Grid is a visual reference and optional snap source.
 
 V1.1-C1 explicitly excludes trim, general intersections, point-on-curve,
 tangent/equal/concentric and arc constraints, face/edge selection, flat
@@ -805,6 +848,16 @@ shading, undo/redo implementation, persistent visibility, curved topology and
 new modeling features. Endpoint/midpoint/grid snapping and horizontal/vertical/
 coincident inference are interaction aids; temporary inference is not solver
 truth, while an accepted inference may create an explicit supported constraint.
+Mouse gestures, constrained dragging and detailed grid configuration remain
+deferred. The architecture stays ready for right-drag radial shortcuts and C2
+heads-up Fit/standard-view/display controls. C1 prepares C2 flat shaded faces,
+edge overlay and face hover/selection without implementing them.
+
+The CAD interaction direction uses familiar mechanical-CAD command grouping,
+context sensitivity, tree/graphics synchronization, property-based workflows
+and mouse-centric selection. It does not copy trademarks, copyrighted artwork,
+proprietary icons or a pixel-perfect third-party product layout. Micro
+SolidWorks retains its own visual identity.
 
 Campaigns retain V0/V1/V2/V3 governance. A prerequisite review is used only
 when needed, a Decision Gate only for material architecture, and one V3 closes

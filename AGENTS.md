@@ -1025,13 +1025,13 @@ Current proposed decision gate:
 D13 — Editor Ownership, Selection Identity & Scene Lifecycle
 STATUS: PROPOSED / READY FOR REVIEW
 ADR-0049–0052: PROPOSED
-V1.1-C1 — Guided Sketching & Constraint Interaction:
-STATUS: NOT STARTED / NEXT ACTIVE AFTER D13 APPROVAL
+V1.1-C1 — CAD Workspace & Guided Sketching:
+STATUS: NOT STARTED / NEXT ACTIVE AFTER D13 FREEZE
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The complete inventory is 48/48 ADRs ACCEPTED. D6 — Topology Ownership,
+FROZEN. The ADR inventory is 52 total: 48 ACCEPTED and 4 PROPOSED in D13. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
@@ -1135,11 +1135,24 @@ file/session state to the Application persistence session, derived visual state
 to Presentation, and transient tools, logical selection and display policy to
 an Application-owned editor context. It proposes typed logical selection with
 explicit Presentation mapping, editor/session-owned visibility, atomic editor
-transactions and interaction-owned snapping/inference. This proposal closes
-the product-relevant feature/sketch visibility and editing-lifecycle core of
-GAP-SCENE-002 without claiming a general scene graph. GAP-GEO-002 remains OPEN
+transactions and interaction-owned snapping/inference. This proposal defines the architecture-level partial-closure target for
+GAP-SCENE-002 without claiming normative or executable closure and without a
+general scene graph. GAP-GEO-002 remains OPEN
 and deferred. D13 is READY FOR REVIEW; V1.1-C1 is not authorized until D13 is
 approved and frozen.
+
+D13-R1 proposes a CAD-first product contract: the Graphics Area is primary;
+the mouse is the primary pointing interaction; context-sensitive icon tools in
+a CAD Command Bar provide command discovery; the human-readable Feature Manager
+shows model structure; and a Property/Tool Manager owns command parameters,
+selection guidance, validation, Confirm and Cancel. Internal IDs are diagnostic
+only and normal CAD work must never require manual ID entry. The Feature Manager
+and Graphics Area synchronize through logical identity. Hover pre-highlights
+the next pick, contextual tools expose only valid actions, and EditorContext
+holds all transient command, tool-step, hover, selection, snap/inference,
+display and property-editing state. Familiar mechanical-CAD interaction
+patterns may be used without copying branding, proprietary artwork/icons or a
+pixel-perfect third-party layout.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

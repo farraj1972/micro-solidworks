@@ -160,9 +160,10 @@ not decided, so future face/edge selection cannot rely on raw topology IDs.
 
 Feature/sketch visibility is proposed as transient editor/session display state,
 not Geometry, Topology, FeatureModel or persisted CAD state. Active editing,
-selection and visibility remain distinct. This closes the product-relevant
-feature/sketch visibility and deterministic editing-lifecycle core of
-GAP-SCENE-002 without creating a generic scene graph.
+selection and visibility remain distinct. If D13 is accepted, it supplies the
+architecture-level partial closure semantics for the feature/sketch visibility
+and deterministic editing-lifecycle core of GAP-SCENE-002 without creating a
+generic scene graph. Executable partial closure remains V1.1-C1 work.
 
 Editor actions cross one atomic Application transaction boundary before domain
 commit and rebuild. Preview snapping and inference remain interaction/tool
@@ -170,6 +171,29 @@ state; accepted inference may create an explicit constraint in the committed
 edit. D13 preserves future snapshot and inverse-command undo/redo strategies
 without choosing or implementing either. No new `microsw_editor` or
 `microsw_interaction` module is authorized by the proposal.
+
+D13-R1 adds a CAD-first interaction contract without changing those ownership
+decisions. The Graphics Area is the primary surface and mouse interaction is
+primary. A compact CAD Command Bar provides icon/tool-tip driven Sketch,
+minimal Features and minimal View commands. A left manager region switches
+between the human-readable Feature Manager and context-sensitive Property/Tool
+Manager. Context toolbar/menu and status hints expose only relevant operations.
+Internal IDs remain available for diagnostics, never as required CAD input.
+
+The Feature Manager and Graphics Area synchronize through typed logical
+selection. Active tools use Property/Tool Manager parameters, logical picks,
+preview, validation, Confirm and Cancel. `EditorContext` also carries active
+command and step, hover target, command operand selection, snap/inference
+candidates and property-editing context. All remain transient. Buttons derive
+availability from the active Sketch, current selection and domain validity.
+
+The initial visual vocabulary distinguishes normal, hover, selected,
+active/editing, context/reference, disabled/hidden and error/failed states.
+Constraint glyphs and dimensions are derived graphical objects mapped to
+logical constraint identity. V1.1-C1 prepares, but does not implement, C2 flat
+shading, edge overlay or face selection. Familiar mechanical-CAD patterns are
+used without copying third-party branding, artwork, proprietary icons or a
+pixel-perfect layout.
 
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:

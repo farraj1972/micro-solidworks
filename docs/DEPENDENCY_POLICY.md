@@ -138,6 +138,11 @@ OpenGL 3.3 funcional.
   command transactions remain Application/interaction concerns. Domain modules
   do not depend on Editor/UI, and no new external dependency or editor module is
   authorized by ADR-0049–0052 while they remain PROPOSED.
+- CAD workspace icons and interaction visuals: `BUILD` for V1.1-C1 using
+  project-owned simple vector/icon primitives and the existing Dear ImGui/
+  Rendering boundaries. No icon library is approved by D13. Any external icon
+  dependency must be justified and explicitly authorized before integration;
+  proprietary CAD-product assets must not be copied.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

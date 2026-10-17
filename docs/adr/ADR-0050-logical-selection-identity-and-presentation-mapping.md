@@ -31,6 +31,17 @@ resolves to its `FeatureId`; selecting either representation synchronizes the
 other. While a Sketch is active, picking its geometry resolves to the
 appropriate Sketch entity or sub-element.
 
+The Feature Manager presents human-readable display names such as `Sketch1`,
+`Extrude1` and `Boolean1`; IDs may appear only in diagnostics. It is the main
+visual history and supports selection, highlight, status, visibility and
+context actions. The Feature Manager and Graphics Area are two synchronized
+views of the same logical model.
+
+Hover resolves through the same logical mapping and pre-highlights what a click
+would select without changing authoritative state. The consistent visual-state
+vocabulary is normal, hover, selected, active/editing, context/reference,
+disabled/hidden and error/failed. Exact colors are Presentation/UI detail.
+
 Logical selection survives Presentation regeneration, successful feature
 rebuild, Sketch geometry replacement, viewport resize and navigation while its
 target remains valid. It clears deterministically when the target is deleted or
@@ -48,7 +59,8 @@ regenerated and allows selection to grow without another identity redesign.
 
 ## Consequences
 
-- Numeric IDs may be displayed for diagnostics but are not required input.
+- Numeric IDs may be displayed for diagnostics but are never required normal
+  workflow input.
 - Picking adapters must expose explicit logical mappings.
 - Constraint glyphs, when present, map to `SketchConstraintId`.
 - A later face/edge campaign requires a separate topological naming decision.
@@ -62,5 +74,6 @@ regenerated and allows selection to grow without another identity redesign.
 
 ## Deferred / Non-goals
 
-Multi-selection, selection sets, persistent selection, face/edge selection and
-persistent topological naming are deferred.
+General multi-selection/selection sets, persistent selection, face/edge
+selection and persistent topological naming are deferred. A small transient set
+of logical operands required by one active constraint command remains allowed.

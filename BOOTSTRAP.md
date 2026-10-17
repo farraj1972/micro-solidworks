@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-48/48 ADRs ACCEPTED; ADR-0021–0040 CONFORMANT
+ADR inventory: 52 total; 48 ACCEPTED; 4 PROPOSED in D13
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -92,7 +92,7 @@ ADR-0045–0048: CONFORMANT
 MICRO SOLIDWORKS MVP 1.0: FROZEN
 D13 — Editor Ownership, Selection Identity & Scene Lifecycle: PROPOSED / READY FOR REVIEW
 ADR-0049–0052: PROPOSED
-V1.1-C1 — Guided Sketching & Constraint Interaction: NOT STARTED / NEXT ACTIVE AFTER D13 APPROVAL
+V1.1-C1 — CAD Workspace & Guided Sketching: NOT STARTED / NEXT ACTIVE AFTER D13 FREEZE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -160,6 +160,21 @@ Before changing the repository, read the following documents in this order:
 40. docs/adr/ADR-0035-profile-representation-and-sketch-to-modeling-boundary.md
 41. docs/adr/ADR-0036-extrusion-semantics-and-topology-generation.md
 42. docs/adr/ADR-0037-modeling-result-ownership-and-presentation-boundary.md
+43. docs/adr/ADR-0038-boolean-operation-scope-and-result-semantics.md
+44. docs/adr/ADR-0039-axis-aligned-cell-decomposition-and-topology-reconstruction.md
+45. docs/adr/ADR-0040-non-convex-solid-validation-and-boolean-application-boundary.md
+46. docs/adr/ADR-0041-feature-model-ownership-identity-and-history.md
+47. docs/adr/ADR-0042-feature-dependencies-dirty-state-and-rebuild-ordering.md
+48. docs/adr/ADR-0043-transactional-rebuild-last-known-good-and-failure-semantics.md
+49. docs/adr/ADR-0044-feature-result-ownership-and-presentation-identity.md
+50. docs/adr/ADR-0045-persistence-boundary-and-authoritative-state.md
+51. docs/adr/ADR-0046-file-schema-versioning-and-persistent-logical-identity.md
+52. docs/adr/ADR-0047-transactional-save-open-and-rebuild-semantics.md
+53. docs/adr/ADR-0048-b14-and-mvp-validation-freeze-strategy.md
+54. docs/adr/ADR-0049-editor-session-ownership-and-active-editing-context.md
+55. docs/adr/ADR-0050-logical-selection-identity-and-presentation-mapping.md
+56. docs/adr/ADR-0051-scene-visibility-and-display-lifecycle.md
+57. docs/adr/ADR-0052-editor-command-transactions-and-undo-redo-compatibility.md
 ```
 
 If some of these documents are not yet present, they belong to the initial repository materialization and must be created from the approved project context before implementation proceeds.

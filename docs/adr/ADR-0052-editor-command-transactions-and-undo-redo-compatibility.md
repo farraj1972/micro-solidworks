@@ -41,6 +41,29 @@ retain their accepted `SOLVED`, `UNSATISFIED`, `INVALID_INPUT` and
 solver can support it, and are translated into comprehensible UI diagnostics.
 Contextual tool guidance is transient UI state.
 
+Multi-step tools expose explicit Confirm and Cancel semantics. Confirm, or an
+equivalent Enter action, commits exactly one validated model edit. Cancel, or
+Escape, discards all candidates; repeated Escape may exit the active tool and
+return to Select. No partial mutation survives cancellation.
+
+Mouse-first defaults are left-click for selection, point picking and tool-step
+acceptance; right-click for a relevant context menu or compact context toolbar;
+wheel for the existing compatible zoom behavior; and the frozen middle-button
+Viewer conventions for orbit/pan. A relevant selection may expose only
+semantically valid contextual commands. Command availability derives from
+active Sketch, logical selection and domain validity so incompatible flows are
+disabled before entry where practical.
+
+The Property/Tool Manager owns command parameters, current selections,
+validation, Confirm and Cancel. Property-oriented workflows are preferred over
+sequences of modal dialogs. Constraint glyphs and driving dimensions are
+graphical derived objects: glyphs map to `SketchConstraintId`, while selecting
+or safely double-clicking a dimension opens numeric editing and commits through
+the same transaction boundary. Active tools provide cursor/status/hint feedback.
+
+The architecture permits future right-drag radial gestures and safe Sketch
+dragging, but V1.1-C1 implements neither constrained drag solving nor gestures.
+
 ## Rationale
 
 Explicit transaction boundaries prevent partial edits and establish the
@@ -64,4 +87,5 @@ minimum contract required for later undo/redo without over-designing it now.
 ## Deferred / Non-goals
 
 Undo/redo implementation, command history persistence, macros, general
-transaction framework and new solver semantics are deferred.
+transaction framework, mouse gestures, constrained direct drag and new solver
+semantics are deferred.
