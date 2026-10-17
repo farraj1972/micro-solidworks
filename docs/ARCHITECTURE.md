@@ -190,8 +190,8 @@ availability from the active Sketch, current selection and domain validity.
 The initial visual vocabulary distinguishes normal, hover, selected,
 active/editing, context/reference, disabled/hidden and error/failed states.
 Constraint glyphs and dimensions are derived graphical objects mapped to
-logical constraint identity. V1.1-C1 prepares, but does not implement, C2 flat
-shading, edge overlay or face selection. Familiar mechanical-CAD patterns are
+logical constraint identity. V1.1-C2 implements derived flat shading, exact-edge
+overlay and logical face/edge selection. Familiar mechanical-CAD patterns are
 used without copying third-party branding, artwork, proprietary icons or a
 pixel-perfect layout.
 

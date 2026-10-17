@@ -1187,7 +1187,7 @@ STATUS: FROZEN
 ADR-0056-0058: ACCEPTED
 ADR inventory: 58/58 ACCEPTED
 V1.1-C1: FROZEN
-V1.1-C2: VALIDATION IN PROGRESS
+V1.1-C2: FROZEN
 
 Frozen D15 defines derived flat-shaded face tessellation with independent exact-edge
 overlay and Shaded With Edges as the default display. Topology and analytic
@@ -1197,9 +1197,11 @@ on topology regeneration while Feature selection survives rebuild. Picking maps
 derived triangles/curves to the nearest visible logical target, with an edge
 inside the six-logical-pixel tolerance taking priority. Hole interiors produce no
 cap hit. Hidden results are not rendered or pickable. Fit, standard views,
-display mode and lighting remain Viewer/Rendering session state. Persistent
-topological naming and persistent BodyId remain explicitly deferred. D15
-authorizes the C2 contract but does not implement V1.1-C2.
+display mode and lighting remain Viewer/Rendering session state. Persistent topological naming and persistent BodyId remain explicitly deferred.
+V1.1-C2 implements the D15 contract and is FROZEN after a fresh configure, full
+Debug build with zero warnings, 831/831 CTest tests and the manual runtime and
+Experience Gate. Selected Contours remains a separate D14 modeling-workflow
+follow-up and does not alter the completed C2 solid face/edge selection scope.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

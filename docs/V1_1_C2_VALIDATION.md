@@ -47,18 +47,21 @@ Validation level: V3.
   fetch declared dependencies; the identical authorized network retry passed.
 - Full Debug build: PASS.
 - Project/dependency/linker warnings: 0.
-- Full CTest: PASS, 828/828.
+- Full CTest: PASS, 831/831.
 - Focused affected closure before V3: PASS, 51/51.
 - Architecture/dependency audit: PASS; no new external dependency and no reverse
   dependency into authoritative CAD modules.
-- Repository hygiene and `git diff --check`: completed at freeze.
+- Repository hygiene and `git diff --check`: PASS at freeze.
 
 ## Runtime and Experience Gate
 
-The V3 executable launches as a single `Micro SolidWorks` window. The remaining
-runtime smoke and Experience Gate are recorded after manual evaluation of solid
-readability, face/edge discoverability, occlusion, curved/holed/multi-body
-selection, Fit/views, Feature Manager synchronization and normal shutdown.
+The final V3 executable launches as a single `Micro SolidWorks` window. Manual
+runtime evaluation passed solid readability, face/edge discoverability,
+occlusion, curved and holed display/selection, multiple bodies and independent
+solid Features, Fit/views, Feature Manager synchronization, visibility and
+normal shutdown. Existing solids remain visible as context during New Sketch,
+while active Sketch geometry retains picking priority. Experience Gate:
+APPROVED.
 
 ## Known limitations
 
@@ -67,4 +70,6 @@ There is no persistent topological naming, multi-selection, Sketch on Face, Cut,
 Hole feature, fillet/chamfer, materials, textures, PBR, section or measurement
 tool. Face tessellation and CPU picking target the current Line/Arc/Circle and
 Plane/Cylinder feature subset; no general tessellation or acceleration framework
-is introduced.
+is introduced. SolidWorks-style Selected Contours remains a separate D14
+modeling-workflow follow-up; it is not part of the C2 face/edge visualization
+and selection contract.

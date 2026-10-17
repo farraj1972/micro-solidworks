@@ -101,7 +101,8 @@ V1.1-C1 — CAD Workspace & Guided Sketching: FROZEN
 Latest validated snapshot (V1.1-C1): 822/822 tests PASS, runtime and Experience Gate PASS, 0 warnings
 D15 — Solid Visualization & Sub-element Selection Semantics: FROZEN
 ADR-0056–0058: ACCEPTED (58/58 total)
-V1.1-C2 — Solid Visualization & Selection: VALIDATION IN PROGRESS
+V1.1-C2 — Solid Visualization & Selection: FROZEN
+Latest validated snapshot (V1.1-C2): 831/831 tests PASS, runtime and Experience Gate PASS, 0 warnings
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

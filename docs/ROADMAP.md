@@ -779,7 +779,7 @@ initial v1.1 roadmap is:
 | Campaign | State | Functional direction |
 | --- | --- | --- |
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
-| V1.1-C2 — Solid Visualization & Selection | VALIDATION IN PROGRESS | Implementation and Technical Gate complete; Experience Gate pending under accepted ADR-0056–0058 |
+| V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
@@ -934,7 +934,7 @@ STATUS: FROZEN
 ADR-0056–0058: ACCEPTED
 ADR inventory: 58/58 ACCEPTED
 V1.1-C1: FROZEN
-V1.1-C2: VALIDATION IN PROGRESS
+V1.1-C2: FROZEN
 `
 
 D15 freezes Shaded With Edges as the default solid display, Wireframe as
@@ -954,12 +954,13 @@ interiors produce no cap hit. Hidden results are neither rendered nor pickable.
 Fit and standard views belong to Viewer/session state and preserve the existing
 right-handed XY-base, +Z-up convention and navigation bindings.
 
-C2 requires an Experience Gate covering solid-form readability, face/edge
+C2 passed an Experience Gate covering solid-form readability, face/edge
 discoverability, hover clarity, selection confidence, standard-view discovery,
 Fit usefulness, Feature Manager synchronization, context actions and visual
-hierarchy. D15 authorizes the C2 contract but does not implement C2.
+hierarchy. The final V3 passed a fresh configure, full Debug build with zero
+warnings and 831/831 CTest tests; runtime and normal shutdown were confirmed.
 
-Proposed C2 scope is flat-shaded faces, exact-edge overlay, simple lighting,
+C2 implements flat-shaded faces, exact-edge overlay, simple lighting,
 Shaded With Edges/Wireframe display modes, face/edge hover and single logical
 selection, owning-feature synchronization, visibility integration, multi-body
 and cylindrical-face presentation/picking, Fit, standard views and compact
@@ -967,3 +968,5 @@ heads-up controls. Persistent topological naming, persistent bodies,
 multi-selection unless UX evidence requires it, face-based Sketch creation,
 Cut Extrude, Hole, fillet, chamfer, materials, textures, PBR, section view,
 measure, assemblies and selection persistence across rebuild are excluded.
+Selected Contours remains a separate modeling-workflow follow-up under D14 and
+does not change the frozen C2 solid visualization and sub-element selection gate.
