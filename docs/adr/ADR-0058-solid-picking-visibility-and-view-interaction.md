@@ -1,6 +1,6 @@
 # ADR-0058 — Solid Picking, Visibility and View Interaction
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

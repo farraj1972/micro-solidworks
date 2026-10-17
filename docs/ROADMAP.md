@@ -779,7 +779,7 @@ initial v1.1 roadmap is:
 | Campaign | State | Functional direction |
 | --- | --- | --- |
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
-| V1.1-C2 — Solid Visualization & Selection | NOT STARTED / NEXT ACTIVE AFTER D15 FREEZE | Shaded solid display, logical face/edge selection, Fit and standard views under proposed ADR-0056–0058 |
+| V1.1-C2 — Solid Visualization & Selection | NOT STARTED / NEXT ACTIVE | Shaded solid display, logical face/edge selection, Fit and standard views under accepted ADR-0056–0058 |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
@@ -930,14 +930,14 @@ Booleans and persistent body/subshape naming remain deferred.
 ## D15 — Solid Visualization & Sub-element Selection Semantics
 
 `	ext
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0056–0058: PROPOSED
-ADR inventory: 58 total / 55 accepted / 3 proposed
+STATUS: FROZEN
+ADR-0056–0058: ACCEPTED
+ADR inventory: 58/58 ACCEPTED
 V1.1-C1: FROZEN
-V1.1-C2: NOT STARTED / NEXT ACTIVE AFTER D15 FREEZE
+V1.1-C2: NOT STARTED / NEXT ACTIVE
 `
 
-D15 proposes Shaded With Edges as the default solid display, Wireframe as
+D15 freezes Shaded With Edges as the default solid display, Wireframe as
 the mandatory alternate mode, flat shading with basic ambient/directional
 lighting, and independent exact-edge overlay. Topology and analytic geometry
 remain authoritative; planar, holed and cylindrical face meshes remain derived.
@@ -945,8 +945,7 @@ remain authoritative; planar, holed and cylindrical face meshes remain derived.
 Logical face and edge targets carry owning FeatureId, rebuild-local body context
 and current FaceId/EdgeId. They survive navigation and same-topology Presentation
 regeneration, but clear deterministically on topology regeneration. Feature
-selection continues to survive rebuild. No persistent body or topological naming
-is proposed.
+selection continues to survive rebuild. Persistent body and topological naming remain explicitly deferred.
 
 Picking resolves derived triangles/curves to logical targets, gives an edge
 within six logical pixels priority over a face, and selects only the nearest
@@ -958,7 +957,7 @@ right-handed XY-base, +Z-up convention and navigation bindings.
 C2 requires an Experience Gate covering solid-form readability, face/edge
 discoverability, hover clarity, selection confidence, standard-view discovery,
 Fit usefulness, Feature Manager synchronization, context actions and visual
-hierarchy. C2 implementation is not authorized by this proposal.
+hierarchy. D15 authorizes the C2 contract but does not implement C2.
 
 Proposed C2 scope is flat-shaded faces, exact-edge overlay, simple lighting,
 Shaded With Edges/Wireframe display modes, face/edge hover and single logical

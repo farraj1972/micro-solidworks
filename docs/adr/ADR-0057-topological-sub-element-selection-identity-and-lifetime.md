@@ -1,6 +1,6 @@
 # ADR-0057 — Topological Sub-element Selection Identity and Lifetime
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

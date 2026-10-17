@@ -182,9 +182,9 @@ Persistence continues to store feature definitions rather than derived regions,
 Solids or tessellation. Any demonstrated need for schema version 2 or a new
 dependency is a hard stop and requires a separate decision.
 
-## 8. D15 proposed solid-display and picking strategy
+## 8. D15 solid-display and picking strategy
 
-ADR-0056–0058 propose BUILD for face tessellation, flat shading, exact-edge
+Accepted ADR-0056–0058 freeze BUILD for face tessellation, flat shading, exact-edge
 overlay, logical sub-element mapping, nearest-visible-hit picking, Fit and
 standard views. No new dependency is proposed. The intended direction remains:
 

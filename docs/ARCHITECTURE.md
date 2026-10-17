@@ -1421,9 +1421,9 @@ Restricted B11 Boolean accepts only its original single linear-solid subset.
 GAP-GEO-002 is CLOSED. GAP-SCENE-002 is PARTIALLY CLOSED by the executable
 active-edit/show-hide lifecycle; no general scene graph is introduced.
 
-## D15 — Proposed Solid Visualization and Sub-element Selection
+## D15 — Solid Visualization and Sub-element Selection
 
-D15 is PROPOSED / READY FOR REVIEW in ADR-0056–0058. The proposal preserves
+D15 is FROZEN in accepted ADR-0056–0058. The decision preserves
 Topology and analytic Geometry as CAD authority. Presentation derives oriented
 triangles for planar Faces, planar Faces with inner Wires and cylindrical Faces,
 and derives an independent exact-edge overlay. Rendering consumes flat-shaded

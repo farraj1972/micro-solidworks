@@ -1183,13 +1183,13 @@ Manager coherence, parameter editing and error/recovery clarity. V1.1-C1 passed 
 V1.1-C1 is FROZEN after a clean full Debug build, zero project warnings, 822/822 tests and a manual Experience Gate with normal shutdown. It implements the D14 intersection subset, derived planar regions, exact circular topology, transactional multi-Solid extrusion, derived Presentation, projection-consistent Line/Rectangle/Circle previews and the guided CAD workflow. FeatureModel stores derived Solids under one FeatureId without persistent body identity or a persistence schema change. Restricted B11 Boolean rejects curved or multi-body operands explicitly. GAP-GEO-002 is CLOSED. GAP-SCENE-002 is PARTIALLY CLOSED by the executable active-edit and Show/Hide slice; a general scene graph remains deferred.
 
 D15 - Solid Visualization & Sub-element Selection Semantics
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0056-0058: PROPOSED
-ADR inventory: 58 total / 55 ACCEPTED / 3 PROPOSED
+STATUS: FROZEN
+ADR-0056-0058: ACCEPTED
+ADR inventory: 58/58 ACCEPTED
 V1.1-C1: FROZEN
-V1.1-C2: NOT STARTED / NEXT ACTIVE AFTER D15 FREEZE
+V1.1-C2: NOT STARTED / NEXT ACTIVE
 
-D15 proposes derived flat-shaded face tessellation with independent exact-edge
+Frozen D15 defines derived flat-shaded face tessellation with independent exact-edge
 overlay and Shaded With Edges as the default display. Topology and analytic
 Geometry remain authoritative. Logical face/edge targets carry FeatureId, a
 rebuild-local body context and current FaceId/EdgeId; they clear deterministically
@@ -1198,8 +1198,8 @@ derived triangles/curves to the nearest visible logical target, with an edge
 inside the six-logical-pixel tolerance taking priority. Hole interiors produce no
 cap hit. Hidden results are not rendered or pickable. Fit, standard views,
 display mode and lighting remain Viewer/Rendering session state. Persistent
-topological naming, persistent BodyId and V1.1-C2 implementation are not
-authorized by this proposal.
+topological naming and persistent BodyId remain explicitly deferred. D15
+authorizes the C2 contract but does not implement V1.1-C2.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

@@ -1,6 +1,6 @@
 # ADR-0056 — Solid Display, Tessellation and Shading Boundary
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
