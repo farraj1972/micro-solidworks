@@ -2,30 +2,32 @@
 #include <algorithm>
 #include <stdexcept>
 namespace microsw::presentation {
-void FeaturePresentation::update(const features::FeatureModel& model) {
- const auto resultId=model.resultFeatureId();
- if(!resultId.isValid()){current_={};solidDisplay_={};activeFeature_.reset();visualIds_.clear();return;}
- const auto& record=model.find(resultId);
- if(record.state()!=features::FeatureState::Clean||!record.cache()) throw std::invalid_argument{"Feature presentation requires a committed clean result"};
- if(std::holds_alternative<features::EmptyFeatureCache>(*record.cache())){current_={};solidDisplay_={};activeFeature_=resultId;visualIds_.clear();return;}
- const auto* solid=std::get_if<features::SolidFeatureCache>(&*record.cache());
- if(!solid) throw std::invalid_argument{"Result feature does not contain a Solid output"};
- if(activeFeature_!=resultId){current_={};visualIds_.clear();activeFeature_=resultId;}
- while(visualIds_.size()>solid->solids.size()){current_.remove(visualIds_.back());visualIds_.pop_back();}
- solidDisplay_={};
- for(std::size_t index=0;index<solid->solids.size();++index){
-  auto wireframe=deriveSolidWireframe(solid->solids[index]);
-  if(index<visualIds_.size())current_.setGeometry(visualIds_[index],std::move(wireframe));
-  else visualIds_.push_back(current_.add(wireframe));
-  auto display=deriveSolidDisplay(solid->solids[index],resultId,interaction::BodyInstanceContext{index});
-  solidDisplay_.triangles.insert(solidDisplay_.triangles.end(),display.triangles.begin(),display.triangles.end());
-  solidDisplay_.edges.insert(solidDisplay_.edges.end(),display.edges.begin(),display.edges.end());
+void FeaturePresentation::update(const features::FeatureModel& model, const Visibility& visible) {
+ solidDisplay_={};std::vector<features::FeatureId> presented;
+ for(const auto& record:model.history()){
+  if(record.state()!=features::FeatureState::Clean||!record.cache())continue;
+  const auto* solid=std::get_if<features::SolidFeatureCache>(&*record.cache());
+  if(!solid||(visible&&!visible(record.id())))continue;
+  presented.push_back(record.id());auto& ids=visualIds_[record.id()];
+  while(ids.size()>solid->solids.size()){current_.remove(ids.back());ids.pop_back();}
+  for(std::size_t index=0;index<solid->solids.size();++index){
+   auto wireframe=deriveSolidWireframe(solid->solids[index]);
+   if(index<ids.size())current_.setGeometry(ids[index],std::move(wireframe));
+   else ids.push_back(current_.add(wireframe));
+   auto display=deriveSolidDisplay(solid->solids[index],record.id(),interaction::BodyInstanceContext{index});
+   solidDisplay_.triangles.insert(solidDisplay_.triangles.end(),display.triangles.begin(),display.triangles.end());
+   solidDisplay_.edges.insert(solidDisplay_.edges.end(),display.edges.begin(),display.edges.end());
+  }
+ }
+ for(auto it=visualIds_.begin();it!=visualIds_.end();){
+  if(std::find(presented.begin(),presented.end(),it->first)!=presented.end()){++it;continue;}
+  for(const auto id:it->second)current_.remove(id);it=visualIds_.erase(it);
  }
 }
 std::optional<VisualEntityId> FeaturePresentation::visualId(features::FeatureId id) const noexcept {
- return activeFeature_==id&&!visualIds_.empty()?std::optional{visualIds_.front()}:std::nullopt;
+ const auto found=visualIds_.find(id);return found!=visualIds_.end()&&!found->second.empty()?std::optional{found->second.front()}:std::nullopt;
 }
 std::optional<features::FeatureId> FeaturePresentation::featureId(VisualEntityId id) const noexcept {
- return activeFeature_&&std::find(visualIds_.begin(),visualIds_.end(),id)!=visualIds_.end()?activeFeature_:std::nullopt;
+ for(const auto&[feature,ids]:visualIds_)if(std::find(ids.begin(),ids.end(),id)!=ids.end())return feature;return std::nullopt;
 }
 }

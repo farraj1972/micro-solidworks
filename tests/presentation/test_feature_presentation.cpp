@@ -6,9 +6,9 @@ TEST(FeaturePresentation,PreservesVisualIdentityAcrossSuccessfulRebuild){
  ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);auto id=p.visualId(e);ASSERT_TRUE(id);
  model.setExtrudeDistance(e,6);ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);p.update(model);EXPECT_EQ(p.visualId(e),id);
 }
-TEST(FeaturePresentation,SuccessfulEmptyRemovesViewportGeometry){
+TEST(FeaturePresentation,SuccessfulEmptyResultDoesNotRemoveOtherVisibleFeatureGeometry){
  microsw::features::FeatureModel model;auto a=model.addExtrude(model.addSketch(rectangle(0,0,1,1)),1);auto b=model.addExtrude(model.addSketch(rectangle(3,3,4,4)),1);(void)model.addBoolean(a,b,microsw::modeling::BooleanOperation::Intersection);
- ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::SuccessEmpty);microsw::presentation::FeaturePresentation p;p.update(model);EXPECT_TRUE(p.geometry().empty());
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::SuccessEmpty);microsw::presentation::FeaturePresentation p;p.update(model);EXPECT_EQ(p.geometry().size(),2u);EXPECT_TRUE(p.visualId(a));EXPECT_TRUE(p.visualId(b));
 }
 TEST(FeaturePresentation,ResolvesVisualProxyBackToLogicalFeature){
  microsw::features::FeatureModel model;auto feature=model.addExtrude(model.addSketch(rectangle(0,0,2,2)),2);
@@ -22,4 +22,10 @@ TEST(FeaturePresentation,PresentsEveryBodyUnderOneLogicalFeature){
  ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
  ASSERT_EQ(p.geometry().size(),2u);for(const auto& entity:p.geometry().entities())EXPECT_EQ(p.featureId(entity.id()),feature);
  const auto first=p.visualId(feature);ASSERT_TRUE(first);model.setExtrudeDistance(feature,3);ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);p.update(model);EXPECT_EQ(p.visualId(feature),first);
+}
+TEST(FeaturePresentation,PresentsIndependentSolidFeaturesAndAppliesVisibilityPolicy){
+ microsw::features::FeatureModel model;const auto a=model.addExtrude(model.addSketch(rectangle(-4,-1,-2,1)),2);const auto b=model.addExtrude(model.addSketch(rectangle(2,-1,4,1)),3);
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
+ ASSERT_EQ(p.geometry().size(),2u);ASSERT_TRUE(p.visualId(a));ASSERT_TRUE(p.visualId(b));EXPECT_NE(p.visualId(a),p.visualId(b));
+ const auto aVisual=*p.visualId(a);p.update(model,[&](auto id){return id!=b;});EXPECT_EQ(p.geometry().size(),1u);EXPECT_EQ(p.visualId(a),aVisual);EXPECT_FALSE(p.visualId(b));
 }

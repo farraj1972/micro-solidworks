@@ -160,6 +160,7 @@ public:
     const presentation::GeometryPresentation* presentation;
     const presentation::FeaturePresentation* featurePresentation{};
     SolidDisplayMode displayMode{SolidDisplayMode::ShadedWithEdges};
+    bool solidPickingEnabled{true};
     ProjectionState projection;
     OrbitNavigation navigation;
     PanZoomNavigation panZoomNavigation;
@@ -212,6 +213,7 @@ void WorkspaceViewport::setStandardView(StandardView view)
     case StandardView::Isometric: impl_->camera.setYaw(-pi_v<math::Scalar>/4);impl_->camera.setPitch(pi_v<math::Scalar>/6);break;
     }
 }
+void WorkspaceViewport::setSolidPickingEnabled(bool enabled) noexcept { impl_->solidPickingEnabled=enabled;if(!enabled){impl_->solidHover.reset();impl_->solidSelection.reset();} }
 void WorkspaceViewport::fitVisibleGeometry()
 {
     if(!impl_->featurePresentation)return; const auto& d=impl_->featurePresentation->solidDisplay();
@@ -304,7 +306,7 @@ void WorkspaceViewport::updateHover(const WorkspaceLayout& layout, const Workspa
     const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
     if (rect.width <= 0 || rect.height <= 0)
         return; // Normal minimize/resize frames must not call the strict picker.
-    if(const auto hit=pickSolidTarget(layout,framebufferWidth,framebufferHeight,input.x,input.y)){impl_->solidHover=hit->target;return;}
+    if(impl_->solidPickingEnabled)if(const auto hit=pickSolidTarget(layout,framebufferWidth,framebufferHeight,input.x,input.y)){impl_->solidHover=hit->target;return;}
     if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
         impl_->hover.update(hit->id);
 }
@@ -391,7 +393,7 @@ void WorkspaceViewport::updateSelection(const WorkspaceLayout& layout, const Wor
     const auto y = input.y - (framebufferHeight - rect.y - rect.height) * scaleY;
     if (x < 0 || x >= rect.width * scaleX || y < 0 || y >= rect.height * scaleY)
         return;
-    if(const auto hit=pickSolidTarget(layout,framebufferWidth,framebufferHeight,input.x,input.y)){impl_->solidSelection=hit->target;impl_->selection.clear();return;}
+    if(impl_->solidPickingEnabled)if(const auto hit=pickSolidTarget(layout,framebufferWidth,framebufferHeight,input.x,input.y)){impl_->solidSelection=hit->target;impl_->selection.clear();return;}
     impl_->solidSelection.reset();
     if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
         impl_->selection.select(hit->id);

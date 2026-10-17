@@ -43,6 +43,7 @@ public:
     // Switching model sources clears interaction identities from the old source.
     void setPresentation(const presentation::GeometryPresentation& presentation) noexcept;
     void setFeaturePresentation(const presentation::FeaturePresentation* presentation) noexcept;
+    void setSolidPickingEnabled(bool enabled) noexcept;
     void setDisplayMode(SolidDisplayMode mode) noexcept;
     [[nodiscard]] SolidDisplayMode displayMode() const noexcept;
     void setStandardView(StandardView view);

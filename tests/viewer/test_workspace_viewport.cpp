@@ -156,6 +156,30 @@ TEST_F(WorkspaceViewportTest, FaceHoverAfterExtrudeRestoresBaseShaderForWirePres
     EXPECT_TRUE(presentation.visualId(feature));
 }
 
+TEST_F(WorkspaceViewportTest, ActiveSketchPickingWinsWhileExistingSolidRemainsContext)
+{
+    microsw::sketch::Sketch profile;
+    (void)profile.addRectangle({-1,-1},{1,1});
+    microsw::features::FeatureModel model;
+    (void)model.addExtrude(model.addSketch(std::move(profile)),2);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    microsw::presentation::FeaturePresentation solids;
+    solids.update(model);
+    microsw::presentation::GeometryPresentation sketch;
+    const auto sketchPoint=sketch.add(microsw::geometry::Point3{});
+
+    WorkspaceViewport viewport{sketch};
+    viewport.setFeaturePresentation(&solids);
+    viewport.setSolidPickingEnabled(false);
+    const WorkspaceLayout layout{0,0,128,128,128,128};
+    microsw::WorkspaceInput input{64,64,false,false,false,true,true,true,false,0};
+    viewport.updateHover(layout,input,128,128);
+    EXPECT_FALSE(viewport.hoveredSolidTarget());
+    EXPECT_EQ(viewport.hoveredEntity(),sketchPoint);
+    EXPECT_NO_THROW(viewport.render(layout,128,128));
+    EXPECT_EQ(glGetError(),GL_NO_ERROR);
+}
+
 TEST_F(WorkspaceViewportTest, GridAndAxesUploadAndDrawInOneDepthPass)
 {
     const microsw::viewer::ReferenceGrid grid;
