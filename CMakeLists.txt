@@ -182,6 +182,14 @@ set_target_properties(microsw_persistence PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_persistence PUBLIC src)
 target_link_libraries(microsw_persistence PUBLIC microsw_features PRIVATE microsw_nlohmann_json)
 
+add_library(microsw_interaction STATIC
+    src/interaction/EditorContext.cpp
+)
+target_compile_features(microsw_interaction PUBLIC cxx_std_20)
+set_target_properties(microsw_interaction PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_interaction PUBLIC src)
+target_link_libraries(microsw_interaction PUBLIC microsw_features microsw_sketch)
+
 add_library(microsw_sketch_modeling_adapter STATIC
     src/app/modeling/ActiveExtrusion.cpp
     src/app/modeling/ActiveBoolean.cpp
@@ -281,6 +289,7 @@ set_target_properties(microsw_ui PROPERTIES
 )
 target_include_directories(microsw_ui PUBLIC src)
 target_link_libraries(microsw_ui PRIVATE
+    microsw_interaction
     microsw_presentation
     glfw
     microsw_imgui_backend
@@ -302,6 +311,7 @@ set_target_properties(micro_solidworks PROPERTIES
 )
 target_link_libraries(micro_solidworks PRIVATE
     microsw_constraints
+    microsw_interaction
     microsw_features
     microsw_persistence
     microsw_sketch_modeling_adapter
@@ -372,6 +382,7 @@ if(BUILD_TESTING)
         tests/math/test_vector3.cpp
         tests/modeling/test_profile_extrusion.cpp
         tests/modeling/test_boolean.cpp
+        tests/interaction/test_editor_context.cpp
         tests/features/test_feature_model.cpp
         tests/persistence/test_persistence.cpp
         tests/topology/test_topology.cpp
@@ -418,6 +429,7 @@ if(BUILD_TESTING)
         microsw_constraints
         microsw_ui
         microsw_geometry
+        microsw_interaction
         microsw_features
         microsw_persistence
         microsw_logging
