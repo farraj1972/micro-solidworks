@@ -492,7 +492,12 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
         if (!impl_->presentation) return;
         const bool solidWirePresentation = impl_->featurePresentation
             && impl_->presentation == &impl_->featurePresentation->geometry();
-        if (solidWirePresentation && state == VisualState::Normal)
+        // FeaturePresentation::geometry() is only the legacy visual proxy used
+        // for feature identity. Solid faces, topology edges and their hover /
+        // selection feedback are rendered by the explicit solid passes above.
+        // Drawing this proxy in any visual state would leak the complete solid
+        // wireframe into Shaded mode whenever its feature is selected.
+        if (solidWirePresentation)
         {
             impl_->lines.setVertices({});
             impl_->segments.setVertices({});
