@@ -56,6 +56,12 @@ struct PropertyEditContext
     math::Scalar value;
 };
 
+struct ScreenPoint
+{
+    math::Scalar x;
+    math::Scalar y;
+};
+
 class EditorContext
 {
 public:
@@ -84,6 +90,12 @@ public:
     [[nodiscard]] const std::optional<SnapCandidate>& snapCandidate() const noexcept { return snap_; }
     [[nodiscard]] const std::optional<InferenceCandidate>& inferenceCandidate() const noexcept { return inference_; }
 
+    void beginPreview(ScreenPoint anchor) noexcept { previewAnchor_ = anchor; previewCursor_ = anchor; step_ = ToolStep::PickSecond; }
+    void updatePreview(ScreenPoint cursor) noexcept { if (previewAnchor_) previewCursor_ = cursor; }
+    void clearPreview() noexcept { previewAnchor_.reset(); previewCursor_.reset(); }
+    [[nodiscard]] const std::optional<ScreenPoint>& previewAnchor() const noexcept { return previewAnchor_; }
+    [[nodiscard]] const std::optional<ScreenPoint>& previewCursor() const noexcept { return previewCursor_; }
+
     void setDisplayState(features::FeatureId id, DisplayState state);
     [[nodiscard]] DisplayState displayState(features::FeatureId id) const noexcept;
     void beginPropertyEdit(PropertyEditContext context) { propertyEdit_ = context; step_ = ToolStep::EditProperties; }
@@ -103,6 +115,8 @@ private:
     std::vector<sketch::SketchElementRef> operands_;
     std::optional<SnapCandidate> snap_;
     std::optional<InferenceCandidate> inference_;
+    std::optional<ScreenPoint> previewAnchor_;
+    std::optional<ScreenPoint> previewCursor_;
     std::map<features::FeatureId, DisplayState> display_;
     std::optional<PropertyEditContext> propertyEdit_;
 };

@@ -40,6 +40,7 @@ void EditorContext::activateCommand(EditorCommand command) noexcept
     operands_.clear();
     snap_.reset();
     inference_.reset();
+    clearPreview();
     propertyEdit_.reset();
     step_ = command == EditorCommand::Select ? ToolStep::Idle : ToolStep::PickFirst;
 }
@@ -49,6 +50,7 @@ void EditorContext::cancelStep() noexcept
     operands_.clear();
     snap_.reset();
     inference_.reset();
+    clearPreview();
     propertyEdit_.reset();
     step_ = command_ == EditorCommand::Select ? ToolStep::Idle : ToolStep::PickFirst;
 }
@@ -100,7 +102,7 @@ bool EditorContext::commandAvailable(EditorCommand command, bool hasClosedSketch
 void EditorContext::resetSession() noexcept
 {
     activeFeature_.reset(); activeSketch_.reset(); hover_.reset(); selection_.reset();
-    operands_.clear(); snap_.reset(); inference_.reset(); display_.clear(); propertyEdit_.reset();
+    operands_.clear(); snap_.reset(); inference_.reset(); clearPreview(); display_.clear(); propertyEdit_.reset();
     command_ = EditorCommand::Select; step_ = ToolStep::Idle;
 }
 

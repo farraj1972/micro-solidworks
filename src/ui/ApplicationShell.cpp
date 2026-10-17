@@ -93,7 +93,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     drawMainMenu(projectionMode);
     drawCommandBar(activeTool, sketch, selected, featureModel, editor);
     drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel, editor);
-    drawWorkspace();
+    drawWorkspace(activeTool, editor);
     drawStatusBar();
     drawAboutDialog();
     const auto& io = ImGui::GetIO();
@@ -585,7 +585,7 @@ void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected
     ImGui::End();
 }
 
-void ApplicationShell::drawWorkspace()
+void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::EditorContext* editor)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y + commandBarHeight};
@@ -625,6 +625,43 @@ void ApplicationShell::drawWorkspace()
         else ImGui::TextDisabled("No logical object selected");
         if (ImGui::MenuItem("Rebuild")) rebuildFeaturesRequest_ = true;
         ImGui::EndPopup();
+    }
+    if (editor)
+    {
+        auto* draw = ImGui::GetForegroundDrawList();
+        const auto toScreen = [&](interaction::ScreenPoint point) {
+            return ImVec2{viewport->Pos.x + static_cast<float>(point.x),
+                          viewport->Pos.y + static_cast<float>(point.y)};
+        };
+        if (editor->previewAnchor() && editor->previewCursor())
+        {
+            const auto anchor = toScreen(*editor->previewAnchor());
+            const auto cursor = toScreen(*editor->previewCursor());
+            const auto previewColor = IM_COL32(80, 220, 255, 220);
+            if (activeTool == SketchTool::Rectangle)
+                draw->AddRect(anchor, cursor, previewColor, 0.0F, 0, 2.0F);
+            else if (activeTool == SketchTool::Circle)
+                draw->AddCircle(anchor, std::hypot(cursor.x - anchor.x, cursor.y - anchor.y),
+                                previewColor, 48, 2.0F);
+            else
+                draw->AddLine(anchor, cursor, previewColor, 2.0F);
+        }
+        const auto cursor = ImGui::GetMousePos();
+        if (editor->snapCandidate())
+        {
+            const auto snapColor = IM_COL32(255, 210, 60, 255);
+            if (editor->snapCandidate()->kind == interaction::SnapKind::Endpoint)
+                draw->AddRect(ImVec2{cursor.x - 5, cursor.y - 5}, ImVec2{cursor.x + 5, cursor.y + 5}, snapColor, 0, 0, 2);
+            else if (editor->snapCandidate()->kind == interaction::SnapKind::Midpoint)
+                draw->AddTriangle(ImVec2{cursor.x, cursor.y - 6}, ImVec2{cursor.x - 6, cursor.y + 5}, ImVec2{cursor.x + 6, cursor.y + 5}, snapColor, 2);
+            else draw->AddCircle(cursor, 5, snapColor, 12, 2);
+        }
+        if (editor->inferenceCandidate())
+        {
+            const char* cue = editor->inferenceCandidate()->kind == interaction::InferenceKind::Horizontal ? "H"
+                : editor->inferenceCandidate()->kind == interaction::InferenceKind::Vertical ? "V" : "C";
+            draw->AddText(ImVec2{cursor.x + 9, cursor.y + 7}, IM_COL32(100, 255, 120, 255), cue);
+        }
     }
     ImGui::End();
 }

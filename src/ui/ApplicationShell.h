@@ -81,7 +81,8 @@ private:
                         const sketch::SketchEntity* selected,
                         const features::FeatureModel* featureModel,
                         interaction::EditorContext* editor);
-    void drawWorkspace();
+    void drawWorkspace(SketchTool activeTool = SketchTool::Select,
+                       const interaction::EditorContext* editor = nullptr);
     void drawStatusBar();
     void drawAboutDialog();
 

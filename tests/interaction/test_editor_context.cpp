@@ -51,6 +51,23 @@ TEST(EditorContext, SessionResetClearsOnlyTransientEditorState)
     EXPECT_EQ(context.displayState(feature), DisplayState::Visible);
 }
 
+TEST(EditorContext, PreviewLifecycleIsTransientAndCancelledAtomically)
+{
+    EditorContext context;
+    context.activateSketch(features::FeatureId{1});
+    context.activateCommand(EditorCommand::Rectangle);
+    context.beginPreview({120, 80});
+    context.updatePreview({310, 240});
+    ASSERT_TRUE(context.previewAnchor());
+    ASSERT_TRUE(context.previewCursor());
+    EXPECT_DOUBLE_EQ(context.previewAnchor()->x, 120);
+    EXPECT_DOUBLE_EQ(context.previewCursor()->y, 240);
+    context.cancelStep();
+    EXPECT_FALSE(context.previewAnchor());
+    EXPECT_FALSE(context.previewCursor());
+    EXPECT_EQ(context.toolStep(), ToolStep::PickFirst);
+}
+
 TEST(Snapping, UsesDeterministicEndpointMidpointGridPriority)
 {
     sketch::Sketch model;
