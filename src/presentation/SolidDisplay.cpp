@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numbers>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 
@@ -48,41 +49,40 @@ math::Vector3 triangleNormal(const geometry::Point3& a, const geometry::Point3& 
     return math::dot(n, preferred) < 0 ? -n : n;
 }
 
+struct ProjectedPoint { geometry::Point3 world; double x{},y{}; };
+double signedArea(const std::vector<ProjectedPoint>& p){double a=0;for(std::size_t i=0,j=p.size()-1;i<p.size();j=i++)a+=p[j].x*p[i].y-p[i].x*p[j].y;return a/2;}
+double cross2(const ProjectedPoint&a,const ProjectedPoint&b,const ProjectedPoint&c){return(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);}
+bool inTriangle(const ProjectedPoint&p,const ProjectedPoint&a,const ProjectedPoint&b,const ProjectedPoint&c){const auto x=cross2(a,b,p),y=cross2(b,c,p),z=cross2(c,a,p);return x>=-1e-10&&y>=-1e-10&&z>=-1e-10;}
+std::vector<std::array<geometry::Point3,3>> triangulate(std::vector<ProjectedPoint> polygon)
+{
+    std::vector<std::array<geometry::Point3,3>> result;if(polygon.size()<3)return result;
+    if(signedArea(polygon)<0)std::reverse(polygon.begin(),polygon.end());
+    std::vector<std::size_t> indices(polygon.size());for(std::size_t i=0;i<indices.size();++i)indices[i]=i;
+    for(std::size_t guard=0;indices.size()>2&&guard<polygon.size()*polygon.size();++guard){bool clipped=false;
+        for(std::size_t k=0;k<indices.size();++k){const auto ia=indices[(k+indices.size()-1)%indices.size()],ib=indices[k],ic=indices[(k+1)%indices.size()];const auto&a=polygon[ia];const auto&b=polygon[ib];const auto&c=polygon[ic];if(cross2(a,b,c)<=1e-10)continue;bool contains=false;for(auto index:indices)if(index!=ia&&index!=ib&&index!=ic&&inTriangle(polygon[index],a,b,c)){contains=true;break;}if(contains)continue;result.push_back({a.world,b.world,c.world});indices.erase(indices.begin()+static_cast<std::ptrdiff_t>(k));clipped=true;break;}if(!clipped)break;}
+    return result;
+}
+
 void appendPlanar(const topology::Solid& solid, const topology::Face& face,
     interaction::TopologyFaceTarget target, const math::Vector3& outward, std::vector<FaceTriangle>& out)
 {
     const auto outer = wirePoints(solid, face.outerWire());
     if (outer.size() < 3) return;
-    // Fan triangulation is exact for the convex MVP faces and deterministic.
-    // General holed caps are filtered by rejecting triangles whose centroid lies
-    // inside an inner wire; curved boundaries are already sampled consistently.
     const auto basisNormal = outward;
     const auto& plane = std::get<geometry::Plane>(face.support());
     const auto axisX = std::abs(plane.normal().x()) < 0.9
         ? math::cross(plane.normal(), {1,0,0}).normalized()
         : math::cross(plane.normal(), {0,1,0}).normalized();
     const auto axisY = math::cross(plane.normal(), axisX);
-    const auto inside = [&](const geometry::Point3& point, topology::WireId wire)
-    {
-        const auto polygon = wirePoints(solid, wire);
-        const auto px=math::dot(point-plane.origin(),axisX), py=math::dot(point-plane.origin(),axisY);
-        bool value=false;
-        for(std::size_t i=0,j=polygon.size()-1;i<polygon.size();j=i++){
-            const auto xi=math::dot(polygon[i]-plane.origin(),axisX), yi=math::dot(polygon[i]-plane.origin(),axisY);
-            const auto xj=math::dot(polygon[j]-plane.origin(),axisX), yj=math::dot(polygon[j]-plane.origin(),axisY);
-            if(((yi>py)!=(yj>py)) && px < (xj-xi)*(py-yi)/(yj-yi)+xi) value=!value;
-        }
-        return value;
-    };
-    for (std::size_t i=1;i+1<outer.size();++i)
-    {
-        const geometry::Point3 centroid{(outer[0].x()+outer[i].x()+outer[i+1].x())/3,
-            (outer[0].y()+outer[i].y()+outer[i+1].y())/3,
-            (outer[0].z()+outer[i].z()+outer[i+1].z())/3};
-        bool inHole=false; for(auto hole:face.innerWires()) if(inside(centroid,hole)){inHole=true;break;}
-        if(!inHole) out.push_back({{outer[0],outer[i],outer[i+1]},
-            triangleNormal(outer[0],outer[i],outer[i+1],basisNormal),target});
+    const auto project=[&](const geometry::Point3&p){return ProjectedPoint{p,math::dot(p-plane.origin(),axisX),math::dot(p-plane.origin(),axisY)};};
+    std::vector<ProjectedPoint> polygon;for(const auto&p:outer)polygon.push_back(project(p));if(signedArea(polygon)<0)std::reverse(polygon.begin(),polygon.end());
+    for(const auto holeId:face.innerWires()){
+        std::vector<ProjectedPoint> hole;for(const auto&p:wirePoints(solid,holeId))hole.push_back(project(p));if(signedArea(hole)>0)std::reverse(hole.begin(),hole.end());
+        const auto h=static_cast<std::size_t>(std::distance(hole.begin(),std::max_element(hole.begin(),hole.end(),[](const auto&a,const auto&b){return a.x<b.x;})));
+        std::size_t o=0;double best=std::numeric_limits<double>::infinity();for(std::size_t i=0;i<polygon.size();++i){const auto dx=polygon[i].x-hole[h].x,dy=polygon[i].y-hole[h].y,d=dx*dx+dy*dy;if(d<best){best=d;o=i;}}
+        std::vector<ProjectedPoint> merged;for(std::size_t i=0;i<=o;++i)merged.push_back(polygon[i]);for(std::size_t i=0;i<hole.size();++i)merged.push_back(hole[(h+i)%hole.size()]);merged.push_back(hole[h]);merged.push_back(polygon[o]);for(std::size_t i=o+1;i<polygon.size();++i)merged.push_back(polygon[i]);polygon=std::move(merged);
     }
+    for(const auto& triangle:triangulate(std::move(polygon)))out.push_back({triangle,triangleNormal(triangle[0],triangle[1],triangle[2],basisNormal),target});
 }
 
 void appendCylinder(const topology::Solid& solid, const topology::Face& face,

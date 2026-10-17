@@ -27,6 +27,20 @@ TEST(EditorContext, SeparatesActiveEditSelectionAndTransientCommandState)
     EXPECT_EQ(context.activeSketchFeatureId(), sketchFeature);
 }
 
+TEST(EditorContext, TopologySelectionKnowsOwnerAndClearsOnRebuild)
+{
+    interaction::EditorContext editor;
+    const interaction::TopologyFaceTarget face{features::FeatureId{5},{1},topology::FaceId{3}};
+    editor.select(interaction::LogicalTarget{face});
+    ASSERT_TRUE(editor.selection());
+    EXPECT_EQ(editor.activeFeatureId(),features::FeatureId{5});
+    editor.clearTopologySelectionOnRebuild();
+    EXPECT_FALSE(editor.selection());
+    editor.select(interaction::LogicalTarget{features::FeatureId{5}});
+    editor.clearTopologySelectionOnRebuild();
+    EXPECT_TRUE(editor.selection());
+}
+
 TEST(EditorContext, CommandAvailabilityIsContextSensitive)
 {
     EditorContext context;
