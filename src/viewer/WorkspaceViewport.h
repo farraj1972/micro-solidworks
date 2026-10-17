@@ -4,14 +4,17 @@
 #include "app/WorkspaceInput.h"
 #include "core/math/Scalar.h"
 #include "viewer/GeometryPicker.h"
+#include "viewer/SolidPicker.h"
 
 #include <memory>
 
-namespace microsw::presentation { class GeometryPresentation; }
+namespace microsw::presentation { class GeometryPresentation; class FeaturePresentation; }
 namespace microsw::math { class Transform3; }
 
 namespace microsw::viewer
 {
+enum class SolidDisplayMode { ShadedWithEdges, Wireframe, Shaded };
+enum class StandardView { Front, Back, Left, Right, Top, Bottom, Isometric };
 
 struct ViewportRect
 {
@@ -39,6 +42,11 @@ public:
     WorkspaceViewport& operator=(const WorkspaceViewport&) = delete;
     // Switching model sources clears interaction identities from the old source.
     void setPresentation(const presentation::GeometryPresentation& presentation) noexcept;
+    void setFeaturePresentation(const presentation::FeaturePresentation* presentation) noexcept;
+    void setDisplayMode(SolidDisplayMode mode) noexcept;
+    [[nodiscard]] SolidDisplayMode displayMode() const noexcept;
+    void setStandardView(StandardView view);
+    void fitVisibleGeometry();
 
     // Empty/invalid surfaces are no-ops. Restores the OpenGL states changed by this pass.
     void render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight);
@@ -48,10 +56,12 @@ public:
     void updateHover(const WorkspaceLayout& layout, const WorkspaceInput& input,
         int framebufferWidth, int framebufferHeight);
     [[nodiscard]] std::optional<presentation::VisualEntityId> hoveredEntity() const noexcept;
+    [[nodiscard]] const std::optional<SolidTarget>& hoveredSolidTarget() const noexcept;
     // Call after navigation/hover. Only an eligible leftPressed changes selection.
     void updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
         int framebufferWidth, int framebufferHeight);
     [[nodiscard]] std::optional<presentation::VisualEntityId> selectedEntity() const noexcept;
+    [[nodiscard]] const std::optional<SolidTarget>& selectedSolidTarget() const noexcept;
     void selectEntity(std::optional<presentation::VisualEntityId> id) noexcept;
     void clearSelection() noexcept;
     // Preflight a UI edit against world Geometry and the renderer's numeric range.
@@ -66,6 +76,9 @@ public:
     // This query does not change interaction state. Invalid layout
     // or non-finite mouse throws invalid_argument; outside returns no hit.
     [[nodiscard]] std::optional<PickHit> pick(
+        const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+        math::Scalar mouseX, math::Scalar mouseY) const;
+    [[nodiscard]] std::optional<SolidPickHit> pickSolidTarget(
         const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
         math::Scalar mouseX, math::Scalar mouseY) const;
     [[nodiscard]] std::optional<geometry::Point3> pointOnGlobalXY(

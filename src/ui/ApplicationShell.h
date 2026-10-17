@@ -14,6 +14,8 @@
 
 namespace microsw
 {
+enum class ViewCommand { Fit, Front, Back, Left, Right, Top, Bottom, Isometric };
+enum class DisplayModeRequest { ShadedWithEdges, Wireframe, Shaded };
 class ApplicationWindow;
 
 class ApplicationShell
@@ -69,6 +71,8 @@ public:
     [[nodiscard]] bool cancelPropertyRequest() const noexcept { return cancelPropertyRequest_; }
     [[nodiscard]] bool gridSnapEnabled() const noexcept { return gridSnapEnabled_; }
     [[nodiscard]] const std::optional<features::FeatureId>& visibilityToggleRequest() const noexcept { return visibilityToggleRequest_; }
+    [[nodiscard]] const std::optional<ViewCommand>& viewCommandRequest() const noexcept { return viewCommandRequest_; }
+    [[nodiscard]] const std::optional<DisplayModeRequest>& displayModeRequest() const noexcept { return displayModeRequest_; }
 
 private:
     void drawMainMenu(ProjectionMode projectionMode);
@@ -127,6 +131,8 @@ private:
     bool cancelPropertyRequest_{};
     bool gridSnapEnabled_{true};
     std::optional<features::FeatureId> visibilityToggleRequest_;
+    std::optional<ViewCommand> viewCommandRequest_;
+    std::optional<DisplayModeRequest> displayModeRequest_;
     std::array<char, 512> documentPathInput_{};
     std::string currentFilePath_;
     std::string persistenceStatus_;

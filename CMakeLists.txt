@@ -216,6 +216,7 @@ add_library(microsw_presentation STATIC
     src/presentation/SegmentSet3.cpp
     src/presentation/SketchPresentation.cpp
     src/presentation/SolidPresentation.cpp
+    src/presentation/SolidDisplay.cpp
     src/presentation/WorldGeometry.cpp
 )
 target_compile_features(microsw_presentation PUBLIC cxx_std_20)
@@ -236,6 +237,7 @@ add_library(microsw_viewer STATIC
     src/viewer/PresentedSegments.cpp
     src/viewer/ReferenceAxes.cpp
     src/viewer/ReferenceGrid.cpp
+    src/viewer/SolidPicker.cpp
     src/viewer/ViewProjection.cpp
     src/viewer/WorkspaceViewport.cpp
 )
@@ -266,6 +268,7 @@ add_library(microsw_rendering STATIC
     src/rendering/OpenGLContext.cpp
     src/rendering/PointRenderer.cpp
     src/rendering/ShaderProgram.cpp
+    src/rendering/TriangleRenderer.cpp
 )
 
 target_compile_features(microsw_rendering PUBLIC cxx_std_20)
@@ -423,6 +426,7 @@ if(BUILD_TESTING)
         tests/presentation/test_feature_presentation.cpp
         tests/presentation/test_sketch_presentation.cpp
         tests/presentation/test_solid_presentation.cpp
+        tests/presentation/test_solid_display.cpp
         tests/presentation/test_visual_entity.cpp
         tests/viewer/test_presented_lines.cpp
         tests/viewer/test_presented_points.cpp

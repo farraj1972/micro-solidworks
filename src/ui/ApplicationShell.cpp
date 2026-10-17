@@ -104,6 +104,7 @@ ApplicationShell::ApplicationShell(ApplicationWindow& window)
 void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected)
 {
     input_ = {};
+    viewCommandRequest_.reset(); displayModeRequest_.reset();
     transformRequest_.reset();
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
     drawMainMenu(projectionMode);
@@ -137,6 +138,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
                                   interaction::EditorContext* editor)
 {
     input_ = {};
+    viewCommandRequest_.reset(); displayModeRequest_.reset();
     sketchToolRequest_.reset();
     sketchGeometryRequest_.reset();
     deleteSketchRequest_ = false;
@@ -328,6 +330,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         {
             const auto& feature = featureModel->find(*selectedFeature_);
             ImGui::Separator(); ImGui::Text("Selected: %s", feature.displayName().c_str());
+            if(editor&&editor->selection()){
+                if(std::holds_alternative<interaction::TopologyFaceTarget>(*editor->selection())){const auto&t=std::get<interaction::TopologyFaceTarget>(*editor->selection());ImGui::TextUnformatted("Face");const auto& cache=std::get<features::SolidFeatureCache>(*feature.cache());const auto& face=cache.solids.at(t.body.index).find(t.face);ImGui::TextUnformatted(std::holds_alternative<geometry::Plane>(face.support())?"Plane":"Cylinder");ImGui::Text("Owning feature: %s",feature.displayName().c_str());}
+                else if(std::holds_alternative<interaction::TopologyEdgeTarget>(*editor->selection())){const auto&t=std::get<interaction::TopologyEdgeTarget>(*editor->selection());ImGui::TextUnformatted("Edge");const auto& cache=std::get<features::SolidFeatureCache>(*feature.cache());const auto& edge=cache.solids.at(t.body.index).find(t.edge);ImGui::TextUnformatted(std::holds_alternative<geometry::Segment3>(edge.geometry())?"Line":"Arc");ImGui::Text("Owning feature: %s",feature.displayName().c_str());}
+            }
             if (feature.kind() == features::FeatureKind::Sketch)
             {
                 const auto& sketch = std::get<features::SketchFeature>(feature.data()).sketch;
@@ -675,6 +681,13 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
 
     if (ImGui::BeginMenu("View"))
     {
+        if(ImGui::MenuItem("Fit"))viewCommandRequest_=ViewCommand::Fit;
+        if(ImGui::BeginMenu("Standard Views")){
+            if(ImGui::MenuItem("Front"))viewCommandRequest_=ViewCommand::Front;if(ImGui::MenuItem("Back"))viewCommandRequest_=ViewCommand::Back;
+            if(ImGui::MenuItem("Left"))viewCommandRequest_=ViewCommand::Left;if(ImGui::MenuItem("Right"))viewCommandRequest_=ViewCommand::Right;
+            if(ImGui::MenuItem("Top"))viewCommandRequest_=ViewCommand::Top;if(ImGui::MenuItem("Bottom"))viewCommandRequest_=ViewCommand::Bottom;
+            if(ImGui::MenuItem("Isometric"))viewCommandRequest_=ViewCommand::Isometric;ImGui::EndMenu();}
+        if(ImGui::BeginMenu("Display Mode")){if(ImGui::MenuItem("Shaded With Edges"))displayModeRequest_=DisplayModeRequest::ShadedWithEdges;if(ImGui::MenuItem("Wireframe"))displayModeRequest_=DisplayModeRequest::Wireframe;if(ImGui::MenuItem("Shaded"))displayModeRequest_=DisplayModeRequest::Shaded;ImGui::EndMenu();}
         if (ImGui::BeginMenu("Projection"))
         {
             if (ImGui::MenuItem("Perspective", nullptr, projectionMode == ProjectionMode::Perspective))
@@ -795,6 +808,11 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
     ImGui::TextColored(ImVec4{0.25F, 1.0F, 0.25F, 1.0F}, "Y");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4{0.3F, 0.55F, 1.0F, 1.0F}, "Z");
+    ImGui::SameLine();ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(),size.x-235));
+    if(ImGui::SmallButton("Fit"))viewCommandRequest_=ViewCommand::Fit;if(ImGui::IsItemHovered())ImGui::SetTooltip("Fit visible modeled geometry");
+    ImGui::SameLine();if(ImGui::SmallButton("ISO"))viewCommandRequest_=ViewCommand::Isometric;if(ImGui::IsItemHovered())ImGui::SetTooltip("Isometric view");
+    ImGui::SameLine();if(ImGui::SmallButton("Display"))ImGui::OpenPopup("Display mode");if(ImGui::IsItemHovered())ImGui::SetTooltip("Choose solid display mode");
+    if(ImGui::BeginPopup("Display mode")){if(ImGui::MenuItem("Shaded With Edges"))displayModeRequest_=DisplayModeRequest::ShadedWithEdges;if(ImGui::MenuItem("Wireframe"))displayModeRequest_=DisplayModeRequest::Wireframe;if(ImGui::MenuItem("Shaded"))displayModeRequest_=DisplayModeRequest::Shaded;ImGui::EndPopup();}
     input_.workspaceHovered = ImGui::IsWindowHovered();
     if (input_.workspaceHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) ImGui::OpenPopup("Graphics context");
     if (ImGui::BeginPopup("Graphics context"))

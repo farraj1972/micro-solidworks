@@ -14,10 +14,14 @@
 #include "viewer/PresentedSegments.h"
 #include "viewer/PresentedLines.h"
 #include "viewer/PickingRay.h"
+#include "viewer/SolidPicker.h"
 #include "rendering/ShaderProgram.h"
 #include "rendering/LineRenderer.h"
 #include "rendering/PointRenderer.h"
 #include "presentation/GeometryPresentation.h"
+#include "presentation/FeaturePresentation.h"
+#include "presentation/SolidDisplay.h"
+#include "rendering/TriangleRenderer.h"
 #include "presentation/WorldGeometry.h"
 #include <limits>
 #include <type_traits>
@@ -82,6 +86,14 @@ out vec4 FragColor;
 uniform vec3 uColor;
 void main() { FragColor = vec4(uColor, 1.0); }
 )";
+constexpr const char* litVertexSource = R"(#version 330 core
+layout(location=0) in vec3 aPosition; layout(location=1) in vec3 aNormal;
+uniform mat4 uModel; uniform mat4 uView; uniform mat4 uProjection;
+out vec3 vNormal;
+void main(){vNormal=mat3(uModel)*aNormal;gl_Position=uProjection*uView*uModel*vec4(aPosition,1.0);})";
+constexpr const char* litFragmentSource = R"(#version 330 core
+in vec3 vNormal; out vec4 FragColor; uniform vec3 uColor;
+void main(){vec3 n=normalize(vNormal);float d=max(dot(n,normalize(vec3(0.35,-0.45,0.82))),0.0);float l=0.32+0.68*d;FragColor=vec4(uColor*l,1.0);})";
 
 // Local pass guard, including exception paths; not a general OpenGL state stack.
 struct PassState
@@ -130,7 +142,7 @@ class WorkspaceViewport::Impl
 {
 public:
     explicit Impl(const presentation::GeometryPresentation* sourcePresentation)
-        : presentation{sourcePresentation}, shader{vertexSource, fragmentSource}
+        : presentation{sourcePresentation}, shader{vertexSource, fragmentSource}, litShader{litVertexSource,litFragmentSource}
     {
         const ReferenceAxes axes;
         const ReferenceGrid grid;
@@ -143,7 +155,11 @@ public:
     OrbitCamera camera;
     HoverState hover;
     SelectionState selection;
+    std::optional<SolidTarget> solidHover;
+    std::optional<SolidTarget> solidSelection;
     const presentation::GeometryPresentation* presentation;
+    const presentation::FeaturePresentation* featurePresentation{};
+    SolidDisplayMode displayMode{SolidDisplayMode::ShadedWithEdges};
     ProjectionState projection;
     OrbitNavigation navigation;
     PanZoomNavigation panZoomNavigation;
@@ -152,6 +168,9 @@ public:
     // Keep the origin aids within clipping range at the maximum zoom distance.
     const math::Scalar farPlane = PanZoomNavigation::maximumDistance() + 100.0;
     rendering::ShaderProgram shader;
+    rendering::ShaderProgram litShader;
+    rendering::TriangleRenderer triangles;
+    rendering::LineRenderer solidEdges;
     rendering::LineRenderer gridRenderer;
     rendering::LineRenderer xAxis;
     rendering::LineRenderer yAxis;
@@ -173,6 +192,32 @@ void WorkspaceViewport::setPresentation(
     impl_->presentation = &presentation;
     impl_->hover.clear();
     impl_->selection.clear();
+    impl_->solidHover.reset(); impl_->solidSelection.reset();
+}
+
+void WorkspaceViewport::setFeaturePresentation(const presentation::FeaturePresentation* presentation) noexcept
+{ impl_->featurePresentation=presentation; }
+void WorkspaceViewport::setDisplayMode(SolidDisplayMode mode) noexcept { impl_->displayMode=mode; }
+SolidDisplayMode WorkspaceViewport::displayMode() const noexcept { return impl_->displayMode; }
+void WorkspaceViewport::setStandardView(StandardView view)
+{
+    using std::numbers::pi_v; const auto half=pi_v<math::Scalar>/2;
+    switch(view){
+    case StandardView::Front: impl_->camera.setYaw(-half);impl_->camera.setPitch(0);break;
+    case StandardView::Back: impl_->camera.setYaw(half);impl_->camera.setPitch(0);break;
+    case StandardView::Left: impl_->camera.setYaw(0);impl_->camera.setPitch(0);break;
+    case StandardView::Right: impl_->camera.setYaw(pi_v<math::Scalar>);impl_->camera.setPitch(0);break;
+    case StandardView::Top: impl_->camera.setYaw(-half);impl_->camera.setPitch(half);break;
+    case StandardView::Bottom: impl_->camera.setYaw(-half);impl_->camera.setPitch(-half);break;
+    case StandardView::Isometric: impl_->camera.setYaw(-pi_v<math::Scalar>/4);impl_->camera.setPitch(pi_v<math::Scalar>/6);break;
+    }
+}
+void WorkspaceViewport::fitVisibleGeometry()
+{
+    if(!impl_->featurePresentation)return; const auto& d=impl_->featurePresentation->solidDisplay();
+    if(d.triangles.empty())return; math::Vector3 lo{d.triangles[0].points[0].x(),d.triangles[0].points[0].y(),d.triangles[0].points[0].z()},hi=lo;
+    for(const auto&t:d.triangles)for(const auto&p:t.points){lo={std::min(lo.x(),p.x()),std::min(lo.y(),p.y()),std::min(lo.z(),p.z())};hi={std::max(hi.x(),p.x()),std::max(hi.y(),p.y()),std::max(hi.z(),p.z())};}
+    impl_->camera.setTarget((lo+hi)*0.5);impl_->camera.setDistance(std::max<math::Scalar>(1.0,(hi-lo).length()*1.5));
 }
 
 ProjectionMode WorkspaceViewport::projectionMode() const noexcept
@@ -236,6 +281,15 @@ std::optional<presentation::VisualEntityId> WorkspaceViewport::hoveredEntity() c
 {
     return impl_->hover.hovered();
 }
+const std::optional<SolidTarget>& WorkspaceViewport::hoveredSolidTarget() const noexcept{return impl_->solidHover;}
+const std::optional<SolidTarget>& WorkspaceViewport::selectedSolidTarget() const noexcept{return impl_->solidSelection;}
+
+std::optional<SolidPickHit> WorkspaceViewport::pickSolidTarget(const WorkspaceLayout& layout,int framebufferWidth,int framebufferHeight,math::Scalar mouseX,math::Scalar mouseY)const
+{
+    if(!impl_->featurePresentation)return{};const auto rect=framebufferRect(layout,framebufferWidth,framebufferHeight);if(rect.width<=0||rect.height<=0)return{};
+    const auto sx=layout.displayWidth/framebufferWidth,sy=layout.displayHeight/framebufferHeight;PickingContext c;c.camera=impl_->camera;c.projection=impl_->projection;c.width=rect.width*sx;c.height=rect.height*sy;c.mouseX=mouseX-rect.x*sx;c.mouseY=mouseY-(framebufferHeight-rect.y-rect.height)*sy;c.projectionAspectRatio=rect.aspectRatio();c.verticalFov=impl_->verticalFov;c.nearPlane=impl_->nearPlane;c.farPlane=impl_->farPlane;
+    if(c.mouseX<0||c.mouseX>=c.width||c.mouseY<0||c.mouseY>=c.height)return{};return viewer::pickSolid(impl_->featurePresentation->solidDisplay(),c);
+}
 
 void WorkspaceViewport::updateHover(const WorkspaceLayout& layout, const WorkspaceInput& input,
     int framebufferWidth, int framebufferHeight)
@@ -243,12 +297,14 @@ void WorkspaceViewport::updateHover(const WorkspaceLayout& layout, const Workspa
     // Clear first so unavailable interaction or a failed query cannot leave a
     // stale identity. PickHit and its distance never survive this update.
     impl_->hover.clear();
+    impl_->solidHover.reset();
     if (!input.focused || !input.pointerValid || !input.workspaceHovered || input.blocked
         || input.middleDown || input.middlePressed || !contains(layout, input.x, input.y))
         return;
     const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
     if (rect.width <= 0 || rect.height <= 0)
         return; // Normal minimize/resize frames must not call the strict picker.
+    if(const auto hit=pickSolidTarget(layout,framebufferWidth,framebufferHeight,input.x,input.y)){impl_->solidHover=hit->target;return;}
     if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
         impl_->hover.update(hit->id);
 }
@@ -260,10 +316,11 @@ std::optional<presentation::VisualEntityId> WorkspaceViewport::selectedEntity() 
 
 void WorkspaceViewport::selectEntity(std::optional<presentation::VisualEntityId> id) noexcept
 {
+    impl_->solidSelection.reset();
     if (id) impl_->selection.select(*id); else impl_->selection.clear();
 }
 
-void WorkspaceViewport::clearSelection() noexcept { impl_->selection.clear(); }
+void WorkspaceViewport::clearSelection() noexcept { impl_->selection.clear();impl_->solidSelection.reset(); }
 
 std::optional<geometry::Point3> WorkspaceViewport::pointOnGlobalXY(
     const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
@@ -334,6 +391,8 @@ void WorkspaceViewport::updateSelection(const WorkspaceLayout& layout, const Wor
     const auto y = input.y - (framebufferHeight - rect.y - rect.height) * scaleY;
     if (x < 0 || x >= rect.width * scaleX || y < 0 || y >= rect.height * scaleY)
         return;
+    if(const auto hit=pickSolidTarget(layout,framebufferWidth,framebufferHeight,input.x,input.y)){impl_->solidSelection=hit->target;impl_->selection.clear();return;}
+    impl_->solidSelection.reset();
     if (const auto hit = pick(layout, framebufferWidth, framebufferHeight, input.x, input.y))
         impl_->selection.select(hit->id);
     else
@@ -395,6 +454,27 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
         : impl_->projection.visibleHeight();
     const LinePresentationContext lineContext{impl_->camera.target(),
         visibleHeight * std::max<math::Scalar>(1.0, rect.aspectRatio())};
+
+    if(impl_->featurePresentation)
+    {
+        const auto& display=impl_->featurePresentation->solidDisplay();
+        if(impl_->displayMode!=SolidDisplayMode::Wireframe)
+        {
+            std::vector<rendering::LitVertex> vertices;vertices.reserve(display.triangles.size()*3);
+            for(const auto&t:display.triangles)for(const auto&p:t.points)vertices.push_back({{p.x(),p.y(),p.z()},t.normal});
+            impl_->triangles.setVertices(vertices);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",{0.52,0.64,0.78});impl_->triangles.draw();
+            impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
+        }
+        if(impl_->displayMode!=SolidDisplayMode::Shaded)
+        {
+            std::vector<math::Vector3> vertices;for(const auto&e:display.edges)for(std::size_t i=1;i<e.points.size();++i){const auto&a=e.points[i-1];const auto&b=e.points[i];vertices.push_back({a.x(),a.y(),a.z()});vertices.push_back({b.x(),b.y(),b.z()});}
+            impl_->solidEdges.setVertices(vertices);impl_->shader.setVector3("uColor",{0.08,0.1,0.13});glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();glDepthFunc(GL_LESS);
+        }
+        const auto drawState=[&](const std::optional<SolidTarget>& target,const math::Vector3& color){if(!target)return;
+            if(const auto*face=std::get_if<interaction::TopologyFaceTarget>(&*target)){std::vector<rendering::LitVertex>v;for(const auto&t:display.triangles)if(t.target==*face)for(const auto&p:t.points)v.push_back({{p.x(),p.y(),p.z()},t.normal});impl_->triangles.setVertices(v);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->triangles.draw();}
+            else if(const auto*edge=std::get_if<interaction::TopologyEdgeTarget>(&*target)){std::vector<math::Vector3>v;for(const auto&e:display.edges)if(e.target==*edge)for(std::size_t i=1;i<e.points.size();++i){v.push_back({e.points[i-1].x(),e.points[i-1].y(),e.points[i-1].z()});v.push_back({e.points[i].x(),e.points[i].y(),e.points[i].z()});}impl_->solidEdges.setVertices(v);impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->shader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();}glDepthFunc(GL_LESS);};
+        drawState(impl_->solidHover,{0.25,0.9,1.0});drawState(impl_->solidSelection,{1.0,0.48,0.08});
+    }
 
     // Reuse three generic GPU buffers for successive state batches. IDs stay on CPU.
     const auto upload = [&](VisualState state)

@@ -5,6 +5,7 @@
 #include "core/sketch/SketchEntityId.h"
 #include "core/sketch/Sketch.h"
 #include "features/FeatureId.h"
+#include "interaction/TopologyTarget.h"
 
 #include <map>
 #include <optional>
@@ -31,7 +32,11 @@ enum class ToolStep { Idle, PickFirst, PickSecond, EditProperties, Preview };
 enum class DisplayState { Visible, Hidden, ActiveEditing, ContextReference };
 
 using LogicalTarget = std::variant<features::FeatureId, sketch::SketchEntityId,
-    sketch::SketchElementRef, sketch::SketchConstraintId>;
+    sketch::SketchElementRef, sketch::SketchConstraintId,
+    TopologyFaceTarget, TopologyEdgeTarget>;
+
+[[nodiscard]] std::optional<features::FeatureId> owningFeature(const LogicalTarget& target) noexcept;
+[[nodiscard]] bool isTopologyTarget(const LogicalTarget& target) noexcept;
 
 enum class SnapKind { Endpoint, Midpoint, Grid };
 struct SnapCandidate
@@ -106,6 +111,7 @@ public:
 
     [[nodiscard]] bool commandAvailable(EditorCommand command, bool hasClosedSketch) const noexcept;
     void resetSession() noexcept;
+    void clearTopologySelectionOnRebuild() noexcept;
 
 private:
     std::optional<features::FeatureId> activeFeature_;

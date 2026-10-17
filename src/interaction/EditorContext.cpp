@@ -64,9 +64,20 @@ void EditorContext::escape() noexcept
 void EditorContext::select(std::optional<LogicalTarget> target)
 {
     selection_ = std::move(target);
-    if (selection_)
-        if (const auto* feature = std::get_if<features::FeatureId>(&*selection_)) activeFeature_ = *feature;
+    if (selection_) if(const auto feature=owningFeature(*selection_)) activeFeature_=*feature;
 }
+
+std::optional<features::FeatureId> owningFeature(const LogicalTarget& target) noexcept
+{
+    if(const auto*p=std::get_if<features::FeatureId>(&target))return *p;
+    if(const auto*p=std::get_if<TopologyFaceTarget>(&target))return p->feature;
+    if(const auto*p=std::get_if<TopologyEdgeTarget>(&target))return p->feature;
+    return std::nullopt;
+}
+bool isTopologyTarget(const LogicalTarget& target) noexcept
+{ return std::holds_alternative<TopologyFaceTarget>(target)||std::holds_alternative<TopologyEdgeTarget>(target); }
+void EditorContext::clearTopologySelectionOnRebuild() noexcept
+{ if(selection_&&isTopologyTarget(*selection_))selection_.reset();if(hover_&&isTopologyTarget(*hover_))hover_.reset(); }
 
 void EditorContext::addOperand(sketch::SketchElementRef operand)
 {
