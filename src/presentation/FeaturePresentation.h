@@ -9,6 +9,7 @@ public:
  void update(const features::FeatureModel& model);
  [[nodiscard]] const GeometryPresentation& geometry() const noexcept { return current_; }
  [[nodiscard]] std::optional<VisualEntityId> visualId(features::FeatureId id) const noexcept;
+ [[nodiscard]] std::optional<features::FeatureId> featureId(VisualEntityId id) const noexcept;
 private:
  std::map<features::FeatureId,SolidPresentation> presentations_;
  GeometryPresentation current_;

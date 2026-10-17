@@ -18,6 +18,8 @@ public:
     void setTool(SketchTool tool) noexcept;
     [[nodiscard]] SketchTool tool() const noexcept { return tool_; }
     [[nodiscard]] std::size_t pendingPointCount() const noexcept { return pending_.size(); }
+    [[nodiscard]] std::optional<geometry::Point2> pendingPoint() const noexcept
+        { return pending_.empty() ? std::nullopt : std::optional{pending_.back()}; }
     [[nodiscard]] std::vector<sketch::SketchEntityId> click(const geometry::Point2& point);
     void cancel() noexcept { pending_.clear(); }
 

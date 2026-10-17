@@ -258,6 +258,11 @@ std::optional<presentation::VisualEntityId> WorkspaceViewport::selectedEntity() 
     return impl_->selection.selected();
 }
 
+void WorkspaceViewport::selectEntity(std::optional<presentation::VisualEntityId> id) noexcept
+{
+    if (id) impl_->selection.select(*id); else impl_->selection.clear();
+}
+
 void WorkspaceViewport::clearSelection() noexcept { impl_->selection.clear(); }
 
 std::optional<geometry::Point3> WorkspaceViewport::pointOnGlobalXY(

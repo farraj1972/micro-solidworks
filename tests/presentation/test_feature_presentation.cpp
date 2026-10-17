@@ -10,3 +10,9 @@ TEST(FeaturePresentation,SuccessfulEmptyRemovesViewportGeometry){
  microsw::features::FeatureModel model;auto a=model.addExtrude(model.addSketch(rectangle(0,0,1,1)),1);auto b=model.addExtrude(model.addSketch(rectangle(3,3,4,4)),1);(void)model.addBoolean(a,b,microsw::modeling::BooleanOperation::Intersection);
  ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::SuccessEmpty);microsw::presentation::FeaturePresentation p;p.update(model);EXPECT_TRUE(p.geometry().empty());
 }
+TEST(FeaturePresentation,ResolvesVisualProxyBackToLogicalFeature){
+ microsw::features::FeatureModel model;auto feature=model.addExtrude(model.addSketch(rectangle(0,0,2,2)),2);
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
+ const auto visual=p.visualId(feature);ASSERT_TRUE(visual);EXPECT_EQ(p.featureId(*visual),feature);
+ EXPECT_FALSE(p.featureId(microsw::presentation::VisualEntityId{999999}));
+}

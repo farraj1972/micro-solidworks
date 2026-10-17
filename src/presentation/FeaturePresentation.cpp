@@ -14,4 +14,8 @@ void FeaturePresentation::update(const features::FeatureModel& model) {
 std::optional<VisualEntityId> FeaturePresentation::visualId(features::FeatureId id) const noexcept {
  const auto found=presentations_.find(id); return found==presentations_.end()?std::nullopt:found->second.visualId();
 }
+std::optional<features::FeatureId> FeaturePresentation::featureId(VisualEntityId id) const noexcept {
+ for(const auto& [feature,presentation]:presentations_) if(presentation.visualId()==id) return feature;
+ return std::nullopt;
+}
 }

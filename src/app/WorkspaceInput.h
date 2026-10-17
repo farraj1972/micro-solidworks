@@ -22,5 +22,7 @@ struct WorkspaceInput
     std::optional<ProjectionMode> projectionRequest{};
     // One-frame left-button press; appended to preserve existing snapshots.
     bool leftPressed{};
+    bool rightPressed{};
+    bool escapePressed{};
 };
 }

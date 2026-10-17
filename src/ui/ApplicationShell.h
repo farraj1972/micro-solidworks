@@ -6,6 +6,7 @@
 #include "app/sketch/SketchToolController.h"
 #include "modeling/Boolean.h"
 #include "features/FeatureModel.h"
+#include "interaction/EditorContext.h"
 
 #include <optional>
 #include <string>
@@ -23,7 +24,8 @@ public:
     void draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected = nullptr);
     void drawSketch(ProjectionMode projectionMode, SketchTool activeTool,
                     const sketch::Sketch& sketch, const sketch::SketchEntity* selected = nullptr,
-                    bool hasActiveSolid = false, const features::FeatureModel* featureModel = nullptr);
+                    bool hasActiveSolid = false, const features::FeatureModel* featureModel = nullptr,
+                    interaction::EditorContext* editor = nullptr);
     [[nodiscard]] const std::optional<math::Transform3>& transformRequest() const noexcept { return transformRequest_; }
     void reportTransformError(const std::string& error) { transformError_ = error; }
     [[nodiscard]] const std::optional<SketchTool>& sketchToolRequest() const noexcept { return sketchToolRequest_; }
@@ -58,13 +60,27 @@ public:
     void setCurrentFilePath(std::string path) { currentFilePath_ = std::move(path); }
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
+    [[nodiscard]] const std::optional<interaction::EditorCommand>& editorCommandRequest() const noexcept { return editorCommandRequest_; }
+    [[nodiscard]] const std::optional<features::FeatureId>& selectedFeature() const noexcept { return selectedFeature_; }
+    void setSelectedFeature(std::optional<features::FeatureId> feature) { selectedFeature_ = feature; }
+    [[nodiscard]] bool enterSketchRequest() const noexcept { return enterSketchRequest_; }
+    [[nodiscard]] bool exitSketchRequest() const noexcept { return exitSketchRequest_; }
+    [[nodiscard]] bool confirmPropertyRequest() const noexcept { return confirmPropertyRequest_; }
+    [[nodiscard]] bool cancelPropertyRequest() const noexcept { return cancelPropertyRequest_; }
+    [[nodiscard]] bool gridSnapEnabled() const noexcept { return gridSnapEnabled_; }
+    [[nodiscard]] const std::optional<features::FeatureId>& visibilityToggleRequest() const noexcept { return visibilityToggleRequest_; }
 
 private:
     void drawMainMenu(ProjectionMode projectionMode);
     void drawModelPanel(const presentation::VisualEntity* selected);
     void drawSketchPanel(SketchTool activeTool, const sketch::Sketch& sketch,
                          const sketch::SketchEntity* selected, bool hasActiveSolid,
-                         const features::FeatureModel* featureModel);
+                         const features::FeatureModel* featureModel,
+                         interaction::EditorContext* editor);
+    void drawCommandBar(SketchTool activeTool, const sketch::Sketch& sketch,
+                        const sketch::SketchEntity* selected,
+                        const features::FeatureModel* featureModel,
+                        interaction::EditorContext* editor);
     void drawWorkspace();
     void drawStatusBar();
     void drawAboutDialog();
@@ -103,6 +119,13 @@ private:
     bool openDocumentRequest_{};
     bool saveDocumentRequest_{};
     bool saveAsDocumentRequest_{};
+    std::optional<interaction::EditorCommand> editorCommandRequest_;
+    bool enterSketchRequest_{};
+    bool exitSketchRequest_{};
+    bool confirmPropertyRequest_{};
+    bool cancelPropertyRequest_{};
+    bool gridSnapEnabled_{true};
+    std::optional<features::FeatureId> visibilityToggleRequest_;
     std::array<char, 512> documentPathInput_{};
     std::string currentFilePath_;
     std::string persistenceStatus_;

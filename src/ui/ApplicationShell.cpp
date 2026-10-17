@@ -4,7 +4,9 @@
 #include "app/window/ApplicationWindow.h"
 
 #include <imgui.h>
+#include <cmath>
 #include <numbers>
+#include <string_view>
 #include <stdexcept>
 #include <type_traits>
 
@@ -13,6 +15,7 @@ namespace
 constexpr float defaultModelPanelWidth = 320.0F;
 constexpr float minimumModelPanelWidth = 260.0F;
 constexpr float statusBarHeight = 26.0F;
+constexpr float commandBarHeight = 58.0F;
 
 constexpr ImGuiWindowFlags structuralWindowFlags =
     ImGuiWindowFlags_NoDecoration |
@@ -52,6 +55,8 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
     input_.x = static_cast<double>(io.MousePos.x) - viewport->Pos.x;
     input_.y = static_cast<double>(io.MousePos.y) - viewport->Pos.y;
     input_.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+    input_.rightPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+    input_.escapePressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
     input_.middlePressed = ImGui::IsMouseClicked(ImGuiMouseButton_Middle);
     input_.middleDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
     input_.shiftDown = io.KeyShift;
@@ -67,7 +72,8 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
 
 void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool activeTool,
                                   const sketch::Sketch& sketch, const sketch::SketchEntity* selected,
-                                  bool hasActiveSolid, const features::FeatureModel* featureModel)
+                                  bool hasActiveSolid, const features::FeatureModel* featureModel,
+                                  interaction::EditorContext* editor)
 {
     input_ = {};
     sketchToolRequest_.reset();
@@ -82,8 +88,11 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     booleanRequest_.reset();
     featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
+    editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false;
+    confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
     drawMainMenu(projectionMode);
-    drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel);
+    drawCommandBar(activeTool, sketch, selected, featureModel, editor);
+    drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel, editor);
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
@@ -92,6 +101,8 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     input_.x = static_cast<double>(io.MousePos.x) - viewport->Pos.x;
     input_.y = static_cast<double>(io.MousePos.y) - viewport->Pos.y;
     input_.leftPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+    input_.rightPressed = ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+    input_.escapePressed = ImGui::IsKeyPressed(ImGuiKey_Escape);
     input_.middlePressed = ImGui::IsMouseClicked(ImGuiMouseButton_Middle);
     input_.middleDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
     input_.shiftDown = io.KeyShift;
@@ -102,13 +113,67 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
         || (io.WantCaptureMouse && ImGui::IsAnyItemActive());
 }
 
+void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketch& model,
+                                      const sketch::SketchEntity* selected,
+                                      const features::FeatureModel* featureModel,
+                                      interaction::EditorContext* editor)
+{
+    const auto* viewport = ImGui::GetMainViewport();
+    beginStructuralWindow("CAD Command Bar", viewport->WorkPos,
+        ImVec2{viewport->WorkSize.x, commandBarHeight});
+    const auto commandButton = [&](const char* icon, const char* tooltip, bool enabled, const auto& action)
+    {
+        if (!enabled) ImGui::BeginDisabled();
+        if (ImGui::Button(icon, ImVec2{34, 30})) action();
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("%s", tooltip);
+        if (!enabled) ImGui::EndDisabled();
+        ImGui::SameLine();
+    };
+    ImGui::TextDisabled("General"); ImGui::SameLine();
+    commandButton("N", "New document", true, [&]{ newDocumentRequest_ = true; });
+    commandButton("O", "Open .microsw", true, [&]{ openDocumentRequest_ = true; });
+    commandButton("S", "Save", true, [&]{ saveDocumentRequest_ = true; });
+    commandButton("SA", "Save As", true, [&]{ saveAsDocumentRequest_ = true; });
+    commandButton("R", "Rebuild model", featureModel != nullptr, [&]{ rebuildFeaturesRequest_ = true; });
+    ImGui::Separator(); ImGui::SameLine(); ImGui::TextDisabled("Sketch"); ImGui::SameLine();
+    const bool editing = editor && editor->activeSketchFeatureId();
+    commandButton(editing ? "X" : "SK", editing ? "Exit Sketch" : "Create or edit Sketch", true,
+        [&]{ if (editing) exitSketchRequest_ = true; else enterSketchRequest_ = true; });
+    const auto tool = [&](const char* icon, const char* tip, SketchTool sketchTool, interaction::EditorCommand command)
+    {
+        commandButton(icon, tip, editing, [&]{ sketchToolRequest_ = sketchTool; editorCommandRequest_ = command; });
+    };
+    tool("SEL", "Select", SketchTool::Select, interaction::EditorCommand::Select);
+    tool("L", "Line", SketchTool::Line, interaction::EditorCommand::Line);
+    tool("[]", "Rectangle", SketchTool::Rectangle, interaction::EditorCommand::Rectangle);
+    tool("O", "Circle", SketchTool::Circle, interaction::EditorCommand::Circle);
+    const bool selectedLine = selected && selected->type() == sketch::SketchEntityType::Line;
+    commandButton("H", "Horizontal constraint", editing && selectedLine, [&]{
+        editorCommandRequest_ = interaction::EditorCommand::Horizontal;
+        addConstraintRequest_ = sketch::Horizontal{{selected->id(), sketch::SubElementKind::LineBody}};
+    });
+    commandButton("V", "Vertical constraint", editing && selectedLine, [&]{
+        editorCommandRequest_ = interaction::EditorCommand::Vertical;
+        addConstraintRequest_ = sketch::Vertical{{selected->id(), sketch::SubElementKind::LineBody}};
+    });
+    commandButton("C", "Coincident: select two endpoints", editing, [&]{ editorCommandRequest_ = interaction::EditorCommand::Coincident; });
+    commandButton("D", "Driving dimension", editing && selected, [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension; });
+    ImGui::Separator(); ImGui::SameLine(); ImGui::TextDisabled("Features"); ImGui::SameLine();
+    const bool canExtrude = editor && editor->commandAvailable(interaction::EditorCommand::Extrude, model.size() >= 3);
+    commandButton("EX", "Extrude selected Sketch", canExtrude, [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; });
+    ImGui::Separator(); ImGui::SameLine(); ImGui::TextDisabled("View: mouse navigation");
+    ImGui::End();
+    (void)activeTool;
+}
+
 void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sketch& model,
                                        const sketch::SketchEntity* selected, bool hasActiveSolid,
-                                       const features::FeatureModel* featureModel)
+                                       const features::FeatureModel* featureModel,
+                                       interaction::EditorContext* editor)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight};
-    ImGui::SetNextWindowPos(viewport->WorkPos);
+    const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight - commandBarHeight};
+    ImGui::SetNextWindowPos(ImVec2{viewport->WorkPos.x, viewport->WorkPos.y + commandBarHeight});
     ImGui::SetNextWindowSize(ImVec2{defaultModelPanelWidth, contentSize.y}, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSizeConstraints(
         ImVec2{minimumModelPanelWidth, contentSize.y},
@@ -126,72 +191,86 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     ImGui::Separator();
     if (featureModel)
     {
-        ImGui::TextUnformatted("Feature Tree");
-        const auto kindName = [](features::FeatureKind kind) {
-            return kind == features::FeatureKind::Sketch ? "Sketch" : kind == features::FeatureKind::Extrude ? "Extrude" : "Boolean";
-        };
+        ImGui::TextUnformatted("Feature Manager");
+        ImGui::TextDisabled("Part / Model");
         const auto stateName = [](features::FeatureState state) {
-            switch (state) { case features::FeatureState::Clean: return "CLEAN"; case features::FeatureState::Dirty: return "DIRTY";
-            case features::FeatureState::Failed: return "FAILED"; default: return "BLOCKED"; }
+            switch (state) { case features::FeatureState::Clean: return "OK"; case features::FeatureState::Dirty: return "Needs rebuild";
+            case features::FeatureState::Failed: return "Failed"; default: return "Blocked"; }
         };
         for (const auto& feature : featureModel->history())
         {
             ImGui::PushID(static_cast<int>(feature.id().value()));
-            const std::string label = std::to_string(feature.id().value()) + ": " + feature.displayName()
-                + " [" + kindName(feature.kind()) + "] " + stateName(feature.state());
-            if (ImGui::Selectable(label.c_str(), selectedFeature_ == feature.id())) selectedFeature_ = feature.id();
-            if (!feature.dependencies().empty())
+            const auto display = editor ? editor->displayState(feature.id()) : interaction::DisplayState::Visible;
+            const std::string label = std::string{display == interaction::DisplayState::Hidden ? "[ ] " : "[o] "}
+                + feature.displayName() + "  -  " + stateName(feature.state());
+            if (ImGui::Selectable(label.c_str(), selectedFeature_ == feature.id()))
             {
-                ImGui::Indent(); ImGui::TextUnformatted("depends:"); ImGui::SameLine();
-                for (const auto dependency : feature.dependencies()) { ImGui::Text("%u", dependency.value()); ImGui::SameLine(); }
-                ImGui::NewLine(); ImGui::Unindent();
+                selectedFeature_ = feature.id();
+                if (editor) editor->select(interaction::LogicalTarget{feature.id()});
             }
-            if (!feature.diagnostic().empty()) { ImGui::Indent(); ImGui::TextWrapped("%s", feature.diagnostic().c_str()); ImGui::Unindent(); }
+            if (ImGui::BeginPopupContextItem("Feature actions"))
+            {
+                if (feature.kind() == features::FeatureKind::Sketch && ImGui::MenuItem("Edit Sketch"))
+                { selectedFeature_ = feature.id(); enterSketchRequest_ = true; }
+                if (feature.kind() == features::FeatureKind::Sketch && ImGui::MenuItem("Extrude"))
+                { selectedFeature_ = feature.id(); editorCommandRequest_ = interaction::EditorCommand::Extrude; }
+                if (ImGui::MenuItem(display == interaction::DisplayState::Hidden ? "Show" : "Hide"))
+                    visibilityToggleRequest_ = feature.id();
+                ImGui::EndPopup();
+            }
             ImGui::PopID();
         }
         if (selectedFeature_)
         {
             const auto& feature = featureModel->find(*selectedFeature_);
-            ImGui::Separator(); ImGui::Text("Selected FeatureId: %u", feature.id().value());
-            ImGui::Text("Derived cache: %s", feature.cache() ? "available" : "none");
+            ImGui::Separator(); ImGui::Text("Selected: %s", feature.displayName().c_str());
             if (feature.kind() == features::FeatureKind::Sketch)
             {
                 const auto& sketch = std::get<features::SketchFeature>(feature.data()).sketch;
-                ImGui::Text("Sketch entities: %zu", sketch.size()); ImGui::Text("Constraints: %zu", sketch.constraintCount());
+                ImGui::Text("%zu entities, %zu constraints", sketch.size(), sketch.constraintCount());
+                if (ImGui::Button("Edit Sketch")) enterSketchRequest_ = true;
+                ImGui::SameLine();
+                if (ImGui::Button("Extrude")) editorCommandRequest_ = interaction::EditorCommand::Extrude;
             }
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
                 const auto& extrude = std::get<features::ExtrudeFeature>(feature.data());
                 double distance = extrude.distance;
-                if (ImGui::InputDouble("Feature distance", &distance)) featureDistanceRequest_ = std::pair{feature.id(), distance};
+                ImGui::TextUnformatted("Property Manager — Extrude");
+                ImGui::InputDouble("Distance", &distance);
+                if (ImGui::Button("Confirm")) { featureDistanceRequest_ = std::pair{feature.id(), distance}; rebuildFeaturesRequest_ = true; }
+                ImGui::SameLine(); if (ImGui::Button("Cancel")) cancelPropertyRequest_ = true;
             }
             else
             {
-                const auto& boolean = std::get<features::BooleanFeature>(feature.data());
-                ImGui::Text("Input A/B: %u / %u", boolean.inputA.value(), boolean.inputB.value());
-                if (ImGui::Button("Feature Union")) featureBooleanRequest_ = std::pair{feature.id(), modeling::BooleanOperation::Union};
-                ImGui::SameLine(); if (ImGui::Button("Feature Intersection")) featureBooleanRequest_ = std::pair{feature.id(), modeling::BooleanOperation::Intersection};
-                if (ImGui::Button("Feature Difference")) featureBooleanRequest_ = std::pair{feature.id(), modeling::BooleanOperation::Difference};
+                ImGui::TextUnformatted("Boolean result");
             }
+            if (!feature.diagnostic().empty()) ImGui::TextWrapped("%s", feature.diagnostic().c_str());
         }
-        if (ImGui::Button("Rebuild Features")) rebuildFeaturesRequest_ = true;
         if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
         ImGui::Separator();
     }
-    ImGui::TextUnformatted("Sketch — Global XY");
-    ImGui::Separator();
-    const auto toolButton = [&](const char* label, SketchTool tool)
+    ImGui::TextUnformatted(editor && editor->activeSketchFeatureId() ? "Property / Tool Manager — Sketch" : "Property / Tool Manager");
+    const char* toolName = activeTool == SketchTool::Select ? "Select" : activeTool == SketchTool::Line ? "Line"
+        : activeTool == SketchTool::Rectangle ? "Rectangle" : activeTool == SketchTool::Circle ? "Circle" : "Arc";
+    ImGui::Text("Current tool: %s", toolName);
+    if (editor && editor->activeSketchFeatureId())
     {
-        if (activeTool == tool) ImGui::BeginDisabled();
-        if (ImGui::Button(label)) sketchToolRequest_ = tool;
-        if (activeTool == tool) ImGui::EndDisabled();
-        ImGui::SameLine();
-    };
-    toolButton("Select", SketchTool::Select);
-    toolButton("Line", SketchTool::Line);
-    toolButton("Rectangle", SketchTool::Rectangle);
-    toolButton("Circle", SketchTool::Circle);
-    if (ImGui::Button("Arc")) sketchToolRequest_ = SketchTool::Arc;
+        ImGui::Checkbox("Grid snap", &gridSnapEnabled_);
+        ImGui::TextWrapped("Click in the Graphics Area. Esc cancels the current step, then returns to Select.");
+        if (editor->snapCandidate())
+        {
+            const char* snap = editor->snapCandidate()->kind == interaction::SnapKind::Endpoint ? "Endpoint snap"
+                : editor->snapCandidate()->kind == interaction::SnapKind::Midpoint ? "Midpoint snap" : "Grid snap";
+            ImGui::TextColored(ImVec4{0.25F, 0.9F, 1.0F, 1.0F}, "%s", snap);
+        }
+        if (editor->inferenceCandidate())
+        {
+            const char* cue = editor->inferenceCandidate()->kind == interaction::InferenceKind::Horizontal ? "Horizontal inference"
+                : editor->inferenceCandidate()->kind == interaction::InferenceKind::Vertical ? "Vertical inference" : "Coincident inference";
+            ImGui::TextColored(ImVec4{0.4F, 1.0F, 0.45F, 1.0F}, "%s", cue);
+        }
+    }
     ImGui::Separator();
 
     const auto selectedId = selected ? std::optional{selected->id()} : std::nullopt;
@@ -235,40 +314,17 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     }
     if (!sketchError_.empty()) ImGui::TextWrapped("Edit rejected: %s", sketchError_.c_str());
     ImGui::Separator();
-    const auto entityIds = model.entityIds();
-    ImGui::Text("Entities (%zu)", entityIds.size());
-    for (const auto id : entityIds)
+    ImGui::Text("Sketch contents: %zu entities, %zu constraints", model.size(), model.constraintCount());
+    if (editor && editor->activeCommand() == interaction::EditorCommand::Coincident)
     {
-        const auto& entity = model.find(id);
-        const char* type = entity.type() == sketch::SketchEntityType::Line ? "Line"
-            : entity.type() == sketch::SketchEntityType::Circle ? "Circle" : "Arc";
-        if (selected && selected->id() == id)
-            ImGui::TextColored(ImVec4{1.0F, 0.65F, 0.2F, 1.0F}, "%u: %s (selected)", id.value(), type);
-        else
-            ImGui::Text("%u: %s", id.value(), type);
+        ImGui::Text("Coincident: %zu/2 points selected", editor->operands().size());
+        if (editor->operands().size() == 2 && ImGui::Button("Confirm Coincident"))
+        {
+            addConstraintRequest_ = sketch::Coincident{editor->operands()[0], editor->operands()[1]};
+            confirmPropertyRequest_ = true;
+        }
+        ImGui::SameLine(); if (ImGui::Button("Cancel##Coincident")) cancelPropertyRequest_ = true;
     }
-    ImGui::Separator();
-    ImGui::Text("Constraints (%zu)", model.constraintCount());
-    static int firstEntity{};
-    static int secondEntity{};
-    static double relationDistance{1.0};
-    ImGui::InputInt("Entity A", &firstEntity);
-    ImGui::InputInt("Entity B", &secondEntity);
-    ImGui::InputDouble("Driving distance", &relationDistance);
-    const auto entityId = [](int value) {
-        return sketch::SketchEntityId{static_cast<sketch::SketchEntityId::Value>(value)};
-    };
-    const sketch::SketchElementRef aEnd{entityId(firstEntity), sketch::SubElementKind::LineEnd};
-    const sketch::SketchElementRef bStart{entityId(secondEntity), sketch::SubElementKind::LineStart};
-    const sketch::SketchElementRef aBody{entityId(firstEntity), sketch::SubElementKind::LineBody};
-    const sketch::SketchElementRef bBody{entityId(secondEntity), sketch::SubElementKind::LineBody};
-    if (ImGui::Button("Coincident A.End B.Start")) addConstraintRequest_ = sketch::Coincident{aEnd, bStart};
-    if (ImGui::Button("Parallel A/B")) addConstraintRequest_ = sketch::Parallel{aBody, bBody};
-    if (ImGui::Button("Perpendicular A/B")) addConstraintRequest_ = sketch::Perpendicular{aBody, bBody};
-    if (ImGui::Button("Horizontal distance A.End/B.Start"))
-        addConstraintRequest_ = sketch::HorizontalDistance{aEnd, bStart, relationDistance};
-    if (ImGui::Button("Vertical distance A.End/B.Start"))
-        addConstraintRequest_ = sketch::VerticalDistance{aEnd, bStart, relationDistance};
     if (selected)
     {
         const auto id = selected->id();
@@ -327,6 +383,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
         }
     }
+    ImGui::Separator(); ImGui::TextUnformatted("Constraint glyphs / dimensions");
     for (const auto id : model.constraintIds())
     {
         ImGui::PushID(static_cast<int>(id.value()));
@@ -343,7 +400,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             else if constexpr (std::is_same_v<T, sketch::LineLength>) return "LineLength";
             else return "CircleRadius";
         }, value);
-        ImGui::Text("%u: %s", id.value(), name);
+        const char* glyph = std::string_view{name} == "Horizontal" ? "[H]" : std::string_view{name} == "Vertical" ? "[V]"
+            : std::string_view{name} == "Coincident" ? "[o]" : "[D]";
+        ImGui::Text("%s %s", glyph, name);
         if (sketch::isDrivingDimension(value))
         {
             double driving = std::visit([](const auto& c) -> double {
@@ -354,30 +413,28 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     || std::is_same_v<T, sketch::CircleRadius>) return c.value;
                 else return 0;
             }, value);
-            if (ImGui::InputDouble("Value", &driving)) drivingValueRequest_ = std::pair{id, driving};
+            ImGui::InputDouble("Value", &driving);
+            if (ImGui::Button("Apply dimension")) drivingValueRequest_ = std::pair{id, driving};
         }
-        if (ImGui::Button("Remove")) removeConstraintRequest_ = id;
+        if (ImGui::Button("Remove constraint")) removeConstraintRequest_ = id;
         ImGui::PopID();
     }
-    if (ImGui::Button("Solve constraints")) solveSketchRequest_ = true;
+    if (ImGui::Button("Solve / Rebuild Sketch")) solveSketchRequest_ = true;
     ImGui::Separator();
-    ImGui::TextUnformatted("Extrusion");
-    ImGui::InputDouble("Distance", &extrusionDistance_);
-    if (ImGui::Button(hasActiveSolid ? "Regenerate Solid" : "Extrude Solid"))
-        extrusionRequest_ = true;
-    if (hasActiveSolid) ImGui::TextUnformatted("Active result: one selectable Solid");
+    if (editor && editor->activeCommand() == interaction::EditorCommand::Extrude)
+    {
+        ImGui::TextUnformatted("Property Manager — Extrude");
+        ImGui::TextUnformatted("Source: selected Sketch");
+        ImGui::InputDouble("Distance", &extrusionDistance_);
+        const bool valid = std::isfinite(extrusionDistance_) && extrusionDistance_ > 0 && model.size() >= 3;
+        if (!valid) ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "A closed Sketch and positive distance are required.");
+        if (!valid) ImGui::BeginDisabled();
+        if (ImGui::Button("Confirm Extrude")) { extrusionRequest_ = true; confirmPropertyRequest_ = true; }
+        if (!valid) ImGui::EndDisabled();
+        ImGui::SameLine(); if (ImGui::Button("Cancel##Extrude")) cancelPropertyRequest_ = true;
+    }
+    if (hasActiveSolid) ImGui::TextUnformatted("Modeled result available");
     if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
-    ImGui::Separator();
-    ImGui::TextUnformatted("Boolean Operations");
-    ImGui::TextWrapped("Use deterministic overlapping box operands or assign the active extruded Solid.");
-    if (ImGui::Button("Load demo operands A/B")) loadBooleanDemoRequest_ = true;
-    if (ImGui::Button("Load touching unsupported A/B")) loadBooleanUnsupportedRequest_ = true;
-    if (ImGui::Button("Assign active Solid to A")) assignOperandARequest_ = true;
-    if (ImGui::Button("Assign active Solid to B")) assignOperandBRequest_ = true;
-    if (ImGui::Button("Intersection")) booleanRequest_ = modeling::BooleanOperation::Intersection;
-    ImGui::SameLine(); if (ImGui::Button("Union")) booleanRequest_ = modeling::BooleanOperation::Union;
-    if (ImGui::Button("Difference A-B")) booleanRequest_ = modeling::BooleanOperation::Difference;
-    if (!booleanStatus_.empty()) ImGui::TextWrapped("Boolean: %s", booleanStatus_.c_str());
     ImGui::End();
 }
 
@@ -531,10 +588,10 @@ void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected
 void ApplicationShell::drawWorkspace()
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y};
+    const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y + commandBarHeight};
     const ImVec2 size{
         viewport->WorkSize.x - modelPanelWidth_,
-        viewport->WorkSize.y - statusBarHeight};
+        viewport->WorkSize.y - statusBarHeight - commandBarHeight};
 
     const ImGuiIO& io = ImGui::GetIO();
     workspace_ = {position.x - viewport->Pos.x, position.y - viewport->Pos.y,
@@ -556,6 +613,19 @@ void ApplicationShell::drawWorkspace()
     ImGui::SameLine();
     ImGui::TextColored(ImVec4{0.3F, 0.55F, 1.0F, 1.0F}, "Z");
     input_.workspaceHovered = ImGui::IsWindowHovered();
+    if (input_.workspaceHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) ImGui::OpenPopup("Graphics context");
+    if (ImGui::BeginPopup("Graphics context"))
+    {
+        if (selectedFeature_)
+        {
+            if (ImGui::MenuItem("Edit selected Sketch")) enterSketchRequest_ = true;
+            if (ImGui::MenuItem("Show / Hide")) visibilityToggleRequest_ = selectedFeature_;
+            if (ImGui::MenuItem("Extrude")) editorCommandRequest_ = interaction::EditorCommand::Extrude;
+        }
+        else ImGui::TextDisabled("No logical object selected");
+        if (ImGui::MenuItem("Rebuild")) rebuildFeaturesRequest_ = true;
+        ImGui::EndPopup();
+    }
     ImGui::End();
 }
 

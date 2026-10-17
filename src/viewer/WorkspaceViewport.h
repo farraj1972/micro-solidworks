@@ -52,6 +52,7 @@ public:
     void updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
         int framebufferWidth, int framebufferHeight);
     [[nodiscard]] std::optional<presentation::VisualEntityId> selectedEntity() const noexcept;
+    void selectEntity(std::optional<presentation::VisualEntityId> id) noexcept;
     void clearSelection() noexcept;
     // Preflight a UI edit against world Geometry and the renderer's numeric range.
     // Does not mutate Presentation or interaction state.
