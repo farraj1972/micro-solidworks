@@ -1420,3 +1420,24 @@ transactional multi-Solid feature caches and derived wireframe Presentation.
 Restricted B11 Boolean accepts only its original single linear-solid subset.
 GAP-GEO-002 is CLOSED. GAP-SCENE-002 is PARTIALLY CLOSED by the executable
 active-edit/show-hide lifecycle; no general scene graph is introduced.
+
+## D15 — Proposed Solid Visualization and Sub-element Selection
+
+D15 is PROPOSED / READY FOR REVIEW in ADR-0056–0058. The proposal preserves
+Topology and analytic Geometry as CAD authority. Presentation derives oriented
+triangles for planar Faces, planar Faces with inner Wires and cylindrical Faces,
+and derives an independent exact-edge overlay. Rendering consumes flat-shaded
+draw data with simple lighting and owns no CAD identity.
+
+Logical topology selection is (FeatureId, rebuild-local body context,
+FaceId|EdgeId). Visual and mesh indices remain private derived mappings.
+Sub-element selection survives navigation and same-topology Presentation
+regeneration, then clears deterministically whenever topology is regenerated;
+FeatureId selection survives rebuild. This is explicitly not persistent naming.
+
+Picking resolves the nearest visible logical face or edge. An edge within the
+documented six-logical-pixel tolerance has priority over a face without allowing
+unbounded edge capture. Derived cap triangulation excludes holes; curved
+tessellation resolves to the analytic cylindrical Face. Visibility comes from
+EditorContext, while Fit, standard views, display mode and lighting are
+Viewer/Rendering session policy and are not persisted.

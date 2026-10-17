@@ -181,3 +181,21 @@ Tessellation libraries cannot become authoritative CAD representation.
 Persistence continues to store feature definitions rather than derived regions,
 Solids or tessellation. Any demonstrated need for schema version 2 or a new
 dependency is a hard stop and requires a separate decision.
+
+## 8. D15 proposed solid-display and picking strategy
+
+ADR-0056–0058 propose BUILD for face tessellation, flat shading, exact-edge
+overlay, logical sub-element mapping, nearest-visible-hit picking, Fit and
+standard views. No new dependency is proposed. The intended direction remains:
+
+`	ext
+topology/geometry -> authoritative CAD state
+presentation -> derived face/edge data and logical mappings
+viewer -> picking, view/session policy and visibility consumption
+rendering -> identity-free draw execution
+ui/application -> logical interaction coordination
+`
+
+Mesh, GPU and visual IDs must not cross into FeatureModel, Topology or persisted
+state. Any request for an external tessellator, renderer or picking framework
+requires separate dependency and architectural approval.

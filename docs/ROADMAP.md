@@ -779,7 +779,7 @@ initial v1.1 roadmap is:
 | Campaign | State | Functional direction |
 | --- | --- | --- |
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
-| V1.1-C2 — Solid Visualization & Selection | PLANNED / SUBJECT TO REVIEW | Product-oriented solid display and selection |
+| V1.1-C2 — Solid Visualization & Selection | NOT STARTED / NEXT ACTIVE AFTER D15 FREEZE | Shaded solid display, logical face/edge selection, Fit and standard views under proposed ADR-0056–0058 |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
@@ -926,3 +926,45 @@ coincident/overlap classification. GAP-GEO-002 closes only after implementation
 and validation. Thin Feature, Selected Contours UI, persistent region naming,
 advanced curves, surface/revolve/cut features, implicit body merge, general
 Booleans and persistent body/subshape naming remain deferred.
+
+## D15 — Solid Visualization & Sub-element Selection Semantics
+
+`	ext
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0056–0058: PROPOSED
+ADR inventory: 58 total / 55 accepted / 3 proposed
+V1.1-C1: FROZEN
+V1.1-C2: NOT STARTED / NEXT ACTIVE AFTER D15 FREEZE
+`
+
+D15 proposes Shaded With Edges as the default solid display, Wireframe as
+the mandatory alternate mode, flat shading with basic ambient/directional
+lighting, and independent exact-edge overlay. Topology and analytic geometry
+remain authoritative; planar, holed and cylindrical face meshes remain derived.
+
+Logical face and edge targets carry owning FeatureId, rebuild-local body context
+and current FaceId/EdgeId. They survive navigation and same-topology Presentation
+regeneration, but clear deterministically on topology regeneration. Feature
+selection continues to survive rebuild. No persistent body or topological naming
+is proposed.
+
+Picking resolves derived triangles/curves to logical targets, gives an edge
+within six logical pixels priority over a face, and selects only the nearest
+visible geometric hit. Cylindrical faces resolve as logical faces and hole
+interiors produce no cap hit. Hidden results are neither rendered nor pickable.
+Fit and standard views belong to Viewer/session state and preserve the existing
+right-handed XY-base, +Z-up convention and navigation bindings.
+
+C2 requires an Experience Gate covering solid-form readability, face/edge
+discoverability, hover clarity, selection confidence, standard-view discovery,
+Fit usefulness, Feature Manager synchronization, context actions and visual
+hierarchy. C2 implementation is not authorized by this proposal.
+
+Proposed C2 scope is flat-shaded faces, exact-edge overlay, simple lighting,
+Shaded With Edges/Wireframe display modes, face/edge hover and single logical
+selection, owning-feature synchronization, visibility integration, multi-body
+and cylindrical-face presentation/picking, Fit, standard views and compact
+heads-up controls. Persistent topological naming, persistent bodies,
+multi-selection unless UX evidence requires it, face-based Sketch creation,
+Cut Extrude, Hole, fillet, chamfer, materials, textures, PBR, section view,
+measure, assemblies and selection persistence across rebuild are excluded.

@@ -99,6 +99,9 @@ GAP-GEO-002: CLOSED — D14 intersection subset implemented and validated
 GAP-SCENE-002: PARTIALLY CLOSED — EXECUTABLE V1.1-C1 SLICE
 V1.1-C1 — CAD Workspace & Guided Sketching: FROZEN
 Latest validated snapshot (V1.1-C1): 822/822 tests PASS, runtime and Experience Gate PASS, 0 warnings
+D15 — Solid Visualization & Sub-element Selection Semantics: PROPOSED / READY FOR REVIEW
+ADR-0056–0058: PROPOSED (55 accepted, 3 proposed, 58 total)
+V1.1-C2 — Solid Visualization & Selection: NOT STARTED / NEXT ACTIVE AFTER D15 FREEZE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
