@@ -821,17 +821,13 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
             const auto anchor = toScreen(*editor->previewAnchor());
             const auto cursor = toScreen(*editor->previewCursor());
             const auto previewColor = IM_COL32(80, 220, 255, 220);
-            if (activeTool == SketchTool::Rectangle)
-                draw->AddRect(anchor, cursor, previewColor, 0.0F, 0, 2.0F);
-            else if (activeTool == SketchTool::Circle)
+            const auto& curve = editor->previewCurve();
+            if (curve.size() > 1)
             {
-                const auto& curve = editor->previewCurve();
-                if (curve.size() > 2)
-                {
-                    for (std::size_t i = 1; i < curve.size(); ++i)
-                        draw->AddLine(toScreen(curve[i - 1]), toScreen(curve[i]), previewColor, 2.0F);
+                for (std::size_t i = 1; i < curve.size(); ++i)
+                    draw->AddLine(toScreen(curve[i - 1]), toScreen(curve[i]), previewColor, 2.0F);
+                if (activeTool == SketchTool::Rectangle || activeTool == SketchTool::Circle)
                     draw->AddLine(toScreen(curve.back()), toScreen(curve.front()), previewColor, 2.0F);
-                }
             }
             else
                 draw->AddLine(anchor, cursor, previewColor, 2.0F);
