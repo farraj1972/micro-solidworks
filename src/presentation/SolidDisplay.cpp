@@ -53,13 +53,14 @@ struct ProjectedPoint { geometry::Point3 world; double x{},y{}; };
 double signedArea(const std::vector<ProjectedPoint>& p){double a=0;for(std::size_t i=0,j=p.size()-1;i<p.size();j=i++)a+=p[j].x*p[i].y-p[i].x*p[j].y;return a/2;}
 double cross2(const ProjectedPoint&a,const ProjectedPoint&b,const ProjectedPoint&c){return(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);}
 bool inTriangle(const ProjectedPoint&p,const ProjectedPoint&a,const ProjectedPoint&b,const ProjectedPoint&c){const auto x=cross2(a,b,p),y=cross2(b,c,p),z=cross2(c,a,p);return x>=-1e-10&&y>=-1e-10&&z>=-1e-10;}
+bool same2(const ProjectedPoint&a,const ProjectedPoint&b){return std::abs(a.x-b.x)<=1e-10&&std::abs(a.y-b.y)<=1e-10;}
 std::vector<std::array<geometry::Point3,3>> triangulate(std::vector<ProjectedPoint> polygon)
 {
     std::vector<std::array<geometry::Point3,3>> result;if(polygon.size()<3)return result;
     if(signedArea(polygon)<0)std::reverse(polygon.begin(),polygon.end());
     std::vector<std::size_t> indices(polygon.size());for(std::size_t i=0;i<indices.size();++i)indices[i]=i;
     for(std::size_t guard=0;indices.size()>2&&guard<polygon.size()*polygon.size();++guard){bool clipped=false;
-        for(std::size_t k=0;k<indices.size();++k){const auto ia=indices[(k+indices.size()-1)%indices.size()],ib=indices[k],ic=indices[(k+1)%indices.size()];const auto&a=polygon[ia];const auto&b=polygon[ib];const auto&c=polygon[ic];if(cross2(a,b,c)<=1e-10)continue;bool contains=false;for(auto index:indices)if(index!=ia&&index!=ib&&index!=ic&&inTriangle(polygon[index],a,b,c)){contains=true;break;}if(contains)continue;result.push_back({a.world,b.world,c.world});indices.erase(indices.begin()+static_cast<std::ptrdiff_t>(k));clipped=true;break;}if(!clipped)break;}
+        for(std::size_t k=0;k<indices.size();++k){const auto ia=indices[(k+indices.size()-1)%indices.size()],ib=indices[k],ic=indices[(k+1)%indices.size()];const auto&a=polygon[ia];const auto&b=polygon[ib];const auto&c=polygon[ic];if(cross2(a,b,c)<=1e-10)continue;bool contains=false;for(auto index:indices)if(index!=ia&&index!=ib&&index!=ic&&!same2(polygon[index],a)&&!same2(polygon[index],b)&&!same2(polygon[index],c)&&inTriangle(polygon[index],a,b,c)){contains=true;break;}if(contains)continue;result.push_back({a.world,b.world,c.world});indices.erase(indices.begin()+static_cast<std::ptrdiff_t>(k));clipped=true;break;}if(!clipped)break;}
     return result;
 }
 

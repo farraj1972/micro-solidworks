@@ -34,7 +34,10 @@ TEST(SolidDisplay, HoledCapLeavesHoleEmptyAndCylinderIsTessellated)
  const auto extrusion=features::extrudeRegions(features::extractPlanarRegions(sketch),sketch.plane(),3);ASSERT_TRUE(extrusion.succeeded());
  const auto display=presentation::deriveSolidDisplay(extrusion.solids.front(),features::FeatureId{9},{0});
  EXPECT_FALSE(display.triangles.empty());
+ std::size_t bottomTriangles{},topTriangles{};double bottomArea{},topArea{};
  for(const auto&t:display.triangles){const auto z=(t.points[0].z()+t.points[1].z()+t.points[2].z())/3;if(std::abs(z)<1e-8||std::abs(z-3)<1e-8){const auto x=(t.points[0].x()+t.points[1].x()+t.points[2].x())/3;const auto y=(t.points[0].y()+t.points[1].y()+t.points[2].y())/3;EXPECT_GE(std::hypot(x,y),1.99);}}
+ for(const auto&t:display.triangles){const auto z=(t.points[0].z()+t.points[1].z()+t.points[2].z())/3;const auto ab=t.points[1]-t.points[0],ac=t.points[2]-t.points[0];const auto area=math::cross(ab,ac).length()/2;if(std::abs(z)<1e-8){++bottomTriangles;bottomArea+=area;}if(std::abs(z-3)<1e-8){++topTriangles;topArea+=area;}}
+ EXPECT_GT(bottomTriangles,0u);EXPECT_GT(topTriangles,0u);EXPECT_GT(bottomArea,80);EXPECT_GT(topArea,80);
  EXPECT_GT(std::count_if(display.triangles.begin(),display.triangles.end(),[](const auto&t){return std::abs(t.normal.z())<0.9;}),0);
  for(const auto&t:display.triangles)if(std::abs(t.normal.z())<0.9){const auto x=(t.points[0].x()+t.points[1].x()+t.points[2].x())/3;const auto y=(t.points[0].y()+t.points[1].y()+t.points[2].y())/3;EXPECT_GT(t.normal.x()*x+t.normal.y()*y,0);}
 }
