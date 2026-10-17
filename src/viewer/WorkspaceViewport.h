@@ -3,6 +3,7 @@
 #include "app/WorkspaceLayout.h"
 #include "app/WorkspaceInput.h"
 #include "core/math/Scalar.h"
+#include "core/math/Vector3.h"
 #include "viewer/GeometryPicker.h"
 #include "viewer/SolidPicker.h"
 
@@ -18,6 +19,14 @@ struct SolidDisplayPasses { bool faces; bool topologyEdges; };
 [[nodiscard]] constexpr SolidDisplayPasses displayPasses(SolidDisplayMode mode) noexcept
 {
     return {mode != SolidDisplayMode::Wireframe, mode != SolidDisplayMode::Shaded};
+}
+[[nodiscard]] constexpr math::Vector3 topologyEdgeColor(SolidDisplayMode mode) noexcept
+{
+    // Dark edges read against lit faces; Wireframe needs light edges because it
+    // draws directly over the dark workspace background.
+    return mode == SolidDisplayMode::Wireframe
+        ? math::Vector3{0.72, 0.78, 0.86}
+        : math::Vector3{0.08, 0.10, 0.13};
 }
 enum class StandardView { Front, Back, Left, Right, Top, Bottom, Isometric };
 

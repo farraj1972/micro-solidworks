@@ -471,7 +471,7 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
         if(passes.topologyEdges)
         {
             std::vector<math::Vector3> vertices;for(const auto&e:display.edges)for(std::size_t i=1;i<e.points.size();++i){const auto&a=e.points[i-1];const auto&b=e.points[i];vertices.push_back({a.x(),a.y(),a.z()});vertices.push_back({b.x(),b.y(),b.z()});}
-            impl_->solidEdges.setVertices(vertices);impl_->shader.setVector3("uColor",{0.08,0.1,0.13});glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();glDepthFunc(GL_LESS);
+            impl_->solidEdges.setVertices(vertices);impl_->shader.setVector3("uColor",topologyEdgeColor(impl_->displayMode));glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();glDepthFunc(GL_LESS);
         }
         const auto drawState=[&](const std::optional<SolidTarget>& target,const math::Vector3& color){if(!target)return;
             if(const auto*face=std::get_if<interaction::TopologyFaceTarget>(&*target)){std::vector<rendering::LitVertex>v;for(const auto&t:display.triangles)if(t.target==*face)for(const auto&p:t.points)v.push_back({{p.x(),p.y(),p.z()},t.normal});impl_->triangles.setVertices(v);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->triangles.draw();}

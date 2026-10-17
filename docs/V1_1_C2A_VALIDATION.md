@@ -74,3 +74,21 @@ Experience Gate: APPROVED.
 
 V1.1-C2A is FROZEN. V1.1-C3 — Document Safety, Undo/Redo & Session Workflow is
 the next active campaign.
+
+## Post-freeze corrective — V1.1-C2A-FIX1
+
+A manual post-freeze check found that normal topology edges were effectively
+invisible in Wireframe. The edge pass was enabled and its batches contained the
+expected straight, circular, hole-boundary and multi-body topology curves. The
+cause was visual contrast: the dark edge color intended for overlaying lit
+faces was also used directly over the dark workspace background.
+
+Wireframe now uses a light normal topology-edge color, while Shaded With Edges
+retains the dark overlay color. Hovered and selected edges retain their distinct
+cyan and orange feedback. No face fill or tessellation diagonals were introduced.
+The affected application/test targets built successfully; 27/27 targeted
+Viewer, Presentation and picking tests passed, including explicit pass-policy,
+contrast and non-empty curved/hole/multi-body edge-batch coverage. The directed
+runtime re-check passed all three modes for box, cylinder, hole and multi-body
+models. ADR-0060 conformance is restored; the historical C2A freeze tag remains
+unchanged.

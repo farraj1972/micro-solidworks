@@ -191,6 +191,16 @@ TEST(SolidDisplayMode, MapsToExplicitFaceAndTopologyEdgePasses)
     EXPECT_FALSE(wire.faces);EXPECT_TRUE(wire.topologyEdges);
 }
 
+TEST(SolidDisplayMode, WireframeEdgesContrastWithDarkWorkspaceBackground)
+{
+    using microsw::viewer::SolidDisplayMode;
+    const microsw::math::Vector3 background{0.12,0.12,0.14};
+    const auto wire=microsw::viewer::topologyEdgeColor(SolidDisplayMode::Wireframe);
+    const auto shadedWithEdges=microsw::viewer::topologyEdgeColor(SolidDisplayMode::ShadedWithEdges);
+    EXPECT_GT((wire-background).squaredLength(),0.5);
+    EXPECT_LT((shadedWithEdges-background).squaredLength(),0.01);
+}
+
 TEST_F(WorkspaceViewportTest, GridAndAxesUploadAndDrawInOneDepthPass)
 {
     const microsw::viewer::ReferenceGrid grid;
