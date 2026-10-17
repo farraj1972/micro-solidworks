@@ -779,7 +779,7 @@ initial v1.1 roadmap is:
 | Campaign | State | Functional direction |
 | --- | --- | --- |
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
-| V1.1-C2 — Solid Visualization & Selection | NOT STARTED / NEXT ACTIVE | Shaded solid display, logical face/edge selection, Fit and standard views under accepted ADR-0056–0058 |
+| V1.1-C2 — Solid Visualization & Selection | VALIDATION IN PROGRESS | Implementation and Technical Gate complete; Experience Gate pending under accepted ADR-0056–0058 |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
@@ -934,7 +934,7 @@ STATUS: FROZEN
 ADR-0056–0058: ACCEPTED
 ADR inventory: 58/58 ACCEPTED
 V1.1-C1: FROZEN
-V1.1-C2: NOT STARTED / NEXT ACTIVE
+V1.1-C2: VALIDATION IN PROGRESS
 `
 
 D15 freezes Shaded With Edges as the default solid display, Wireframe as

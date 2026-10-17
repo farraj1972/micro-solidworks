@@ -86,6 +86,11 @@ build, 708/708 tests and runtime PASS. See [B6 validation](docs/B6_VALIDATION.md
 | MMB drag | Orbit |
 | Shift + MMB drag | Pan |
 | Mouse wheel | Zoom |
+| Heads-up Fit | Frame all visible modeled solids |
+| Heads-up ISO / View menu | Isometric or Front/Back/Left/Right/Top/Bottom view |
+| Heads-up Display / View menu | Shaded With Edges, Wireframe or Shaded |
+| Pointer over a solid face/edge | Pre-highlight the logical face or edge |
+| Left click solid face/edge | Select it; a nearby edge has priority within 6 logical pixels |
 | Pointer over geometry | Automatic hover; suspended during MMB navigation |
 | Left click geometry | Select one entity; another click replaces it |
 | Left click empty Workspace | Clear selection |
@@ -104,6 +109,11 @@ horizontal/vertical/coincident inference, then select the Sketch and choose
 Extrude. The Edit panel validates the profile, reports region/body count and
 accepts a positive depth. Concave profiles, circular/arc boundaries, holes,
 nested islands and disjoint regions are supported without internal ID entry.
+
+V1.1-C2 presents every derived solid body with flat-shaded faces and an
+independent topology-edge overlay. Face/edge selection synchronizes its owning
+Feature without exposing FaceId, EdgeId or runtime body indices. Hidden results
+are neither displayed nor pickable; topology rebuild clears sub-element selection.
 
 Re-clicking a selected entity preserves it. Clicks outside the Workspace or
 blocked by UI/modal interaction preserve selection. UI does not implement picking.

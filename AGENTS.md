@@ -1187,7 +1187,7 @@ STATUS: FROZEN
 ADR-0056-0058: ACCEPTED
 ADR inventory: 58/58 ACCEPTED
 V1.1-C1: FROZEN
-V1.1-C2: NOT STARTED / NEXT ACTIVE
+V1.1-C2: VALIDATION IN PROGRESS
 
 Frozen D15 defines derived flat-shaded face tessellation with independent exact-edge
 overlay and Shaded With Edges as the default display. Topology and analytic

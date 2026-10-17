@@ -1441,3 +1441,9 @@ unbounded edge capture. Derived cap triangulation excludes holes; curved
 tessellation resolves to the analytic cylindrical Face. Visibility comes from
 EditorContext, while Fit, standard views, display mode and lighting are
 Viewer/Rendering session policy and are not persisted.
+
+V1.1-C2 implements this boundary with `SolidDisplayData` in Presentation,
+identity-free `TriangleRenderer` draw execution, CPU `SolidPicker` resolution
+and EditorContext logical topology targets. Multi-body context is an index in
+the current derived Feature result and is invalidated on rebuild. No tessellation
+or GPU representation enters FeatureModel, Topology, Geometry or persistence.

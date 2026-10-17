@@ -199,3 +199,9 @@ ui/application -> logical interaction coordination
 Mesh, GPU and visual IDs must not cross into FeatureModel, Topology or persisted
 state. Any request for an external tessellator, renderer or picking framework
 requires separate dependency and architectural approval.
+
+V1.1-C2 implements this BUILD strategy with project-owned planar/hole and
+cylindrical tessellation, triangle rendering, curve overlay and CPU picking.
+No dependency was added. Presentation derives from Topology/Geometry, Viewer
+consumes Presentation for picking and view policy, Rendering stays independent
+of CAD identity, and Application/UI coordinates logical EditorContext state.
