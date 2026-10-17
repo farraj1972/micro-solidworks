@@ -105,6 +105,7 @@ add_library(microsw_geometry STATIC
     src/core/geometry/Arc2.cpp
     src/core/geometry/Circle2.cpp
     src/core/geometry/GeometryQuerySupport.cpp
+    src/core/geometry/Intersection2.cpp
     src/core/geometry/Line2.cpp
     src/core/geometry/Line3.cpp
     src/core/geometry/Ray2.cpp
@@ -361,6 +362,7 @@ if(BUILD_TESTING)
         tests/geometry/test_plane.cpp
         tests/geometry/test_distance_projection.cpp
         tests/geometry/test_geometry_integration.cpp
+        tests/geometry/test_intersection2.cpp
         tests/geometry/test_segment2_queries.cpp
         tests/geometry/test_segment3_queries.cpp
         tests/geometry/test_line2_queries.cpp
