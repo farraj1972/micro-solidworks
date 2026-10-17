@@ -142,6 +142,35 @@ FROZEN after its final V3 passed 793/793 tests, zero warnings and runtime
 validation. That same unchanged executable state validates MICRO SOLIDWORKS MVP
 1.0, now FROZEN. GAP-GEO-002 and GAP-SCENE-002 remain explicitly outside MVP.
 
+D13 — Editor Ownership, Selection Identity & Scene Lifecycle is PROPOSED in
+ADR-0049–0052 and READY FOR REVIEW. It preserves `FeatureModel` as the sole
+authoritative CAD model, keeps file/session state in the Application persistence
+session and makes Presentation derived. A minimal Application-owned editor
+context holds the active feature/sketch, tool, typed logical selection and
+transient display context; `ApplicationShell` remains an orchestrator/UI host.
+
+Logical selection distinguishes `FeatureId`, `SketchEntityId`,
+`SketchConstraintId`, Sketch sub-element references, rebuild-local topology
+identity and `VisualEntityId`. Presentation explicitly maps logical targets to
+visual/picking proxies. Feature Tree and modeled-result selection synchronize
+through `FeatureId`; active-Sketch picking uses `SketchEntityId` and existing
+`SketchElementRef` semantics. Logical selection survives visual regeneration
+and rebuild while its target remains valid. Persistent topological naming is
+not decided, so future face/edge selection cannot rely on raw topology IDs.
+
+Feature/sketch visibility is proposed as transient editor/session display state,
+not Geometry, Topology, FeatureModel or persisted CAD state. Active editing,
+selection and visibility remain distinct. This closes the product-relevant
+feature/sketch visibility and deterministic editing-lifecycle core of
+GAP-SCENE-002 without creating a generic scene graph.
+
+Editor actions cross one atomic Application transaction boundary before domain
+commit and rebuild. Preview snapping and inference remain interaction/tool
+state; accepted inference may create an explicit constraint in the committed
+edit. D13 preserves future snapshot and inverse-command undo/redo strategies
+without choosing or implementing either. No new `microsw_editor` or
+`microsw_interaction` module is authorized by the proposal.
+
 Geometry remains transform-free; local Geometry plus a Presentation-owned
 `Transform3` derives world representation. The implemented flat dependency graph is:
 

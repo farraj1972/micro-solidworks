@@ -90,6 +90,9 @@ B14 — Persistence: FROZEN
 Latest validated snapshot (B14/MVP executable): 793/793 tests PASS, runtime PASS, 0 warnings
 ADR-0045–0048: CONFORMANT
 MICRO SOLIDWORKS MVP 1.0: FROZEN
+D13 — Editor Ownership, Selection Identity & Scene Lifecycle: PROPOSED / READY FOR REVIEW
+ADR-0049–0052: PROPOSED
+V1.1-C1 — Guided Sketching & Constraint Interaction: NOT STARTED / NEXT ACTIVE AFTER D13 APPROVAL
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

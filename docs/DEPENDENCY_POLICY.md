@@ -130,8 +130,14 @@ OpenGL 3.3 funcional.
   inside `microsw_persistence`. No JSON type
   may cross its public API. The frozen dependency is
   `microsw_persistence -> microsw_features`; Features and lower domain modules
-  must not depend on Persistence. D12 is FROZEN and the B14 implementation is
-  CANDIDATE pending final V3.
+  must not depend on Persistence. D12, B14 and MVP 1.0 are FROZEN.
+- Editor interaction and display policy: `BUILD`, proposed in D13. A minimal
+  Application-owned editor context consumes Features, Sketch/Constraints,
+  Presentation and Viewer mapping without introducing reverse dependencies.
+  Snapping/inference, logical selection coordination, visibility policy and
+  command transactions remain Application/interaction concerns. Domain modules
+  do not depend on Editor/UI, and no new external dependency or editor module is
+  authorized by ADR-0049–0052 while they remain PROPOSED.
 - Geometric picking: `BUILD`, implementado em B4.6 no Viewer, com tolerance
   de 6 pixels lógicos, distinta da tolerance geométrica; sem framebuffer picking.
 - Hover/single-selection/highlight: `BUILD`, implementados em B4.7–B4.9 no

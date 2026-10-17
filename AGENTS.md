@@ -1018,6 +1018,17 @@ B14 — Persistence: FROZEN
 MICRO SOLIDWORKS MVP 1.0: FROZEN
 ```
 
+
+Current proposed decision gate:
+
+```text
+D13 — Editor Ownership, Selection Identity & Scene Lifecycle
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0049–0052: PROPOSED
+V1.1-C1 — Guided Sketching & Constraint Interaction:
+STATUS: NOT STARTED / NEXT ACTIVE AFTER D13 APPROVAL
+```
+
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
 FROZEN. The complete inventory is 48/48 ADRs ACCEPTED. D6 — Topology Ownership,
@@ -1118,6 +1129,17 @@ executable state without repeating V3. Its capabilities span Foundation, Math,
 Sketcher, Constraints, Extrusion, Boolean Operations, Feature Tree, Parametric
 Rebuild and Persistence. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / outside MVP. GAP-GEO-002 and
 GAP-SCENE-002 remain OPEN / deferred.
+
+Proposed D13 assigns authoritative CAD state exclusively to `FeatureModel`,
+file/session state to the Application persistence session, derived visual state
+to Presentation, and transient tools, logical selection and display policy to
+an Application-owned editor context. It proposes typed logical selection with
+explicit Presentation mapping, editor/session-owned visibility, atomic editor
+transactions and interaction-owned snapping/inference. This proposal closes
+the product-relevant feature/sketch visibility and editing-lifecycle core of
+GAP-SCENE-002 without claiming a general scene graph. GAP-GEO-002 remains OPEN
+and deferred. D13 is READY FOR REVIEW; V1.1-C1 is not authorized until D13 is
+approved and frozen.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

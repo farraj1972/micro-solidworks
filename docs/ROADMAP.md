@@ -93,12 +93,15 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
 | GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | When an authorized non-convex/general operation requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
-| GAP-SCENE-002 | OPEN / deferred — Explicit visibility/lifecycle object semantics incomplete | NO | When required by Document/Topology/application lifecycle |
+| GAP-SCENE-002 | PARTIALLY CLOSED BY D13 PROPOSAL — Closure scope is feature/sketch visibility, active editing context and deterministic display lifecycle; implementation pending approval/V1.1-C1 | YES for v1.1 UX | V1.1-C1 after D13 approval; general scene graph remains outside the closure claim |
 
 Circle2 is implemented and GAP-GEO-001 is CLOSED. Basic intersections remain
-GAP-GEO-002 deferred; frozen D9 confirms they do not block the strict-convex
-B10 slice. Each future closure requires authorized scope. GAP-SCENE-002 likewise
-remains open and does not block one Application-owned active Solid.
+GAP-GEO-002 deferred; frozen D9 confirms it does not block the strict-convex
+B10 slice or V1.1-C1. Each future closure requires authorized scope. Proposed
+D13 partially closes GAP-SCENE-002 at the decision level by defining explicit
+feature/sketch visibility, active editing context and deterministic display
+lifecycle. Executable closure awaits D13 approval and V1.1-C1; general scene
+graph and broader object lifecycle remain deferred.
 
 ## Delivered Functional Slice — B6
 
@@ -769,22 +772,42 @@ GAP-SCENE-002 remain OPEN / outside MVP.
 
 ---
 
-# Post-MVP
+# Post-MVP — Micro SolidWorks v1.1
 
-Possíveis linhas de evolução:
+MVP 1.0 remains FROZEN. D13 is `PROPOSED / READY FOR REVIEW`; its ADR-0049–0052
+are not normative until explicit approval. The initial v1.1 roadmap is:
 
-B15 — Revolve  
-B16 — Fillet / Chamfer  
-B17 — Advanced Sketch Constraints  
-B18 — Improved Boolean Engine  
-B19 — Curves / Bezier  
-B20 — B-Splines / NURBS  
-B21 — Advanced Surfaces  
-B22 — STEP / IGES  
-B23 — Assemblies  
-B24 — Measurements  
-B25 — Technical Drawing  
-B26 — Performance / Spatial Acceleration  
-B27 — Alternative Geometry Kernel
+| Campaign | State | Functional direction |
+| --- | --- | --- |
+| V1.1-C1 — Guided Sketching & Constraint Interaction | NOT STARTED / NEXT ACTIVE AFTER D13 APPROVAL | Snap/infer Sketch creation, logical entity/sub-element selection, constraint workflow without numeric-ID entry, glyphs/diagnostics, rebuild and extrusion |
+| V1.1-C2 — Solid Visualization & Selection | PLANNED / SUBJECT TO REVIEW | Product-oriented solid display and selection |
+| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
+| V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
+| V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
-A sequência pós-MVP não está congelada e deverá ser decidida com base na evolução do projecto.
+V1.1-C1 functional slice:
+
+```text
+New
+→ create/edit active Sketch
+→ snap/infer rectangle/circle geometry
+→ select entities/sub-elements directly
+→ apply constraints without numeric IDs
+→ see constraint associations/glyphs
+→ edit dimension
+→ Rebuild
+→ Extrude
+```
+
+V1.1-C1 explicitly excludes trim, general intersections, point-on-curve,
+tangent/equal/concentric and arc constraints, face/edge selection, flat
+shading, undo/redo implementation, persistent visibility, curved topology and
+new modeling features. Endpoint/midpoint/grid snapping and horizontal/vertical/
+coincident inference are interaction aids; temporary inference is not solver
+truth, while an accepted inference may create an explicit supported constraint.
+
+Campaigns retain V0/V1/V2/V3 governance. A prerequisite review is used only
+when needed, a Decision Gate only for material architecture, and one V3 closes
+each campaign. Historical B0–B14 numbering is unchanged. Longer-term Revolve,
+Fillet/Chamfer, advanced curves/surfaces, exchange, assemblies, drawings,
+acceleration and alternative-kernel work remain uncommitted future options.
