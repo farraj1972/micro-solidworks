@@ -103,9 +103,9 @@ D15 — Solid Visualization & Sub-element Selection Semantics: FROZEN
 ADR-0056–0058: ACCEPTED (58/58 total)
 V1.1-C2 — Solid Visualization & Selection: FROZEN
 Latest validated snapshot (V1.1-C2): 831/831 tests PASS, runtime and Experience Gate PASS, 0 warnings
-D16 — Feature Manager Hierarchy & Display Mode UX Semantics: PROPOSED / READY FOR REVIEW
-ADR-0059–0060: PROPOSED (60 total; 58 accepted, 2 proposed)
-V1.1-C2A — Feature Manager & Display Mode UX Alignment: NOT STARTED / NEXT ACTIVE AFTER D16 FREEZE
+D16 — Feature Manager Hierarchy & Display Mode UX Semantics: FROZEN
+ADR-0059–0060: ACCEPTED (60/60 total)
+V1.1-C2A — Feature Manager & Display Mode UX Alignment: NOT STARTED / NEXT ACTIVE
 V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: PLANNED / WAITING FOR C2A
 ```
 

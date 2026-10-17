@@ -1204,13 +1204,13 @@ Experience Gate. Selected Contours remains a separate D14 modeling-workflow
 follow-up and does not alter the completed C2 solid face/edge selection scope.
 
 D16 - Feature Manager Hierarchy & Display Mode UX Semantics
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0059-0060: PROPOSED
-ADR inventory: 60 total / 58 accepted / 2 proposed
-V1.1-C2A: NOT STARTED / NEXT ACTIVE AFTER D16 FREEZE
+STATUS: FROZEN
+ADR-0059-0060: ACCEPTED
+ADR inventory: 60/60 ACCEPTED
+V1.1-C2A: NOT STARTED / NEXT ACTIVE
 V1.1-C3: PLANNED / WAITING FOR C2A
 
-D16 proposes a CAD-first Feature Manager derived from FeatureModel. Modeling
+Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
 unconsumed Sketches remain at the Part root. The first direct modeling consumer
 in history order is the deterministic future visual parent for a shared Sketch;
@@ -1218,7 +1218,7 @@ secondary consumers expose references through properties/context. Tree hierarchy
 never changes FeatureModel ownership, identity, dependency or rebuild order.
 Normal labels are human-readable; internal IDs are diagnostic only.
 
-D16 proposes explicit display passes: Shaded draws lit faces without the global
+Frozen D16 defines explicit display passes: Shaded draws lit faces without the global
 topology-edge overlay; Shaded With Edges adds topology-derived edges; Wireframe
 draws topology edges without face fill. Hovered/selected edges may remain as
 transient feedback in Shaded. Display mode remains Viewer/session state. C2A is

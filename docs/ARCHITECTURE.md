@@ -1448,9 +1448,9 @@ and EditorContext logical topology targets. Multi-body context is an index in
 the current derived Feature result and is invalidated on rebuild. No tessellation
 or GPU representation enters FeatureModel, Topology, Geometry or persistence.
 
-## D16 proposal — Feature Manager hierarchy and display modes
+## D16 — Feature Manager hierarchy and display modes
 
-D16 proposes that FeatureModel history and the normal Feature Manager tree are
+Frozen D16 defines that FeatureModel history and the normal Feature Manager tree are
 distinct. The model remains authoritative; UI/Application derives a CAD-first
 feature hierarchy. An Extrude visually absorbs its primary Sketch, while an
 unconsumed Sketch remains at the Part root. The first direct modeling consumer
@@ -1459,7 +1459,7 @@ secondary dependencies stay discoverable through properties/context. Boolean
 inputs are not expanded as a duplicated dependency DAG. These are presentation
 relationships and never alter feature ownership, identity or rebuild order.
 
-The same proposal makes display modes explicit pass policy: Shaded draws lit
+D16 makes display modes explicit pass policy: Shaded draws lit
 faces without the global edge overlay; Shaded With Edges draws the same faces
 plus topology-derived edges; Wireframe draws topology edges without face fill.
 Selected and hovered edges may still provide transient feedback in Shaded.

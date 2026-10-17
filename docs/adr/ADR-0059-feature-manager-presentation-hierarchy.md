@@ -1,6 +1,6 @@
 # ADR-0059 — Feature Manager Presentation Hierarchy and Absorbed Sketch Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

@@ -206,9 +206,9 @@ No dependency was added. Presentation derives from Topology/Geometry, Viewer
 consumes Presentation for picking and view policy, Rendering stays independent
 of CAD identity, and Application/UI coordinates logical EditorContext state.
 
-## 9. D16 Feature Manager and display-mode UX proposal
+## 9. D16 Feature Manager and display-mode UX semantics
 
-ADR-0059–0060 propose no new dependency. Feature Manager hierarchy remains a
+Accepted ADR-0059–0060 require no new dependency. Feature Manager hierarchy remains a
 BUILD concern in Application/UI, derived from the existing FeatureModel public
 history and dependency contracts. It must not introduce UI dependencies into
 Features or reinterpret presentation parenting as domain ownership.

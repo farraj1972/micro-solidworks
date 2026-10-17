@@ -1,6 +1,6 @@
 # ADR-0060 — CAD Display Mode Rendering Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
