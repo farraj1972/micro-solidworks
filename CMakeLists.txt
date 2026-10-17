@@ -163,6 +163,7 @@ target_include_directories(microsw_modeling PUBLIC src)
 target_link_libraries(microsw_modeling PUBLIC microsw_topology)
 
 add_library(microsw_features STATIC
+    src/features/PlanarRegion.cpp
     src/features/FeatureModel.cpp
     src/features/SketchProfileAdapter.cpp
 )
@@ -383,6 +384,7 @@ if(BUILD_TESTING)
         tests/math/test_vector2.cpp
         tests/math/test_vector3.cpp
         tests/modeling/test_profile_extrusion.cpp
+        tests/modeling/test_planar_region.cpp
         tests/modeling/test_boolean.cpp
         tests/interaction/test_editor_context.cpp
         tests/interaction/test_guided_workflow.cpp
