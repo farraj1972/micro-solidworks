@@ -1208,7 +1208,10 @@ STATUS: FROZEN
 ADR-0059-0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
 V1.1-C2A: FROZEN
-V1.1-C3: NOT STARTED / NEXT ACTIVE
+D17: PROPOSED / READY FOR REVIEW
+ADR-0061-0063: PROPOSED
+ADR inventory: 60 ACCEPTED / 3 PROPOSED / 63 total
+V1.1-C3: NOT STARTED / NEXT ACTIVE AFTER D17 FREEZE
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
@@ -1225,7 +1228,19 @@ transient feedback in Shaded. Display mode remains Viewer/session state. C2A is 
 configure, full Debug build with zero warnings, 837/837 CTest tests,
 targeted correction validation and the manual Experience Gate. The solid
 identity proxy is never drawn as geometry; explicit face and topology
-passes exclusively control solid display. C3 is the next active campaign.
+passes exclusively control solid display. C3 follows D17 approval and freeze.
+
+D17 is PROPOSED / READY FOR REVIEW in ADR-0061-0063. It separates
+DocumentDirty from FeatureState::Dirty, marks successful New/Open/Save/Save As
+as saved checkpoints, and preserves dirty through rebuild. It proposes a bounded
+linear history of typed authoritative FeatureModel checkpoints at D13 transaction
+boundaries. Checkpoints preserve IDs, tombstones, counters, dependencies and
+parameters while excluding derived caches; restore is followed by deterministic
+rebuild. Save retains history, a new edit after Undo truncates Redo, and the
+initial limit is 100 undoable transactions plus current state. Dirty New/Open/Exit
+use Save / Don't Save / Cancel. Undo history and session/editor state remain
+nonpersistent; schema v1, D11 and D13 remain unchanged. V1.1-C3 executable work
+requires D17 approval and freeze.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

@@ -1471,3 +1471,24 @@ Solid rendering uses explicit face and topology-edge passes; the legacy visual
 entity retained for feature identity is never drawn as solid geometry. This
 prevents feature selection from leaking a complete wireframe into Shaded mode.
 The campaign is FROZEN with no change to FeatureModel ownership or dependencies.
+
+## D17 — Document safety and session history proposal
+
+D17 proposes a session-owned saved-baseline marker and bounded linear undo/redo
+history. `DocumentDirty` is independent of `FeatureState::Dirty`: it compares
+the current authoritative history checkpoint with the last successful
+New/Open/Save/Save As baseline. Rebuild affects derived state and never marks a
+document saved.
+
+Each D13 logical transaction captures a typed authoritative FeatureModel
+checkpoint. The checkpoint preserves Feature and Sketch records, dependencies,
+parameters, history order, tombstones and next-ID counters, but excludes rebuild
+states, diagnostics, solved/modeling caches, topology and Presentation. Restore
+is followed by deterministic rebuild and Presentation refresh. Features owns the
+typed capture/restore boundary; Application owns history position, saved marker,
+file path and destructive-action workflow.
+
+New, Open and Exit are Application session transactions guarded by Save / Don't
+Save / Cancel when dirty. Open constructs and validates a candidate before
+replacing the current session. This proposal does not add a Document domain
+aggregate, schema v2, multiple documents or persistent undo history.

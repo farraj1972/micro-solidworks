@@ -107,7 +107,9 @@ D16 — Feature Manager Hierarchy & Display Mode UX Semantics: FROZEN
 ADR-0059–0060: ACCEPTED (60/60 total)
 V1.1-C2A — Feature Manager & Display Mode UX Alignment: FROZEN
 Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience Gate PASS, 0 warnings
-V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: NOT STARTED / NEXT ACTIVE
+D17 — Document Safety, Undo/Redo & Session History Semantics: PROPOSED / READY FOR REVIEW
+ADR-0061–0063: PROPOSED (60 ACCEPTED / 3 PROPOSED / 63 total)
+V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: NOT STARTED / NEXT ACTIVE AFTER D17 FREEZE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
