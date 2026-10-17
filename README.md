@@ -70,8 +70,9 @@ B0–B14 sequence, implementation mapping and Canonical Roadmap Gaps.
 
 **Vertical Slice First**: feature over performance; working vertical slice over
 speculative completeness; architecture boundaries over premature abstraction.
-Circle/intersections remain deferred B3 gaps; B6 supplies entity transforms;
-explicit visibility/lifecycle semantics wait until required.
+Circle is supplied by B8; V1.1-C1 supplies the D14 Line/Arc/Circle intersection
+subset, general planar regions and exact curved extrusion. B6 supplies entity
+transforms; the C1 editor supplies the first explicit visibility/edit lifecycle.
 
 The B6 slice is select Point/Segment/Line -> edit transform -> updated
 rendering/picking -> coherent hover/selection/highlight. D5 — Transformation
@@ -96,6 +97,13 @@ build, 708/708 tests and runtime PASS. See [B6 validation](docs/B6_VALIDATION.md
 | Document path + File → Open | Transactionally load and rebuild a `.microsw` model |
 | File → New | Reset model, path, presentation and transient interaction state |
 | File → Exit or native X | Close the application |
+
+The v1.1 CAD workspace adds icon commands and Model/Edit panels. Start a Sketch,
+draw Line/Rectangle/Circle geometry with endpoint/midpoint/grid snapping and
+horizontal/vertical/coincident inference, then select the Sketch and choose
+Extrude. The Edit panel validates the profile, reports region/body count and
+accepts a positive depth. Concave profiles, circular/arc boundaries, holes,
+nested islands and disjoint regions are supported without internal ID entry.
 
 Re-clicking a selected entity preserves it. Clicks outside the Workspace or
 blocked by UI/modal interaction preserve selection. UI does not implement picking.

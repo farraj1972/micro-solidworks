@@ -1026,7 +1026,7 @@ D13 — Editor Ownership, Selection Identity & CAD Interaction Model
 STATUS: FROZEN
 ADR-0049–0052: ACCEPTED
 V1.1-C1 — CAD Workspace & Guided Sketching:
-STATUS: NOT STARTED / NEXT ACTIVE
+STATUS: FROZEN
 ```
 
 Latest frozen post-MVP decision gate:
@@ -1036,19 +1036,18 @@ D14 - General Planar Profiles & Curved Extrusion Semantics
 STATUS: FROZEN
 ADR-0053-0055: ACCEPTED
 ADR-0001-0055: 55/55 ACCEPTED
-GAP-GEO-002: OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION
-GAP-SCENE-002: unchanged
-V1.1-C1: NOT STARTED / NEXT ACTIVE
+GAP-GEO-002: CLOSED
+GAP-SCENE-002: PARTIALLY CLOSED - EXECUTABLE V1.1-C1 SLICE
+V1.1-C1: FROZEN
 `
 
 D14 preserves ADR-0035-0037 as the historically correct MVP extrusion slice
 and extends its initial line-only, strictly-convex and single-Solid limitations
 for future authorized work. General profiles, exact curved topology and
-multiple-Solid extrusion are DECIDED / NOT IMPLEMENTED. The path to final C1
-Extrude acceptance is Geometry intersection/classification, derived planar
-region extraction, exact curved topology, transactional general/multiple-body
-extrusion, Presentation integration and CAD workflow validation. The D14 freeze
-does not by itself authorize implementation.
+multiple-Solid extrusion are implemented and validated by V1.1-C1. The delivered
+path includes Geometry intersection/classification, derived planar regions, exact
+curved topology, transactional general/multiple-body extrusion, Presentation
+integration and guided CAD workflow validation.
 
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
@@ -1157,10 +1156,9 @@ file/session state to the Application persistence session, derived visual state
 to Presentation, and transient tools, logical selection and display policy to
 an Application-owned editor context. It freezes typed logical selection with
 explicit Presentation mapping, editor/session-owned visibility, atomic editor
-transactions and interaction-owned snapping/inference. GAP-SCENE-002 is
-PARTIALLY CLOSED at the architecture/decision level; executable partial closure
-remains V1.1-C1 work and no general scene graph is claimed. GAP-GEO-002 remains
-OPEN and deferred.
+transactions and interaction-owned snapping/inference. GAP-SCENE-002 is PARTIALLY CLOSED by the architecture plus the executable
+V1.1-C1 edit/display lifecycle; no general scene graph is claimed. GAP-GEO-002
+is CLOSED by the validated D14 intersection subset.
 
 D13 freezes a CAD-first product contract: the Graphics Area is primary;
 the mouse is the primary pointing interaction; context-sensitive icon tools in
@@ -1180,8 +1178,9 @@ addition to technical validation. It asks whether a mechanically CAD-literate
 user can discover and complete the intended workflow without understanding
 internal implementation IDs. Evidence must cover discoverability, mouse-first
 workflow, command clarity, selection feedback, context sensitivity, Feature
-Manager coherence, parameter editing and error/recovery clarity. V1.1-C1 must
-pass this gate before its campaign freeze.
+Manager coherence, parameter editing and error/recovery clarity. V1.1-C1 passed this gate and is FROZEN.
+
+V1.1-C1 is FROZEN after a clean full Debug build, zero project warnings, 822/822 tests and a manual Experience Gate with normal shutdown. It implements the D14 intersection subset, derived planar regions, exact circular topology, transactional multi-Solid extrusion, derived Presentation, projection-consistent Line/Rectangle/Circle previews and the guided CAD workflow. FeatureModel stores derived Solids under one FeatureId without persistent body identity or a persistence schema change. Restricted B11 Boolean rejects curved or multi-body operands explicitly. GAP-GEO-002 is CLOSED. GAP-SCENE-002 is PARTIALLY CLOSED by the executable active-edit and Show/Hide slice; a general scene graph remains deferred.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

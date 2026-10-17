@@ -163,7 +163,7 @@ not Geometry, Topology, FeatureModel or persisted CAD state. Active editing,
 selection and visibility remain distinct. D13 supplies the architecture-level
 partial closure semantics for the feature/sketch visibility
 and deterministic editing-lifecycle core of GAP-SCENE-002 without creating a
-generic scene graph. Executable partial closure remains V1.1-C1 work.
+generic scene graph. V1.1-C1 now supplies that executable partial closure.
 
 Editor actions cross one atomic Application transaction boundary before domain
 commit and rebuild. Preview snapping and inference remain interaction/tool
@@ -1414,7 +1414,9 @@ General Extrude is a transactional multi-region operation returning one or more
 derived Solids under one logical FeatureId. No partial result commits. D11
 last-known-good behavior, B11 Boolean limitations and persistence version 1
 policy remain unchanged. General profiles, curved topology and multiple solids
-are DECIDED / NOT IMPLEMENTED. GAP-GEO-002 is OPEN / ACTIVE; GAP-SCENE-002 is
-unchanged. The implementation sequence is intersections/classification,
-region extraction, exact curved topology, multi-body extrusion, Presentation,
-then CAD workflow acceptance.
+are implemented by V1.1-C1 through structured intersection classification,
+nonpersistent `PlanarRegionSet`, exact `CircularArc3`/`Cylinder` topology,
+transactional multi-Solid feature caches and derived wireframe Presentation.
+Restricted B11 Boolean accepts only its original single linear-solid subset.
+GAP-GEO-002 is CLOSED. GAP-SCENE-002 is PARTIALLY CLOSED by the executable
+active-edit/show-hide lifecycle; no general scene graph is introduced.

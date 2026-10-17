@@ -165,9 +165,10 @@ justificada e aprovada no contexto do roadmap.
 ## 7. D14 general-profile strategy
 
 General planar region extraction, the required Line/Arc/Circle intersection and
-classification subset, exact curved topology and general extrusion remain
-`BUILD`. This preserves their educational value and the internal Geometry and
-Topology decisions. The dependency direction remains:
+classification subset, exact curved topology and general extrusion use the
+approved `BUILD` strategy and are implemented in V1.1-C1. This preserves their
+educational value and the internal Geometry and Topology decisions. The
+dependency direction remains:
 
 ```text
 features/integration -> sketch + modeling

@@ -186,3 +186,13 @@ Create `docs/V1_1_C1_VALIDATION.md` and synchronize AGENTS, BOOTSTRAP,
 ARCHITECTURE, DEPENDENCY_POLICY, ROADMAP and materially relevant README content.
 Record stash disposition, D14 implementation, both gaps, Technical Gate,
 Experience Gate and deferred capabilities.
+
+## Closure
+
+Status: COMPLETE / FROZEN.
+
+The sequence above was completed. The final Technical Gate passed with a fresh
+full Debug build, zero project warnings and 822/822 tests. The manual Experience
+Gate, including projection-consistent Line, Rectangle and Circle previews,
+passed with normal application shutdown. GAP-GEO-002 is CLOSED;
+GAP-SCENE-002 is PARTIALLY CLOSED by the executable C1 lifecycle slice.

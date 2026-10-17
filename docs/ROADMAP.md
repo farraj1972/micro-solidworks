@@ -63,7 +63,7 @@ uses V0 rather than repeating V3.
 | B0 Foundation | SATISFIED | COMPLETE / FROZEN; nenhum gap material |
 | B1 Mathematical Foundation | SATISFIED | COMPLETE / FROZEN; nenhum gap material para o roadmap actual |
 | B2 3D Viewer | SATISFIED | COMPLETE / FROZEN |
-| B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | PARTIALLY SATISFIED | B3 técnica FROZEN: Point2/3, Segment2/3, Line2/3, Ray2/3, Plane, queries, distance/projection e robustness; Circle2 was implemented in B8 and closed GAP-GEO-001; basic intersections remain GAP-GEO-002 deferred |
+| B3 Geometric Primitives: point, line, segment, plane, circle, basic intersections | SATISFIED ACROSS FROZEN B3/B8 AND V1.1-C1 | B3 técnica FROZEN supplies primitives/queries; B8 supplies Circle2; V1.1-C1 supplies the required Line/Arc/Circle intersection subset and closes GAP-GEO-002 |
 | B4 Scene & Object Model: identity, transforms, visibility, object lifecycle | PARTIALLY SATISFIED | B4 técnica FROZEN: Presentation identity, GeometryPresentation, visual ownership boundary, visualização Point/Segment/Line e o slice de picking/hover/single-selection/highlight |
 | B5 Selection & Picking: screen ray, intersections/picking, hover, click selection, selection state, highlighting | REALIZED / SATISFIED BY B4 | FUNCTIONALLY REALIZED BY FROZEN TECHNICAL B4; No duplicate B5 implementation is required |
 | B6 Transformations: translate, rotate, scale, local/world coordinates | REALIZED / FROZEN | B6.1–B6.10 COMPLETE; 708/708 testes e runtime PASS; D5 FROZEN |
@@ -91,17 +91,16 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | ID | Gap | Blocking now | Expected closure |
 | --- | --- | --- | --- |
 | GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
-| GAP-GEO-002 | OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION — required Line/Arc/Circle intersections and classification are not implemented | YES for final C1 Extrude acceptance | Implement and validate the D14-required subset before general profile extraction |
+| GAP-GEO-002 | CLOSED — segment/segment, segment/circle, segment/arc, circle/circle, circle/arc and arc/arc classification implemented and validated in V1.1-C1 | NO | V1.1-C1 C1.8/C1.9 targeted and final V3 validation |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
-| GAP-SCENE-002 | PARTIALLY CLOSED AT ARCHITECTURE / DECISION LEVEL — ownership, visibility semantics, active editing context and deterministic display lifecycle frozen by D13 | YES for executable v1.1 UX | V1.1-C1 implements active Sketch, show/hide, context display and deterministic editing lifecycle; general scene graph remains deferred |
+| GAP-SCENE-002 | PARTIALLY CLOSED — EXECUTABLE V1.1-C1 SLICE: active Sketch, show/hide and deterministic edit/display lifecycle | NO for C1; broader lifecycle remains deferred | General scene graph and persistent visibility remain future scope |
 
-Circle2 is implemented and GAP-GEO-001 is CLOSED. Basic intersections remain
-GAP-GEO-002 deferred; frozen D9 confirms it does not block the strict-convex
-B10 slice or V1.1-C1. Each future closure requires authorized scope. Proposed
-Frozen D13 provides the architecture-level partial closure of GAP-SCENE-002
-through explicit feature/sketch visibility ownership, active editing context
-and deterministic display lifecycle. V1.1-C1 must provide executable partial
-closure. General scene graph and broader object lifecycle remain deferred.
+Circle2 is implemented and GAP-GEO-001 is CLOSED. V1.1-C1 implements and
+validates the D14-required basic intersections, closing GAP-GEO-002 without
+changing the frozen D9/B10 historical slice. Frozen D13 plus the executable C1
+editor provide partial closure of GAP-SCENE-002 through explicit visibility
+ownership, active editing context and deterministic display lifecycle. General
+scene graph and broader object lifecycle remain deferred.
 
 ## Delivered Functional Slice — B6
 
@@ -779,7 +778,7 @@ initial v1.1 roadmap is:
 
 | Campaign | State | Functional direction |
 | --- | --- | --- |
-| V1.1-C1 — CAD Workspace & Guided Sketching | NOT STARTED / NEXT ACTIVE | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, rebuild and extrusion |
+| V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
 | V1.1-C2 — Solid Visualization & Selection | PLANNED / SUBJECT TO REVIEW | Product-oriented solid display and selection |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
@@ -841,10 +840,10 @@ pre-highlights the next logical pick; active tools provide cursor/status hints;
 Escape cancels transient steps and returns toward Select without partial commit.
 Grid is a visual reference and optional snap source.
 
-V1.1-C1 explicitly excludes trim, general intersections, point-on-curve,
+V1.1-C1 explicitly excludes trim, intersections beyond the D14-required subset, point-on-curve,
 tangent/equal/concentric and arc constraints, face/edge selection, flat
-shading, undo/redo implementation, persistent visibility, curved topology and
-new modeling features. Endpoint/midpoint/grid snapping and horizontal/vertical/
+shading, undo/redo implementation, persistent visibility and new modeling
+features beyond general Boss/Base extrusion. Endpoint/midpoint/grid snapping and horizontal/vertical/
 coincident inference are interaction aids; temporary inference is not solver
 truth, while an accepted inference may create an explicit supported constraint.
 Mouse gestures, constrained dragging and detailed grid configuration remain
@@ -900,17 +899,16 @@ single-Solid limitations for authorized post-MVP general-profile work.
 
 ```text
 ADR-0001–0055: 55/55 ACCEPTED
-general profiles: DECIDED / NOT IMPLEMENTED
-curved topology: DECIDED / NOT IMPLEMENTED
-multiple solids: DECIDED / NOT IMPLEMENTED
-GAP-GEO-002: OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION
-GAP-SCENE-002: unchanged
-V1.1-C1: NOT STARTED / NEXT ACTIVE
+general profiles: IMPLEMENTED IN V1.1-C1
+curved topology: IMPLEMENTED FOR LINE/CIRCULAR ARC + PLANE/CYLINDER
+multiple solids: IMPLEMENTED AS DERIVED FEATURE OUTPUT
+GAP-GEO-002: CLOSED
+GAP-SCENE-002: PARTIALLY CLOSED — EXECUTABLE V1.1-C1 SLICE
+V1.1-C1: FROZEN
 ```
 
-V1.1-C1 remains the active product campaign and its workspace/sketch work may
-advance, but its Extrude workflow cannot be accepted as product-complete while
-limited to the old profile contract. The required foundation sequence is:
+V1.1-C1 completed the required foundation sequence and its guided Extrude
+workflow is accepted for the frozen C1 scope:
 
 ```text
 Geometry intersections/classification

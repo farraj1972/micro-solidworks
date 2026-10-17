@@ -94,9 +94,11 @@ D13 — Editor Ownership, Selection Identity & CAD Interaction Model: FROZEN
 ADR-0049–0052: ACCEPTED
 D14 — General Planar Profiles & Curved Extrusion Semantics: FROZEN
 ADR-0053–0055: ACCEPTED (55/55 total)
-General profiles / curved topology / multiple solids: DECIDED / NOT IMPLEMENTED
-GAP-GEO-002: OPEN / ACTIVE PREREQUISITE FOR D14 IMPLEMENTATION
-V1.1-C1 — CAD Workspace & Guided Sketching: NOT STARTED / NEXT ACTIVE
+General profiles / curved topology / multiple solids: IMPLEMENTED IN V1.1-C1
+GAP-GEO-002: CLOSED — D14 intersection subset implemented and validated
+GAP-SCENE-002: PARTIALLY CLOSED — EXECUTABLE V1.1-C1 SLICE
+V1.1-C1 — CAD Workspace & Guided Sketching: FROZEN
+Latest validated snapshot (V1.1-C1): 822/822 tests PASS, runtime and Experience Gate PASS, 0 warnings
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
