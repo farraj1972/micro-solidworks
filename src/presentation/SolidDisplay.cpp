@@ -86,8 +86,21 @@ void appendPlanar(const topology::Solid& solid, const topology::Face& face,
 }
 
 void appendCylinder(const topology::Solid& solid, const topology::Face& face,
-    interaction::TopologyFaceTarget target, const math::Vector3& outward, std::vector<FaceTriangle>& out)
+    interaction::TopologyFaceTarget target, bool reversed, std::vector<FaceTriangle>& out)
 {
+    const auto& cylinder = std::get<geometry::Cylinder>(face.support());
+    const auto radialNormal = [&](const geometry::Point3& a, const geometry::Point3& b,
+        const geometry::Point3& c)
+    {
+        const auto centroid = geometry::Point3{
+            (a.x() + b.x() + c.x()) / 3.0,
+            (a.y() + b.y() + c.y()) / 3.0,
+            (a.z() + b.z() + c.z()) / 3.0};
+        const auto fromAxisOrigin = centroid - cylinder.origin();
+        auto radial = (fromAxisOrigin - cylinder.axis() * math::dot(fromAxisOrigin, cylinder.axis())).normalized();
+        if (reversed) radial = -radial;
+        return radial;
+    };
     std::vector<std::vector<geometry::Point3>> arcs;
     for(const auto& use:solid.find(face.outerWire()).uses())
         if(std::holds_alternative<geometry::CircularArc3>(solid.find(use.edge).geometry()))
@@ -100,8 +113,8 @@ void appendCylinder(const topology::Solid& solid, const topology::Face& face,
     {
         const auto& a=arcs[0][i]; const auto& b=arcs[0][i+1];
         const auto& c=arcs[1][i+1]; const auto& d=arcs[1][i];
-        out.push_back({{a,b,c},triangleNormal(a,b,c,outward),target});
-        out.push_back({{a,c,d},triangleNormal(a,c,d,outward),target});
+        out.push_back({{a,b,c},triangleNormal(a,b,c,radialNormal(a,b,c)),target});
+        out.push_back({{a,c,d},triangleNormal(a,c,d,radialNormal(a,c,d)),target});
     }
 }
 }
@@ -124,7 +137,7 @@ SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::Feat
         if(use.orientation==topology::FaceOrientation::Reversed) outward=-outward;
         const interaction::TopologyFaceTarget target{feature,body,use.face};
         if(std::holds_alternative<geometry::Plane>(face.support())) appendPlanar(solid,face,target,outward,result.triangles);
-        else appendCylinder(solid,face,target,outward,result.triangles);
+        else appendCylinder(solid,face,target,use.orientation==topology::FaceOrientation::Reversed,result.triangles);
     }
     return result;
 }

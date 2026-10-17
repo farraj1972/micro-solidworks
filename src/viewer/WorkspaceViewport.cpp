@@ -217,7 +217,7 @@ void WorkspaceViewport::fitVisibleGeometry()
     if(!impl_->featurePresentation)return; const auto& d=impl_->featurePresentation->solidDisplay();
     if(d.triangles.empty())return; math::Vector3 lo{d.triangles[0].points[0].x(),d.triangles[0].points[0].y(),d.triangles[0].points[0].z()},hi=lo;
     for(const auto&t:d.triangles)for(const auto&p:t.points){lo={std::min(lo.x(),p.x()),std::min(lo.y(),p.y()),std::min(lo.z(),p.z())};hi={std::max(hi.x(),p.x()),std::max(hi.y(),p.y()),std::max(hi.z(),p.z())};}
-    impl_->camera.setTarget((lo+hi)*0.5);impl_->camera.setDistance(std::max<math::Scalar>(1.0,(hi-lo).length()*1.5));
+    const auto extent=std::max<math::Scalar>(1.0,(hi-lo).length());impl_->camera.setTarget((lo+hi)*0.5);impl_->camera.setDistance(extent*1.5);impl_->projection.setVisibleHeight(extent*1.2);
 }
 
 ProjectionMode WorkspaceViewport::projectionMode() const noexcept
