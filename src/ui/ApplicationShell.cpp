@@ -15,7 +15,61 @@ namespace
 constexpr float defaultModelPanelWidth = 320.0F;
 constexpr float minimumModelPanelWidth = 260.0F;
 constexpr float statusBarHeight = 26.0F;
-constexpr float commandBarHeight = 58.0F;
+constexpr float commandBarHeight = 88.0F;
+
+enum class CadIcon { New, Open, Save, SaveAs, Rebuild, Sketch, ExitSketch, Select,
+    Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude };
+
+void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
+{
+    const float x = center.x, y = center.y;
+    const auto line = [&](float ax, float ay, float bx, float by, float width = 2.0F) {
+        draw->AddLine({x + ax, y + ay}, {x + bx, y + by}, color, width);
+    };
+    const auto circle = [&](float ox, float oy, float radius, float width = 2.0F) {
+        draw->AddCircle({x + ox, y + oy}, radius, color, 20, width);
+    };
+    switch (icon)
+    {
+    case CadIcon::New:
+        draw->AddRect({x-9,y-11},{x+6,y+10},color,1,0,2); line(2,-11,6,-7); line(10,1,10,11); line(5,6,15,6); break;
+    case CadIcon::Open:
+        line(-12,-5,-3,-5); line(-3,-5,0,-9); line(0,-9,9,-9); line(9,-9,11,-5);
+        draw->AddQuad({x-12,y-5},{x+12,y-5},{x+8,y+10},{x-9,y+10},color,2); break;
+    case CadIcon::Save:
+    case CadIcon::SaveAs:
+        draw->AddRect({x-11,y-11},{x+11,y+11},color,1,0,2); draw->AddRect({x-6,y-10},{x+5,y-3},color,0,0,2);
+        draw->AddRect({x-6,y+3},{x+6,y+10},color,0,0,2); if(icon==CadIcon::SaveAs){line(8,2,8,12);line(3,7,13,7);} break;
+    case CadIcon::Rebuild:
+        draw->PathArcTo({x,y},10,-2.6F,1.1F,20); draw->PathStroke(color,0,2.5F);
+        draw->AddTriangleFilled({x+10,y-9},{x+12,y-1},{x+4,y-3},color); break;
+    case CadIcon::Sketch:
+        draw->AddRect({x-11,y-9},{x+7,y+9},color,0,0,2); line(-5,5,11,-11,3); circle(10,-10,2); break;
+    case CadIcon::ExitSketch:
+        line(-11,0,-3,8,3); line(-3,8,12,-9,3); break;
+    case CadIcon::Select:
+        draw->AddTriangleFilled({x-10,y-12},{x-7,y+10},{x+1,y+3},color); line(0,2,8,11,3); break;
+    case CadIcon::Line:
+        line(-11,9,11,-9,3); circle(-11,9,2); circle(11,-9,2); break;
+    case CadIcon::Rectangle:
+        draw->AddRect({x-11,y-8},{x+11,y+8},color,0,0,2.5F); break;
+    case CadIcon::Circle:
+        circle(0,0,10,2.5F); circle(0,0,2); break;
+    case CadIcon::Horizontal:
+        line(-11,0,11,0,3); circle(-11,0,2); circle(11,0,2); line(-7,-7,7,-7); break;
+    case CadIcon::Vertical:
+        line(0,-11,0,11,3); circle(0,-11,2); circle(0,11,2); line(7,-7,7,7); break;
+    case CadIcon::Coincident:
+        circle(-4,0,6,2.5F); circle(4,0,6,2.5F); draw->AddCircleFilled({x,y},2,color); break;
+    case CadIcon::Dimension:
+        line(-10,-7,-10,8); line(10,-7,10,8); line(-10,4,10,4);
+        draw->AddTriangleFilled({x-10,y+4},{x-5,y+1},{x-5,y+7},color);
+        draw->AddTriangleFilled({x+10,y+4},{x+5,y+1},{x+5,y+7},color); break;
+    case CadIcon::Extrude:
+        draw->AddRect({x-11,y-5},{x+3,y+9},color,0,0,2); draw->AddRect({x-3,y-11},{x+11,y+3},color,0,0,2);
+        line(-11,-5,-3,-11); line(3,-5,11,-11); line(3,9,11,3); break;
+    }
+}
 
 constexpr ImGuiWindowFlags structuralWindowFlags =
     ImGuiWindowFlags_NoDecoration |
@@ -121,49 +175,74 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     const auto* viewport = ImGui::GetMainViewport();
     beginStructuralWindow("CAD Command Bar", viewport->WorkPos,
         ImVec2{viewport->WorkSize.x, commandBarHeight});
-    const auto commandButton = [&](const char* icon, const char* tooltip, bool enabled, const auto& action)
+    const auto commandButton = [&](const char* id, const char* label, const char* tooltip,
+                                   CadIcon icon, bool enabled, bool active, const auto& action)
     {
+        ImGui::PushID(id);
         if (!enabled) ImGui::BeginDisabled();
-        if (ImGui::Button(icon, ImVec2{34, 30})) action();
+        if (active)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.18F, 0.42F, 0.66F, 1.0F});
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.22F, 0.50F, 0.76F, 1.0F});
+        }
+        const bool clicked = ImGui::Button("##tool", ImVec2{62, 58});
+        const auto topLeft = ImGui::GetItemRectMin();
+        auto* draw = ImGui::GetWindowDrawList();
+        const ImU32 color = ImGui::GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+        drawCadIcon(draw, icon, {topLeft.x + 31, topLeft.y + 21}, color);
+        const auto labelSize = ImGui::CalcTextSize(label);
+        draw->AddText({topLeft.x + (62-labelSize.x)/2, topLeft.y + 40}, color, label);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("%s", tooltip);
+        if (active) ImGui::PopStyleColor(2);
         if (!enabled) ImGui::EndDisabled();
+        if (clicked && enabled) action();
+        ImGui::PopID();
         ImGui::SameLine();
     };
-    ImGui::TextDisabled("General"); ImGui::SameLine();
-    commandButton("N", "New document", true, [&]{ newDocumentRequest_ = true; });
-    commandButton("O", "Open .microsw", true, [&]{ openDocumentRequest_ = true; });
-    commandButton("S", "Save", true, [&]{ saveDocumentRequest_ = true; });
-    commandButton("SA", "Save As", true, [&]{ saveAsDocumentRequest_ = true; });
-    commandButton("R", "Rebuild model", featureModel != nullptr, [&]{ rebuildFeaturesRequest_ = true; });
-    ImGui::Separator(); ImGui::SameLine(); ImGui::TextDisabled("Sketch"); ImGui::SameLine();
+    commandButton("new", "New", "Create a new part", CadIcon::New, true, false, [&]{ newDocumentRequest_ = true; });
+    commandButton("open", "Open", "Open a .microsw part", CadIcon::Open, true, false, [&]{ openDocumentRequest_ = true; });
+    commandButton("save", "Save", "Save the current part", CadIcon::Save, true, false, [&]{ saveDocumentRequest_ = true; });
+    commandButton("saveas", "Save As", "Save the part to a new path", CadIcon::SaveAs, true, false, [&]{ saveAsDocumentRequest_ = true; });
+    commandButton("rebuild", "Rebuild", "Rebuild the feature history", CadIcon::Rebuild,
+        featureModel != nullptr, false, [&]{ rebuildFeaturesRequest_ = true; });
+    ImGui::TextDisabled("|"); ImGui::SameLine();
     const bool editing = editor && editor->activeSketchFeatureId();
-    commandButton(editing ? "X" : "SK", editing ? "Exit Sketch" : "Create or edit Sketch", true,
-        [&]{ if (editing) exitSketchRequest_ = true; else enterSketchRequest_ = true; });
-    const auto tool = [&](const char* icon, const char* tip, SketchTool sketchTool, interaction::EditorCommand command)
+    commandButton("sketch", editing ? "Exit" : "Sketch", editing ? "Finish editing the active Sketch" : "Create or edit a Sketch",
+        editing ? CadIcon::ExitSketch : CadIcon::Sketch, true, editing,
+        [&]{ if (editing) exitSketchRequest_ = true; else { enterSketchRequest_ = true; propertyManagerVisible_ = true; } });
+    const auto tool = [&](const char* id, const char* label, const char* tip, CadIcon icon,
+                          SketchTool sketchTool, interaction::EditorCommand command)
     {
-        commandButton(icon, tip, editing, [&]{ sketchToolRequest_ = sketchTool; editorCommandRequest_ = command; });
+        commandButton(id, label, tip, icon, editing, activeTool == sketchTool,
+            [&]{ sketchToolRequest_ = sketchTool; editorCommandRequest_ = command; propertyManagerVisible_ = true; });
     };
-    tool("SEL", "Select", SketchTool::Select, interaction::EditorCommand::Select);
-    tool("L", "Line", SketchTool::Line, interaction::EditorCommand::Line);
-    tool("[]", "Rectangle", SketchTool::Rectangle, interaction::EditorCommand::Rectangle);
-    tool("O", "Circle", SketchTool::Circle, interaction::EditorCommand::Circle);
+    tool("select", "Select", "Select sketch geometry", CadIcon::Select, SketchTool::Select, interaction::EditorCommand::Select);
+    tool("line", "Line", "Create a two-point line", CadIcon::Line, SketchTool::Line, interaction::EditorCommand::Line);
+    tool("rectangle", "Rectangle", "Create a corner rectangle", CadIcon::Rectangle, SketchTool::Rectangle, interaction::EditorCommand::Rectangle);
+    tool("circle", "Circle", "Create a center-radius circle", CadIcon::Circle, SketchTool::Circle, interaction::EditorCommand::Circle);
     const bool selectedLine = selected && selected->type() == sketch::SketchEntityType::Line;
-    commandButton("H", "Horizontal constraint", editing && selectedLine, [&]{
+    commandButton("horizontal", "Horizontal", "Make the selected line horizontal", CadIcon::Horizontal,
+        editing && selectedLine, false, [&]{
         editorCommandRequest_ = interaction::EditorCommand::Horizontal;
         addConstraintRequest_ = sketch::Horizontal{{selected->id(), sketch::SubElementKind::LineBody}};
     });
-    commandButton("V", "Vertical constraint", editing && selectedLine, [&]{
+    commandButton("vertical", "Vertical", "Make the selected line vertical", CadIcon::Vertical,
+        editing && selectedLine, false, [&]{
         editorCommandRequest_ = interaction::EditorCommand::Vertical;
         addConstraintRequest_ = sketch::Vertical{{selected->id(), sketch::SubElementKind::LineBody}};
     });
-    commandButton("C", "Coincident: select two endpoints", editing, [&]{ editorCommandRequest_ = interaction::EditorCommand::Coincident; });
-    commandButton("D", "Driving dimension", editing && selected, [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension; });
-    ImGui::Separator(); ImGui::SameLine(); ImGui::TextDisabled("Features"); ImGui::SameLine();
+    commandButton("coincident", "Coincident", "Select two compatible endpoints", CadIcon::Coincident,
+        editing, editor && editor->activeCommand()==interaction::EditorCommand::Coincident,
+        [&]{ editorCommandRequest_ = interaction::EditorCommand::Coincident; propertyManagerVisible_ = true; });
+    commandButton("dimension", "Dimension", "Create or edit a driving dimension", CadIcon::Dimension,
+        editing && selected, editor && editor->activeCommand()==interaction::EditorCommand::Dimension,
+        [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension; propertyManagerVisible_ = true; });
+    ImGui::TextDisabled("|"); ImGui::SameLine();
     const bool canExtrude = editor && editor->commandAvailable(interaction::EditorCommand::Extrude, model.size() >= 3);
-    commandButton("EX", "Extrude selected Sketch", canExtrude, [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; });
-    ImGui::Separator(); ImGui::SameLine(); ImGui::TextDisabled("View: mouse navigation");
+    commandButton("extrude", "Extrude", "Create an extrusion from the active or selected Sketch", CadIcon::Extrude,
+        canExtrude, editor && editor->activeCommand()==interaction::EditorCommand::Extrude,
+        [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; });
     ImGui::End();
-    (void)activeTool;
 }
 
 void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sketch& model,
@@ -184,6 +263,14 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGuiWindowFlags_NoBringToFrontOnFocus;
     ImGui::Begin("Model", nullptr, sketchPanelFlags);
     modelPanelWidth_ = ImGui::GetWindowSize().x;
+    if (ImGui::Selectable("FeatureManager", !propertyManagerVisible_, 0, ImVec2{145, 28}))
+        propertyManagerVisible_ = false;
+    ImGui::SameLine();
+    if (ImGui::Selectable("PropertyManager", propertyManagerVisible_, 0, ImVec2{145, 28}))
+        propertyManagerVisible_ = true;
+    ImGui::Separator();
+    if (!propertyManagerVisible_)
+    {
     ImGui::TextUnformatted("Document");
     ImGui::InputText("Path (.microsw)", documentPathInput_.data(), documentPathInput_.size());
     ImGui::TextWrapped("Current: %s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str());
@@ -211,9 +298,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             if (ImGui::BeginPopupContextItem("Feature actions"))
             {
                 if (feature.kind() == features::FeatureKind::Sketch && ImGui::MenuItem("Edit Sketch"))
-                { selectedFeature_ = feature.id(); enterSketchRequest_ = true; }
+                { selectedFeature_ = feature.id(); enterSketchRequest_ = true; propertyManagerVisible_ = true; }
                 if (feature.kind() == features::FeatureKind::Sketch && ImGui::MenuItem("Extrude"))
-                { selectedFeature_ = feature.id(); editorCommandRequest_ = interaction::EditorCommand::Extrude; }
+                { selectedFeature_ = feature.id(); editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
                 if (ImGui::MenuItem(display == interaction::DisplayState::Hidden ? "Show" : "Hide"))
                     visibilityToggleRequest_ = feature.id();
                 ImGui::EndPopup();
@@ -228,9 +315,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             {
                 const auto& sketch = std::get<features::SketchFeature>(feature.data()).sketch;
                 ImGui::Text("%zu entities, %zu constraints", sketch.size(), sketch.constraintCount());
-                if (ImGui::Button("Edit Sketch")) enterSketchRequest_ = true;
+                if (ImGui::Button("Edit Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
                 ImGui::SameLine();
-                if (ImGui::Button("Extrude")) editorCommandRequest_ = interaction::EditorCommand::Extrude;
+                if (ImGui::Button("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
             }
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
@@ -249,6 +336,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         }
         if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
         ImGui::Separator();
+    }
+        ImGui::TextWrapped("Select a feature to inspect it. Right-click a feature for Edit, Extrude, Show or Hide.");
+        ImGui::End();
+        return;
     }
     ImGui::TextUnformatted(editor && editor->activeSketchFeatureId() ? "Property / Tool Manager — Sketch" : "Property / Tool Manager");
     const char* toolName = activeTool == SketchTool::Select ? "Select" : activeTool == SketchTool::Line ? "Line"
@@ -618,9 +709,9 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
     {
         if (selectedFeature_)
         {
-            if (ImGui::MenuItem("Edit selected Sketch")) enterSketchRequest_ = true;
+            if (ImGui::MenuItem("Edit selected Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
             if (ImGui::MenuItem("Show / Hide")) visibilityToggleRequest_ = selectedFeature_;
-            if (ImGui::MenuItem("Extrude")) editorCommandRequest_ = interaction::EditorCommand::Extrude;
+            if (ImGui::MenuItem("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
         }
         else ImGui::TextDisabled("No logical object selected");
         if (ImGui::MenuItem("Rebuild")) rebuildFeaturesRequest_ = true;

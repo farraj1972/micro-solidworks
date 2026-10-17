@@ -131,5 +131,6 @@ private:
     std::string currentFilePath_;
     std::string persistenceStatus_;
     float modelPanelWidth_{320.0F};
+    bool propertyManagerVisible_{};
 };
 }
