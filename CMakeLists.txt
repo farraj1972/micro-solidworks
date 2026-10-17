@@ -383,6 +383,7 @@ if(BUILD_TESTING)
         tests/modeling/test_profile_extrusion.cpp
         tests/modeling/test_boolean.cpp
         tests/interaction/test_editor_context.cpp
+        tests/interaction/test_guided_workflow.cpp
         tests/features/test_feature_model.cpp
         tests/persistence/test_persistence.cpp
         tests/topology/test_topology.cpp

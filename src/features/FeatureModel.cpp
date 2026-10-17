@@ -11,6 +11,20 @@
 
 namespace microsw::features
 {
+namespace
+{
+constraints::SolverPolicy featureSolverPolicy()
+{
+    auto policy = constraints::SolverPolicy{};
+    // Feature rebuild feeds solved geometry into the modeling kernel. Tighten
+    // this integration policy so coincident endpoints also satisfy the kernel's
+    // geometric connectivity tolerance after a driving-dimension edit.
+    policy.residualSatisfactionTolerance = 1.0e-10;
+    policy.initialStateRegularization = 1.0e-12;
+    return policy;
+}
+}
+
 std::vector<FeatureId> FeatureRecord::dependencies() const
 {
     return std::visit([](const auto& value) -> std::vector<FeatureId> {
@@ -21,7 +35,7 @@ std::vector<FeatureId> FeatureRecord::dependencies() const
     }, data_);
 }
 
-FeatureModel::FeatureModel() : solver_{constraints::SolverPolicy{}} {}
+FeatureModel::FeatureModel() : solver_{featureSolverPolicy()} {}
 FeatureModel::FeatureModel(constraints::ConstraintSolver solver) : solver_{std::move(solver)} {}
 
 std::string FeatureModel::nextName(FeatureKind kind) const
