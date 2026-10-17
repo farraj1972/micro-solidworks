@@ -1465,3 +1465,9 @@ plus topology-derived edges; Wireframe draws topology edges without face fill.
 Selected and hovered edges may still provide transient feedback in Shaded.
 Triangle mesh edges never represent topology. Display mode remains transient
 Viewer/session state.
+
+V1.1-C2A implements the hierarchy as a pure derived `FeatureTreeModel` in UI.
+Solid rendering uses explicit face and topology-edge passes; the legacy visual
+entity retained for feature identity is never drawn as solid geometry. This
+prevents feature selection from leaking a complete wireframe into Shaded mode.
+The campaign is FROZEN with no change to FeatureModel ownership or dependencies.

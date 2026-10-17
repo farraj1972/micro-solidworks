@@ -105,8 +105,9 @@ V1.1-C2 — Solid Visualization & Selection: FROZEN
 Latest validated snapshot (V1.1-C2): 831/831 tests PASS, runtime and Experience Gate PASS, 0 warnings
 D16 — Feature Manager Hierarchy & Display Mode UX Semantics: FROZEN
 ADR-0059–0060: ACCEPTED (60/60 total)
-V1.1-C2A — Feature Manager & Display Mode UX Alignment: NOT STARTED / NEXT ACTIVE
-V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: PLANNED / WAITING FOR C2A
+V1.1-C2A — Feature Manager & Display Mode UX Alignment: FROZEN
+Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience Gate PASS, 0 warnings
+V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: NOT STARTED / NEXT ACTIVE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

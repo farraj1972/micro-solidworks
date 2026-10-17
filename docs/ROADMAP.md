@@ -780,8 +780,8 @@ initial v1.1 roadmap is:
 | --- | --- | --- |
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
 | V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
-| V1.1-C2A — Feature Manager & Display Mode UX Alignment | NOT STARTED / NEXT ACTIVE | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
-| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / WAITING FOR C2A | Safe editing history and session workflow |
+| V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
+| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | NOT STARTED / NEXT ACTIVE | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
@@ -978,8 +978,8 @@ does not change the frozen C2 solid visualization and sub-element selection gate
 STATUS: FROZEN
 ADR-0059–0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
-V1.1-C2A: NOT STARTED / NEXT ACTIVE
-V1.1-C3: PLANNED / WAITING FOR C2A
+V1.1-C2A: FROZEN
+V1.1-C3: NOT STARTED / NEXT ACTIVE
 ```
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel rather than a
@@ -1003,4 +1003,6 @@ unconsumed Sketch presentation, labels/status cleanup, tree interaction,
 display-mode passes and visual differentiation plus an Experience Gate. It
 excludes Undo/Redo, Document Safety, Cut Extrude, Sketch on Face, persistent
 topological naming, feature reorder, suppression, advanced shared-Sketch
-semantics, reference geometry objects and materials/PBR. C3 waits for C2A.
+semantics, reference geometry objects and materials/PBR. C2A is FROZEN after a
+fresh configure, full Debug build with zero warnings, 837/837 tests and an
+approved manual Experience Gate. C3 is now the next active campaign.

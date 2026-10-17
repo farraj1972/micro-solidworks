@@ -1207,8 +1207,8 @@ D16 - Feature Manager Hierarchy & Display Mode UX Semantics
 STATUS: FROZEN
 ADR-0059-0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
-V1.1-C2A: NOT STARTED / NEXT ACTIVE
-V1.1-C3: PLANNED / WAITING FOR C2A
+V1.1-C2A: FROZEN
+V1.1-C3: NOT STARTED / NEXT ACTIVE
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
@@ -1221,8 +1221,11 @@ Normal labels are human-readable; internal IDs are diagnostic only.
 Frozen D16 defines explicit display passes: Shaded draws lit faces without the global
 topology-edge overlay; Shaded With Edges adds topology-derived edges; Wireframe
 draws topology edges without face fill. Hovered/selected edges may remain as
-transient feedback in Shaded. Display mode remains Viewer/session state. C2A is
-the corrective UX campaign and must freeze before C3 begins.
+transient feedback in Shaded. Display mode remains Viewer/session state. C2A is FROZEN after a fresh
+configure, full Debug build with zero warnings, 837/837 CTest tests,
+targeted correction validation and the manual Experience Gate. The solid
+identity proxy is never drawn as geometry; explicit face and topology
+passes exclusively control solid display. C3 is the next active campaign.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

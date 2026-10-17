@@ -217,3 +217,7 @@ Display-mode correction remains within Viewer/Rendering over existing derived
 Presentation data. Viewer chooses face and topology-edge passes; Rendering stays
 identity-free. No external tree, scene, tessellation or rendering framework is
 authorized for V1.1-C2A.
+
+V1.1-C2A completed this policy without adding dependencies. `FeatureTreeModel`
+derives UI nodes from Features, and Viewer consumes the existing Presentation
+face/edge data. No reverse dependency or CAD-state ownership change was added.
