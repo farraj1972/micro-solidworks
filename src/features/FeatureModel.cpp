@@ -1,9 +1,10 @@
 #include "features/FeatureModel.h"
 
 #include "core/geometry/GeometricTolerance.h"
-#include "features/SketchProfileAdapter.h"
-#include "modeling/Extrusion.h"
+#include "features/GeneralExtrusion.h"
+#include "features/PlanarRegion.h"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <type_traits>
@@ -180,16 +181,32 @@ RebuildResult FeatureModel::rebuild()
             {
                 const auto& data = std::get<ExtrudeFeature>(record.data_);
                 const auto& sketchCache = std::get<SketchFeatureCache>(output(data.sourceSketchFeatureId));
-                candidates[record.id().value()] = SolidFeatureCache{modeling::extrude(extractProfile(sketchCache.solvedSketch), data.distance)};
+                const auto regions = extractPlanarRegions(sketchCache.solvedSketch);
+                auto extrusion = extrudeRegions(regions, sketchCache.solvedSketch.plane(), data.distance);
+                if (!extrusion.succeeded())
+                    throw std::runtime_error{extrusion.diagnostic};
+                candidates[record.id().value()] = SolidFeatureCache{std::move(extrusion.solids)};
             }
             else
             {
                 const auto& data = std::get<BooleanFeature>(record.data_);
-                const auto& a = std::get<SolidFeatureCache>(output(data.inputA)).solid;
-                const auto& b = std::get<SolidFeatureCache>(output(data.inputB)).solid;
+                const auto& aCache = std::get<SolidFeatureCache>(output(data.inputA));
+                const auto& bCache = std::get<SolidFeatureCache>(output(data.inputB));
+                const auto supportsRestrictedBoolean = [](const SolidFeatureCache& cache) {
+                    return cache.solids.size() == 1
+                        && std::all_of(cache.solids.front().edges().begin(),
+                            cache.solids.front().edges().end(), [](const auto& edge) {
+                                return std::holds_alternative<geometry::Segment3>(edge.geometry());
+                            });
+                };
+                if (!supportsRestrictedBoolean(aCache) || !supportsRestrictedBoolean(bCache))
+                    throw std::runtime_error{
+                        "Boolean supports one axis-aligned linear solid per input"};
+                const auto& a = aCache.solids.front();
+                const auto& b = bCache.solids.front();
                 auto result = modeling::booleanOperation(a, b, data.operation);
                 if (result.status() == modeling::BooleanStatus::SUCCESS)
-                    candidates[record.id().value()] = SolidFeatureCache{*result.solid()};
+                    candidates[record.id().value()] = SolidFeatureCache{{*result.solid()}};
                 else if (result.status() == modeling::BooleanStatus::EMPTY)
                     candidates[record.id().value()] = EmptyFeatureCache{};
                 else throw std::runtime_error{"Boolean rebuild failed"};

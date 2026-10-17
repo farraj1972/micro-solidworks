@@ -16,3 +16,10 @@ TEST(FeaturePresentation,ResolvesVisualProxyBackToLogicalFeature){
  const auto visual=p.visualId(feature);ASSERT_TRUE(visual);EXPECT_EQ(p.featureId(*visual),feature);
  EXPECT_FALSE(p.featureId(microsw::presentation::VisualEntityId{999999}));
 }
+TEST(FeaturePresentation,PresentsEveryBodyUnderOneLogicalFeature){
+ microsw::sketch::Sketch sketch;sketch.addCircle({{-3,0},1});sketch.addCircle({{3,0},1});
+ microsw::features::FeatureModel model;const auto feature=model.addExtrude(model.addSketch(std::move(sketch)),2);
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
+ ASSERT_EQ(p.geometry().size(),2u);for(const auto& entity:p.geometry().entities())EXPECT_EQ(p.featureId(entity.id()),feature);
+ const auto first=p.visualId(feature);ASSERT_TRUE(first);model.setExtrudeDistance(feature,3);ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);p.update(model);EXPECT_EQ(p.visualId(feature),first);
+}

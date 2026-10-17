@@ -4,6 +4,7 @@
 #include "app/window/ApplicationWindow.h"
 
 #include <imgui.h>
+#include <algorithm>
 #include <cmath>
 #include <numbers>
 #include <string_view>
@@ -12,6 +13,14 @@
 
 namespace
 {
+bool supportsExtrusionProfile(const microsw::sketch::Sketch& sketch)
+{
+    const auto ids = sketch.entityIds();
+    return ids.size() >= 3 && std::all_of(ids.begin(), ids.end(), [&](const auto id) {
+        return sketch.find(id).type() == microsw::sketch::SketchEntityType::Line;
+    });
+}
+
 constexpr float defaultModelPanelWidth = 320.0F;
 constexpr float minimumModelPanelWidth = 260.0F;
 constexpr float statusBarHeight = 26.0F;
@@ -238,8 +247,10 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         editing && selected, editor && editor->activeCommand()==interaction::EditorCommand::Dimension,
         [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension; propertyManagerVisible_ = true; });
     ImGui::TextDisabled("|"); ImGui::SameLine();
-    const bool canExtrude = editor && editor->commandAvailable(interaction::EditorCommand::Extrude, model.size() >= 3);
-    commandButton("extrude", "Extrude", "Create an extrusion from the active or selected Sketch", CadIcon::Extrude,
+    const bool supportedProfile = supportsExtrusionProfile(model);
+    const bool canExtrude = editor && editor->commandAvailable(interaction::EditorCommand::Extrude, supportedProfile);
+    commandButton("extrude", "Extrude", supportedProfile ? "Create an extrusion from the active or selected Sketch"
+        : "Extrusion currently requires a closed outline made from lines", CadIcon::Extrude,
         canExtrude, editor && editor->activeCommand()==interaction::EditorCommand::Extrude,
         [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; });
     ImGui::End();
@@ -263,10 +274,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGuiWindowFlags_NoBringToFrontOnFocus;
     ImGui::Begin("Model", nullptr, sketchPanelFlags);
     modelPanelWidth_ = ImGui::GetWindowSize().x;
-    if (ImGui::Selectable("FeatureManager", !propertyManagerVisible_, 0, ImVec2{145, 28}))
+    if (ImGui::Selectable("Model", !propertyManagerVisible_, 0, ImVec2{145, 28}))
         propertyManagerVisible_ = false;
     ImGui::SameLine();
-    if (ImGui::Selectable("PropertyManager", propertyManagerVisible_, 0, ImVec2{145, 28}))
+    if (ImGui::Selectable("Edit", propertyManagerVisible_, 0, ImVec2{145, 28}))
         propertyManagerVisible_ = true;
     ImGui::Separator();
     if (!propertyManagerVisible_)
@@ -278,8 +289,8 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     ImGui::Separator();
     if (featureModel)
     {
-        ImGui::TextUnformatted("Feature Manager");
-        ImGui::TextDisabled("Part / Model");
+        ImGui::TextUnformatted("Model history");
+        ImGui::TextDisabled("Sketches and created shapes");
         const auto stateName = [](features::FeatureState state) {
             switch (state) { case features::FeatureState::Clean: return "OK"; case features::FeatureState::Dirty: return "Needs rebuild";
             case features::FeatureState::Failed: return "Failed"; default: return "Blocked"; }
@@ -341,12 +352,58 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGui::End();
         return;
     }
-    ImGui::TextUnformatted(editor && editor->activeSketchFeatureId() ? "Property / Tool Manager — Sketch" : "Property / Tool Manager");
+    ImGui::TextUnformatted(editor && editor->activeSketchFeatureId() ? "Edit sketch" : "Edit model");
     const char* toolName = activeTool == SketchTool::Select ? "Select" : activeTool == SketchTool::Line ? "Line"
         : activeTool == SketchTool::Rectangle ? "Rectangle" : activeTool == SketchTool::Circle ? "Circle" : "Arc";
     ImGui::Text("Current tool: %s", toolName);
     if (editor && editor->activeSketchFeatureId())
     {
+        ImGui::TextColored(ImVec4{0.35F, 0.75F, 1.0F, 1.0F},
+            model.size() == 0 ? "What would you like to draw?" : "Your sketch is ready for the next step.");
+        if (model.size() == 0)
+        {
+            ImGui::TextWrapped("Start with a closed rectangle. Choose a shape, then click in the Graphics Area.");
+            if (ImGui::Button("Draw rectangle", ImVec2{180, 34}))
+            {
+                sketchToolRequest_ = SketchTool::Rectangle;
+                editorCommandRequest_ = interaction::EditorCommand::Rectangle;
+            }
+            if (ImGui::Button("Draw circle", ImVec2{180, 30}))
+            {
+                sketchToolRequest_ = SketchTool::Circle;
+                editorCommandRequest_ = interaction::EditorCommand::Circle;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Draw line", ImVec2{120, 30}))
+            {
+                sketchToolRequest_ = SketchTool::Line;
+                editorCommandRequest_ = interaction::EditorCommand::Line;
+            }
+        }
+        else
+        {
+            ImGui::TextWrapped("You have %zu sketch element%s.",
+                model.size(), model.size() == 1 ? "" : "s");
+            if (supportsExtrusionProfile(model))
+            {
+                ImGui::TextWrapped("The closed line outline is ready for a 3D extrusion.");
+                if (ImGui::Button("Continue to 3D extrusion", ImVec2{230, 36}))
+                {
+                    editorCommandRequest_ = interaction::EditorCommand::Extrude;
+                    propertyManagerVisible_ = true;
+                }
+            }
+            else
+                ImGui::TextColored(ImVec4{1.0F,0.72F,0.25F,1.0F},
+                    "Extrusion currently supports closed outlines made from lines. Circle extrusion is not available in this baseline.");
+            if (ImGui::Button("Keep drawing", ImVec2{115, 36}))
+            {
+                sketchToolRequest_ = SketchTool::Rectangle;
+                editorCommandRequest_ = interaction::EditorCommand::Rectangle;
+            }
+        }
+        ImGui::Spacing();
+        ImGui::Separator();
         ImGui::Checkbox("Grid snap", &gridSnapEnabled_);
         ImGui::TextWrapped("Click in the Graphics Area. Esc cancels the current step, then returns to Select.");
         if (editor->snapCandidate())
@@ -363,6 +420,38 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         }
     }
     ImGui::Separator();
+
+    if (editor && editor->activeCommand() == interaction::EditorCommand::Extrude)
+    {
+        ImGui::TextUnformatted("Create a 3D extrusion");
+        ImGui::Spacing();
+        ImGui::TextWrapped("1. Source: the selected sketch");
+        ImGui::TextWrapped("2. Enter how far the shape should extend");
+        ImGui::TextWrapped("3. Choose Create extrusion");
+        ImGui::Spacing();
+        ImGui::InputDouble("Depth", &extrusionDistance_, 1.0, 5.0, "%.3f");
+        const bool hasProfile = supportsExtrusionProfile(model);
+        const bool hasPositiveDepth = std::isfinite(extrusionDistance_) && extrusionDistance_ > 0;
+        if (!hasProfile)
+            ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "Draw a closed shape first (for example, a rectangle).");
+        else
+            ImGui::TextColored(ImVec4{0.35F,0.9F,0.45F,1}, "Sketch detected and ready to use.");
+        if (!hasPositiveDepth)
+            ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "Depth must be greater than zero.");
+        const bool valid = hasProfile && hasPositiveDepth;
+        if (!valid) ImGui::BeginDisabled();
+        if (ImGui::Button("Create extrusion", ImVec2{170, 34}))
+        {
+            extrusionRequest_ = true;
+            confirmPropertyRequest_ = true;
+        }
+        if (!valid) ImGui::EndDisabled();
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2{90, 34})) cancelPropertyRequest_ = true;
+        if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
+        ImGui::End();
+        return;
+    }
 
     const auto selectedId = selected ? std::optional{selected->id()} : std::nullopt;
     if (selectedId != sketchEditorEntity_) { sketchEditorEntity_ = selectedId; sketchError_.clear(); }
@@ -512,18 +601,6 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     }
     if (ImGui::Button("Solve / Rebuild Sketch")) solveSketchRequest_ = true;
     ImGui::Separator();
-    if (editor && editor->activeCommand() == interaction::EditorCommand::Extrude)
-    {
-        ImGui::TextUnformatted("Property Manager — Extrude");
-        ImGui::TextUnformatted("Source: selected Sketch");
-        ImGui::InputDouble("Distance", &extrusionDistance_);
-        const bool valid = std::isfinite(extrusionDistance_) && extrusionDistance_ > 0 && model.size() >= 3;
-        if (!valid) ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "A closed Sketch and positive distance are required.");
-        if (!valid) ImGui::BeginDisabled();
-        if (ImGui::Button("Confirm Extrude")) { extrusionRequest_ = true; confirmPropertyRequest_ = true; }
-        if (!valid) ImGui::EndDisabled();
-        ImGui::SameLine(); if (ImGui::Button("Cancel##Extrude")) cancelPropertyRequest_ = true;
-    }
     if (hasActiveSolid) ImGui::TextUnformatted("Modeled result available");
     if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
     ImGui::End();
@@ -732,8 +809,15 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
             if (activeTool == SketchTool::Rectangle)
                 draw->AddRect(anchor, cursor, previewColor, 0.0F, 0, 2.0F);
             else if (activeTool == SketchTool::Circle)
-                draw->AddCircle(anchor, std::hypot(cursor.x - anchor.x, cursor.y - anchor.y),
-                                previewColor, 48, 2.0F);
+            {
+                const auto& curve = editor->previewCurve();
+                if (curve.size() > 2)
+                {
+                    for (std::size_t i = 1; i < curve.size(); ++i)
+                        draw->AddLine(toScreen(curve[i - 1]), toScreen(curve[i]), previewColor, 2.0F);
+                    draw->AddLine(toScreen(curve.back()), toScreen(curve.front()), previewColor, 2.0F);
+                }
+            }
             else
                 draw->AddLine(anchor, cursor, previewColor, 2.0F);
         }

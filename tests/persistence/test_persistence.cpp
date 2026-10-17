@@ -108,6 +108,30 @@ TEST(Persistence, FailedRebuildIsSuccessfulStructuralOpen)
     std::filesystem::remove(path);
 }
 
+TEST(Persistence, GeneralizedExtrudeRoundtripsWithFormatVersionOne)
+{
+    features::FeatureModel model;
+    sketch::Sketch sketch;
+    (void)sketch.addCircle({{-3, 0}, 1});
+    (void)sketch.addCircle({{3, 0}, 1});
+    const auto extrude = model.addExtrude(model.addSketch(std::move(sketch)), 4);
+    ASSERT_EQ(model.rebuild().status, features::RebuildStatus::Success);
+    const auto path = temporaryFile("micro-solidworks-general-extrude.microsw");
+
+    ASSERT_EQ(persistence::saveFeatureModel(model, path).status,
+        persistence::SaveStatus::Success);
+    std::ifstream input{path};
+    const std::string json{std::istreambuf_iterator<char>{input}, {}};
+    EXPECT_NE(json.find("\"formatVersion\": 1"), std::string::npos);
+    auto opened = persistence::openFeatureModel(path);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt)
+        << opened.diagnostic;
+    const auto& cache = std::get<features::SolidFeatureCache>(
+        *opened.model.find(extrude).cache());
+    EXPECT_EQ(cache.solids.size(), 2u);
+    std::filesystem::remove(path);
+}
+
 TEST(Persistence, InvalidPathDoesNotMutateModel)
 {
     auto model=sampleModel(); const auto count=model.history().size();

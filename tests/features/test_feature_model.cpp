@@ -126,3 +126,37 @@ TEST(FeatureModel, FailureRollsBackSuccessfulCandidateOnIndependentAffectedBranc
     EXPECT_EQ(&*model.find(extrudeB).cache(), previousB);
     EXPECT_EQ(model.find(extrudeB).state(), microsw::features::FeatureState::Dirty);
 }
+
+TEST(FeatureModel, ExtrudesEveryDisjointRegionUnderOneFeature)
+{
+    microsw::sketch::Sketch sketch;
+    (void)sketch.addCircle({{-3, 0}, 1});
+    (void)sketch.addCircle({{3, 0}, 1});
+    microsw::features::FeatureModel model;
+    const auto feature = model.addExtrude(model.addSketch(std::move(sketch)), 2);
+
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    const auto& cache = std::get<microsw::features::SolidFeatureCache>(
+        *model.find(feature).cache());
+    ASSERT_EQ(cache.solids.size(), 2u);
+    EXPECT_TRUE(cache.solids[0].isValid());
+    EXPECT_TRUE(cache.solids[1].isValid());
+}
+
+TEST(FeatureModel, RestrictedBooleanRejectsMultipleOrCurvedBodiesWithoutReplacingCache)
+{
+    microsw::sketch::Sketch circles;
+    (void)circles.addCircle({{-3, 0}, 1});
+    (void)circles.addCircle({{3, 0}, 1});
+    microsw::features::FeatureModel model;
+    const auto multiple = model.addExtrude(model.addSketch(std::move(circles)), 2);
+    const auto box = model.addExtrude(model.addSketch(rectangle(-1, -1, 1, 1)), 2);
+    const auto boolean = model.addBoolean(multiple, box,
+        microsw::modeling::BooleanOperation::Union);
+
+    const auto result = model.rebuild();
+    EXPECT_EQ(result.status, microsw::features::RebuildStatus::Failed);
+    EXPECT_EQ(result.failedFeature, boolean);
+    EXPECT_EQ(result.diagnostic, "Boolean supports one axis-aligned linear solid per input");
+    EXPECT_FALSE(model.find(boolean).cache());
+}

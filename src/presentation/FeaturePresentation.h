@@ -1,7 +1,6 @@
 #pragma once
 #include "features/FeatureModel.h"
 #include "presentation/SolidPresentation.h"
-#include <map>
 #include <optional>
 namespace microsw::presentation {
 class FeaturePresentation {
@@ -11,7 +10,8 @@ public:
  [[nodiscard]] std::optional<VisualEntityId> visualId(features::FeatureId id) const noexcept;
  [[nodiscard]] std::optional<features::FeatureId> featureId(VisualEntityId id) const noexcept;
 private:
- std::map<features::FeatureId,SolidPresentation> presentations_;
+ std::optional<features::FeatureId> activeFeature_;
+ std::vector<VisualEntityId> visualIds_;
  GeometryPresentation current_;
 };
 }

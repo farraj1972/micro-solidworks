@@ -293,6 +293,28 @@ std::optional<geometry::Point3> WorkspaceViewport::pointOnGlobalXY(
     return ray.pointAt(t);
 }
 
+std::optional<ScreenPoint> WorkspaceViewport::projectPoint(
+    const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+    const geometry::Point3& point) const
+{
+    const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
+    if (rect.width <= 0 || rect.height <= 0) return std::nullopt;
+    const auto logicalPerPixelX = layout.displayWidth / framebufferWidth;
+    const auto logicalPerPixelY = layout.displayHeight / framebufferHeight;
+    PickingContext context;
+    context.camera = impl_->camera;
+    context.projection = impl_->projection;
+    context.width = rect.width * logicalPerPixelX;
+    context.height = rect.height * logicalPerPixelY;
+    context.mouseX = 0;
+    context.mouseY = 0;
+    context.projectionAspectRatio = rect.aspectRatio();
+    context.verticalFov = impl_->verticalFov;
+    context.nearPlane = impl_->nearPlane;
+    context.farPlane = impl_->farPlane;
+    return projectWorldToScreen(point, context);
+}
+
 void WorkspaceViewport::updateSelection(const WorkspaceLayout& layout, const WorkspaceInput& input,
     int framebufferWidth, int framebufferHeight)
 {

@@ -22,7 +22,10 @@ struct BooleanFeature { FeatureId inputA; FeatureId inputB; modeling::BooleanOpe
 using FeatureData = std::variant<SketchFeature, ExtrudeFeature, BooleanFeature>;
 
 struct SketchFeatureCache { sketch::Sketch solvedSketch; };
-struct SolidFeatureCache { topology::Solid solid; };
+struct SolidFeatureCache
+{
+    std::vector<topology::Solid> solids;
+};
 struct EmptyFeatureCache {};
 using FeatureCache = std::variant<SketchFeatureCache, SolidFeatureCache, EmptyFeatureCache>;
 

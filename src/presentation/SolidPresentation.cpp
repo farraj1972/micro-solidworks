@@ -8,7 +8,7 @@
 
 namespace microsw::presentation
 {
-void SolidPresentation::regenerate(const topology::Solid& solid)
+SegmentSet3 deriveSolidWireframe(const topology::Solid& solid)
 {
     if (!solid.isValid()) throw std::invalid_argument{"Cannot present an invalid Solid"};
     std::vector<geometry::Segment3> segments;
@@ -27,7 +27,12 @@ void SolidPresentation::regenerate(const topology::Solid& solid)
                 }
             }
         }, edge.geometry());
-    SegmentSet3 wireframe{std::move(segments)};
+    return SegmentSet3{std::move(segments)};
+}
+
+void SolidPresentation::regenerate(const topology::Solid& solid)
+{
+    auto wireframe = deriveSolidWireframe(solid);
     if (visualId_) (void)geometry_.setGeometry(*visualId_, std::move(wireframe));
     else visualId_ = geometry_.add(wireframe);
 }

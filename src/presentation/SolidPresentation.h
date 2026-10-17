@@ -7,6 +7,8 @@
 
 namespace microsw::presentation
 {
+[[nodiscard]] SegmentSet3 deriveSolidWireframe(const topology::Solid& solid);
+
 class SolidPresentation
 {
 public:

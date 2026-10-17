@@ -71,6 +71,9 @@ public:
     [[nodiscard]] std::optional<geometry::Point3> pointOnGlobalXY(
         const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
         math::Scalar mouseX, math::Scalar mouseY) const;
+    [[nodiscard]] std::optional<ScreenPoint> projectPoint(
+        const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+        const geometry::Point3& point) const;
 
 private:
     class Impl;

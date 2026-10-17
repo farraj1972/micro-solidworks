@@ -92,9 +92,11 @@ public:
 
     void beginPreview(ScreenPoint anchor) noexcept { previewAnchor_ = anchor; previewCursor_ = anchor; step_ = ToolStep::PickSecond; }
     void updatePreview(ScreenPoint cursor) noexcept { if (previewAnchor_) previewCursor_ = cursor; }
-    void clearPreview() noexcept { previewAnchor_.reset(); previewCursor_.reset(); }
+    void clearPreview() noexcept { previewAnchor_.reset(); previewCursor_.reset(); previewCurve_.clear(); }
+    void setPreviewCurve(std::vector<ScreenPoint> curve) { previewCurve_ = std::move(curve); }
     [[nodiscard]] const std::optional<ScreenPoint>& previewAnchor() const noexcept { return previewAnchor_; }
     [[nodiscard]] const std::optional<ScreenPoint>& previewCursor() const noexcept { return previewCursor_; }
+    [[nodiscard]] const std::vector<ScreenPoint>& previewCurve() const noexcept { return previewCurve_; }
 
     void setDisplayState(features::FeatureId id, DisplayState state);
     [[nodiscard]] DisplayState displayState(features::FeatureId id) const noexcept;
@@ -117,6 +119,7 @@ private:
     std::optional<InferenceCandidate> inference_;
     std::optional<ScreenPoint> previewAnchor_;
     std::optional<ScreenPoint> previewCursor_;
+    std::vector<ScreenPoint> previewCurve_;
     std::map<features::FeatureId, DisplayState> display_;
     std::optional<PropertyEditContext> propertyEdit_;
 };
