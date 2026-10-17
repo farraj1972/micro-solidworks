@@ -1,6 +1,6 @@
 # ADR-0051 - Scene Visibility and Display Lifecycle
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -27,12 +27,11 @@ display context. New/Open and invalidated logical targets reconcile display
 state deterministically. No scene graph, parent/child transform hierarchy or
 general object lifecycle service is introduced.
 
-If accepted, D13 supplies the architecture-level partial closure of
-`GAP-SCENE-002`: ownership and display-lifecycle semantics. V1.1-C1 supplies
-the executable partial closure through active-Sketch display, feature/sketch
-show/hide, context display and deterministic editing lifecycle. While this ADR
-is PROPOSED, no normative or executable closure is claimed. General scene graph
-and broader object lifecycle capabilities remain deferred.
+D13 supplies the architecture-level partial closure of `GAP-SCENE-002` through
+frozen ownership and display-lifecycle semantics. V1.1-C1 must supply the
+executable partial closure through active-Sketch display, feature/sketch
+show/hide, context display and deterministic editing lifecycle. General scene
+graph and broader object lifecycle capabilities remain deferred.
 
 ## Rationale
 

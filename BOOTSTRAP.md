@@ -36,7 +36,7 @@ B6 status: FROZEN
 B6.1–B6.10: COMPLETE
 B6.FREEZE: FROZEN
 Latest validated snapshot (B6.10): 708/708 tests PASS, 0 failed
-ADR inventory: 52 total; 48 ACCEPTED; 4 PROPOSED in D13
+ADR inventory: 52/52 ACCEPTED
 B4.12 MINOR documentary state finding: CLOSED by B4.FREEZE
 Canonical progress: B0/B1/B2 satisfied; B3/B4 partially satisfied
 Canonical B5: REALIZED / SATISFIED BY technical B4; no duplicate implementation
@@ -90,9 +90,9 @@ B14 — Persistence: FROZEN
 Latest validated snapshot (B14/MVP executable): 793/793 tests PASS, runtime PASS, 0 warnings
 ADR-0045–0048: CONFORMANT
 MICRO SOLIDWORKS MVP 1.0: FROZEN
-D13 — Editor Ownership, Selection Identity & Scene Lifecycle: PROPOSED / READY FOR REVIEW
-ADR-0049–0052: PROPOSED
-V1.1-C1 — CAD Workspace & Guided Sketching: NOT STARTED / NEXT ACTIVE AFTER D13 FREEZE
+D13 — Editor Ownership, Selection Identity & CAD Interaction Model: FROZEN
+ADR-0049–0052: ACCEPTED
+V1.1-C1 — CAD Workspace & Guided Sketching: NOT STARTED / NEXT ACTIVE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping

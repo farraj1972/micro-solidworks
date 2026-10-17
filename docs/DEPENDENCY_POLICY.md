@@ -131,13 +131,13 @@ OpenGL 3.3 funcional.
   may cross its public API. The frozen dependency is
   `microsw_persistence -> microsw_features`; Features and lower domain modules
   must not depend on Persistence. D12, B14 and MVP 1.0 are FROZEN.
-- Editor interaction and display policy: `BUILD`, proposed in D13. A minimal
+- Editor interaction and display policy: `BUILD`, frozen in D13. A minimal
   Application-owned editor context consumes Features, Sketch/Constraints,
   Presentation and Viewer mapping without introducing reverse dependencies.
   Snapping/inference, logical selection coordination, visibility policy and
   command transactions remain Application/interaction concerns. Domain modules
   do not depend on Editor/UI, and no new external dependency or editor module is
-  authorized by ADR-0049–0052 while they remain PROPOSED.
+  authorized by accepted ADR-0049–0052.
 - CAD workspace icons and interaction visuals: `BUILD` for V1.1-C1 using
   project-owned simple vector/icon primitives and the existing Dear ImGui/
   Rendering boundaries. No icon library is approved by D13. Any external icon

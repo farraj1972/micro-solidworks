@@ -1,6 +1,6 @@
 # ADR-0050 - Logical Selection Identity and Presentation Mapping
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

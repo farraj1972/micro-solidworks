@@ -1019,19 +1019,19 @@ MICRO SOLIDWORKS MVP 1.0: FROZEN
 ```
 
 
-Current proposed decision gate:
+Latest frozen decision gate:
 
 ```text
-D13 — Editor Ownership, Selection Identity & Scene Lifecycle
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0049–0052: PROPOSED
+D13 — Editor Ownership, Selection Identity & CAD Interaction Model
+STATUS: FROZEN
+ADR-0049–0052: ACCEPTED
 V1.1-C1 — CAD Workspace & Guided Sketching:
-STATUS: NOT STARTED / NEXT ACTIVE AFTER D13 FREEZE
+STATUS: NOT STARTED / NEXT ACTIVE
 ```
 
 D0, D1, D2 and D3 remain FROZEN. ADR-0001 through ADR-0020 are ACCEPTED.
 ADR-0021 through ADR-0024 are ACCEPTED. D5 — Transformation Semantics is
-FROZEN. The ADR inventory is 52 total: 48 ACCEPTED and 4 PROPOSED in D13. D6 — Topology Ownership,
+FROZEN. The complete ADR inventory is 52/52 ACCEPTED. D6 — Topology Ownership,
 Identity & Orientation is FROZEN in ADR-0025–0027.
 ADR-0028–0031 are ACCEPTED and freeze D7.
 ADR-0032–0034 are ACCEPTED and freeze D8.
@@ -1130,18 +1130,17 @@ Sketcher, Constraints, Extrusion, Boolean Operations, Feature Tree, Parametric
 Rebuild and Persistence. GAP-GEO-002 and GAP-SCENE-002 remain OPEN / outside MVP. GAP-GEO-002 and
 GAP-SCENE-002 remain OPEN / deferred.
 
-Proposed D13 assigns authoritative CAD state exclusively to `FeatureModel`,
+Frozen D13 assigns authoritative CAD state exclusively to `FeatureModel`,
 file/session state to the Application persistence session, derived visual state
 to Presentation, and transient tools, logical selection and display policy to
-an Application-owned editor context. It proposes typed logical selection with
+an Application-owned editor context. It freezes typed logical selection with
 explicit Presentation mapping, editor/session-owned visibility, atomic editor
-transactions and interaction-owned snapping/inference. This proposal defines the architecture-level partial-closure target for
-GAP-SCENE-002 without claiming normative or executable closure and without a
-general scene graph. GAP-GEO-002 remains OPEN
-and deferred. D13 is READY FOR REVIEW; V1.1-C1 is not authorized until D13 is
-approved and frozen.
+transactions and interaction-owned snapping/inference. GAP-SCENE-002 is
+PARTIALLY CLOSED at the architecture/decision level; executable partial closure
+remains V1.1-C1 work and no general scene graph is claimed. GAP-GEO-002 remains
+OPEN and deferred.
 
-D13-R1 proposes a CAD-first product contract: the Graphics Area is primary;
+D13 freezes a CAD-first product contract: the Graphics Area is primary;
 the mouse is the primary pointing interaction; context-sensitive icon tools in
 a CAD Command Bar provide command discovery; the human-readable Feature Manager
 shows model structure; and a Property/Tool Manager owns command parameters,
@@ -1153,6 +1152,14 @@ holds all transient command, tool-step, hover, selection, snap/inference,
 display and property-editing state. Familiar mechanical-CAD interaction
 patterns may be used without copying branding, proprietary artwork/icons or a
 pixel-perfect third-party layout.
+
+User-facing v1.1 campaigns require an Experience Gate before freeze in
+addition to technical validation. It asks whether a mechanically CAD-literate
+user can discover and complete the intended workflow without understanding
+internal implementation IDs. Evidence must cover discoverability, mouse-first
+workflow, command clarity, selection feedback, context sensitivity, Feature
+Manager coherence, parameter editing and error/recovery clarity. V1.1-C1 must
+pass this gate before its campaign freeze.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

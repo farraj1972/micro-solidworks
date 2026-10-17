@@ -142,8 +142,8 @@ FROZEN after its final V3 passed 793/793 tests, zero warnings and runtime
 validation. That same unchanged executable state validates MICRO SOLIDWORKS MVP
 1.0, now FROZEN. GAP-GEO-002 and GAP-SCENE-002 remain explicitly outside MVP.
 
-D13 — Editor Ownership, Selection Identity & Scene Lifecycle is PROPOSED in
-ADR-0049–0052 and READY FOR REVIEW. It preserves `FeatureModel` as the sole
+D13 — Editor Ownership, Selection Identity & CAD Interaction Model is FROZEN in
+accepted ADR-0049–0052. It preserves `FeatureModel` as the sole
 authoritative CAD model, keeps file/session state in the Application persistence
 session and makes Presentation derived. A minimal Application-owned editor
 context holds the active feature/sketch, tool, typed logical selection and
@@ -160,8 +160,8 @@ not decided, so future face/edge selection cannot rely on raw topology IDs.
 
 Feature/sketch visibility is proposed as transient editor/session display state,
 not Geometry, Topology, FeatureModel or persisted CAD state. Active editing,
-selection and visibility remain distinct. If D13 is accepted, it supplies the
-architecture-level partial closure semantics for the feature/sketch visibility
+selection and visibility remain distinct. D13 supplies the architecture-level
+partial closure semantics for the feature/sketch visibility
 and deterministic editing-lifecycle core of GAP-SCENE-002 without creating a
 generic scene graph. Executable partial closure remains V1.1-C1 work.
 
@@ -172,7 +172,7 @@ edit. D13 preserves future snapshot and inverse-command undo/redo strategies
 without choosing or implementing either. No new `microsw_editor` or
 `microsw_interaction` module is authorized by the proposal.
 
-D13-R1 adds a CAD-first interaction contract without changing those ownership
+D13 also freezes a CAD-first interaction contract without changing those ownership
 decisions. The Graphics Area is the primary surface and mouse interaction is
 primary. A compact CAD Command Bar provides icon/tool-tip driven Sketch,
 minimal Features and minimal View commands. A left manager region switches
@@ -1156,7 +1156,8 @@ manually during B4.10. Test counts are snapshots, not permanent totals.
 | ADR-0019 | CONFORMANT | GeometryPicker projection/clipping and 6 logical-pixel tolerance; separate Geometry tolerance; no framebuffer/color-ID/depth read picking |
 | ADR-0020 | CONFORMANT | Point/Segment/Line adapters and real draws; finite Line representation derived externally; Ray/Plane visualization absent |
 
-ADR-0001 through ADR-0048 are **48/48 ACCEPTED**. ADR-0001–0027 remain unchanged.
+At the later MVP freeze, ADR-0001 through ADR-0048 were **48/48 ACCEPTED**.
+Frozen D13 extends the current inventory to **52/52 ACCEPTED**. ADR-0001–0027 remain unchanged.
 Geometry/Presentation leakage searches found none; Rendering knows no visual
 identity or interaction semantics, UI only supplies input, and the actual target
 graph is acyclic. PROJECT_CHARTER remains consistent. Earlier ADR contexts and

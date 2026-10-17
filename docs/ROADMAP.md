@@ -93,15 +93,14 @@ Registo documental simples de Canonical Gaps; não cria tracker ou framework.
 | GAP-GEO-001 | CLOSED — Circle2 implemented and validated in B8.1 | NO | B8.1 targeted geometry validation PASS |
 | GAP-GEO-002 | OPEN / deferred — Basic intersections missing from canonical B3 scope | NO | When an authorized non-convex/general operation requires them |
 | GAP-SCENE-001 | CLOSED — Entity transforms in frozen B6 | NO | B6.10 PASS / B6.FREEZE |
-| GAP-SCENE-002 | OPEN — D13 PROPOSES architecture-level partial closure; proposal is non-normative and implementation is absent | YES for v1.1 UX | D13 freeze defines ownership/display semantics; V1.1-C1 implements active Sketch, show/hide, context display and deterministic editing lifecycle |
+| GAP-SCENE-002 | PARTIALLY CLOSED AT ARCHITECTURE / DECISION LEVEL — ownership, visibility semantics, active editing context and deterministic display lifecycle frozen by D13 | YES for executable v1.1 UX | V1.1-C1 implements active Sketch, show/hide, context display and deterministic editing lifecycle; general scene graph remains deferred |
 
 Circle2 is implemented and GAP-GEO-001 is CLOSED. Basic intersections remain
 GAP-GEO-002 deferred; frozen D9 confirms it does not block the strict-convex
 B10 slice or V1.1-C1. Each future closure requires authorized scope. Proposed
-D13 proposes an architecture-level partial closure of GAP-SCENE-002 through
-explicit feature/sketch visibility ownership, active editing context and
-deterministic display lifecycle. The proposal is not normative closure. D13
-freeze would establish the semantics; V1.1-C1 would provide executable partial
+Frozen D13 provides the architecture-level partial closure of GAP-SCENE-002
+through explicit feature/sketch visibility ownership, active editing context
+and deterministic display lifecycle. V1.1-C1 must provide executable partial
 closure. General scene graph and broader object lifecycle remain deferred.
 
 ## Delivered Functional Slice — B6
@@ -775,12 +774,12 @@ GAP-SCENE-002 remain OPEN / outside MVP.
 
 # Post-MVP — Micro SolidWorks v1.1
 
-MVP 1.0 remains FROZEN. D13 is `PROPOSED / READY FOR REVIEW`; its ADR-0049–0052
-are not normative until explicit approval. The initial v1.1 roadmap is:
+MVP 1.0 remains FROZEN. D13 is FROZEN and ADR-0049–0052 are ACCEPTED. The
+initial v1.1 roadmap is:
 
 | Campaign | State | Functional direction |
 | --- | --- | --- |
-| V1.1-C1 — CAD Workspace & Guided Sketching | NOT STARTED / NEXT ACTIVE AFTER D13 FREEZE | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, rebuild and extrusion |
+| V1.1-C1 — CAD Workspace & Guided Sketching | NOT STARTED / NEXT ACTIVE | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, rebuild and extrusion |
 | V1.1-C2 — Solid Visualization & Selection | PLANNED / SUBJECT TO REVIEW | Product-oriented solid display and selection |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
@@ -864,3 +863,12 @@ when needed, a Decision Gate only for material architecture, and one V3 closes
 each campaign. Historical B0–B14 numbering is unchanged. Longer-term Revolve,
 Fillet/Chamfer, advanced curves/surfaces, exchange, assemblies, drawings,
 acceleration and alternative-kernel work remain uncommitted future options.
+
+Every user-facing v1.1 campaign also requires an Experience Gate before freeze.
+The gate asks whether a mechanically CAD-literate user can discover and complete
+the intended workflow without understanding implementation IDs. It evaluates
+discoverability, mouse-first flow, command clarity, selection feedback, context
+sensitivity, Feature Manager coherence, parameter editing and error/recovery
+clarity. Technical V0/V1/V2/V3 validation and the Experience Gate are both
+required evidence; neither substitutes for the other. V1.1-C1 must pass this
+gate before its campaign freeze.

@@ -1,6 +1,6 @@
 # ADR-0052 - Editor Command Transactions and Undo/Redo Compatibility
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

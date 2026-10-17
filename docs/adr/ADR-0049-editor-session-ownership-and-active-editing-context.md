@@ -1,6 +1,6 @@
 # ADR-0049 - Editor Session Ownership and Active Editing Context
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
