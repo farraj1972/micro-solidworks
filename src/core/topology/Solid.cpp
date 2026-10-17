@@ -37,19 +37,11 @@ struct Traversal
 std::vector<Traversal> shellBoundary(const Solid& solid, const OrientedFaceUse& faceUse)
 {
     const auto& face = solid.find(faceUse.face);
-    const auto& uses = solid.find(face.outerWire()).uses();
     std::vector<Traversal> result;
-    result.reserve(uses.size());
-    if (faceUse.orientation == FaceOrientation::Forward)
-    {
-        for (const auto& use : uses)
-            result.push_back({use.edge, use.orientation});
-    }
-    else
-    {
-        for (auto it = uses.rbegin(); it != uses.rend(); ++it)
-            result.push_back({it->edge, flipped(it->orientation)});
-    }
+    const auto append=[&](WireId wireId){const auto& uses=solid.find(wireId).uses();
+        if(faceUse.orientation==FaceOrientation::Forward)for(const auto&use:uses)result.push_back({use.edge,use.orientation});
+        else for(auto it=uses.rbegin();it!=uses.rend();++it)result.push_back({it->edge,flipped(it->orientation)});};
+    append(face.outerWire());for(const auto inner:face.innerWires())append(inner);
     return result;
 }
 
@@ -72,8 +64,16 @@ EdgeId Solid::addEdge(VertexId start, VertexId end)
         throw std::invalid_argument{"Edge endpoints must not be geometrically coincident"};
     const auto id = EdgeId{static_cast<EdgeId::Value>(edges_.size())};
     if (!id.isValid()) throw std::overflow_error{"Edge ID space exhausted"};
-    edges_.emplace_back(start, end);
+    edges_.emplace_back(start, end, geometry::Segment3{first,second});
     return id;
+}
+
+EdgeId Solid::addCircularEdge(VertexId start, VertexId end, const geometry::CircularArc3& arc)
+{
+    const auto& first=find(start).point();const auto& second=find(end).point();
+    if(start==end||geometry::areCoincident(first,second))throw std::invalid_argument{"Circular Edge endpoints must differ"};
+    if(!geometry::areCoincident(first,arc.pointAt(0))||!geometry::areCoincident(second,arc.pointAt(1)))throw std::invalid_argument{"Circular Edge geometry must match vertices"};
+    const auto id=EdgeId{static_cast<EdgeId::Value>(edges_.size())};if(!id.isValid())throw std::overflow_error{"Edge ID space exhausted"};edges_.emplace_back(start,end,arc);return id;
 }
 
 VertexId Solid::traversalStart(const OrientedEdgeUse& use) const
@@ -90,7 +90,7 @@ VertexId Solid::traversalEnd(const OrientedEdgeUse& use) const
 
 WireId Solid::addWire(std::vector<OrientedEdgeUse> uses)
 {
-    if (uses.size() < 3) throw std::invalid_argument{"A Wire requires at least three Edge uses"};
+    if (uses.size() < 2) throw std::invalid_argument{"A Wire requires at least two Edge uses"};
     std::set<std::uint32_t> usedEdges;
     for (std::size_t i = 0; i < uses.size(); ++i)
     {
@@ -138,8 +138,20 @@ FaceId Solid::addFace(WireId outerWire, const geometry::Plane& supportPlane)
 
     const auto id = FaceId{static_cast<FaceId::Value>(faces_.size())};
     if (!id.isValid()) throw std::overflow_error{"Face ID space exhausted"};
-    faces_.emplace_back(outerWire, supportPlane);
+    faces_.emplace_back(outerWire, std::vector<WireId>{}, supportPlane);
     return id;
+}
+
+FaceId Solid::addFace(WireId outerWire,std::vector<WireId> innerWires,const geometry::Plane& supportPlane)
+{
+    const auto validate=[&](WireId wireId){const auto&wire=find(wireId);for(const auto&use:wire.uses()){const auto vertex=traversalStart(use);if(!supportPlane.contains(find(vertex).point()))throw std::invalid_argument{"Face boundary must be coplanar with its support Plane"};}};
+    validate(outerWire);for(const auto inner:innerWires){if(inner==outerWire)throw std::invalid_argument{"Face inner Wire must differ from outer Wire"};validate(inner);}
+    const auto id=FaceId{static_cast<FaceId::Value>(faces_.size())};if(!id.isValid())throw std::overflow_error{"Face ID space exhausted"};faces_.emplace_back(outerWire,std::move(innerWires),supportPlane);return id;
+}
+
+FaceId Solid::addCylindricalFace(WireId outerWire,const geometry::Cylinder& support)
+{
+    (void)find(outerWire);const auto id=FaceId{static_cast<FaceId::Value>(faces_.size())};if(!id.isValid())throw std::overflow_error{"Face ID space exhausted"};faces_.emplace_back(outerWire,std::vector<WireId>{},support);return id;
 }
 
 ShellId Solid::addShell(std::vector<OrientedFaceUse> uses)
@@ -224,10 +236,15 @@ void Solid::setCellDerivedRootShell(ShellId shellId)
             throw std::invalid_argument{"Cell-derived Face uses must preserve their outward support Plane"};
     rootShell_ = shellId;
 }
+void Solid::setGeneralRootShell(ShellId shellId)
+{
+    (void)find(shellId);if(shells_.size()!=1)throw std::invalid_argument{"A Solid supports exactly one Shell"};rootShell_=shellId;
+}
 geometry::Segment3 Solid::segment(EdgeId edgeId) const
 {
     const auto& edge = find(edgeId);
-    return {find(edge.start()).point(), find(edge.end()).point()};
+    if(!std::holds_alternative<geometry::Segment3>(edge.geometry()))throw std::logic_error{"Curved Edge has no single Segment3"};
+    return std::get<geometry::Segment3>(edge.geometry());
 }
 
 const Vertex& Solid::find(VertexId id) const { return checkedFind(id, vertices_, "Invalid VertexId"); }

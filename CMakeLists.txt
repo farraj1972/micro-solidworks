@@ -104,6 +104,8 @@ target_include_directories(microsw_math PUBLIC src)
 add_library(microsw_geometry STATIC
     src/core/geometry/Arc2.cpp
     src/core/geometry/Circle2.cpp
+    src/core/geometry/CircularArc3.cpp
+    src/core/geometry/Cylinder.cpp
     src/core/geometry/GeometryQuerySupport.cpp
     src/core/geometry/Intersection2.cpp
     src/core/geometry/Line2.cpp

@@ -2,11 +2,14 @@
 
 #include "core/geometry/Plane.h"
 #include "core/geometry/Segment3.h"
+#include "core/geometry/CircularArc3.h"
+#include "core/geometry/Cylinder.h"
 #include "core/topology/TopologyIds.h"
 
 #include <optional>
 #include <utility>
 #include <vector>
+#include <variant>
 
 namespace microsw::topology
 {
@@ -40,12 +43,15 @@ private:
 class Edge
 {
 public:
-    Edge(VertexId start, VertexId end) : start_{start}, end_{end} {}
+    using Geometry = std::variant<geometry::Segment3, geometry::CircularArc3>;
+    Edge(VertexId start, VertexId end, Geometry geometry) : start_{start}, end_{end}, geometry_{std::move(geometry)} {}
     [[nodiscard]] VertexId start() const noexcept { return start_; }
     [[nodiscard]] VertexId end() const noexcept { return end_; }
+    [[nodiscard]] const Geometry& geometry() const noexcept { return geometry_; }
 private:
     VertexId start_;
     VertexId end_;
+    Geometry geometry_;
 };
 
 class Wire
@@ -60,13 +66,17 @@ private:
 class Face
 {
 public:
-    Face(WireId outerWire, const geometry::Plane& supportPlane)
-        : outerWire_{outerWire}, supportPlane_{supportPlane} {}
+    using Support = std::variant<geometry::Plane, geometry::Cylinder>;
+    Face(WireId outerWire, std::vector<WireId> innerWires, Support support)
+        : outerWire_{outerWire}, innerWires_{std::move(innerWires)}, support_{std::move(support)} {}
     [[nodiscard]] WireId outerWire() const noexcept { return outerWire_; }
-    [[nodiscard]] const geometry::Plane& supportPlane() const noexcept { return supportPlane_; }
+    [[nodiscard]] const std::vector<WireId>& innerWires() const noexcept { return innerWires_; }
+    [[nodiscard]] const Support& support() const noexcept { return support_; }
+    [[nodiscard]] const geometry::Plane& supportPlane() const { return std::get<geometry::Plane>(support_); }
 private:
     WireId outerWire_;
-    geometry::Plane supportPlane_;
+    std::vector<WireId> innerWires_;
+    Support support_;
 };
 
 class Shell
@@ -83,11 +93,15 @@ class Solid
 public:
     VertexId addVertex(const geometry::Point3& point);
     EdgeId addEdge(VertexId start, VertexId end);
+    EdgeId addCircularEdge(VertexId start, VertexId end, const geometry::CircularArc3& arc);
     WireId addWire(std::vector<OrientedEdgeUse> uses);
     FaceId addFace(WireId outerWire, const geometry::Plane& supportPlane);
+    FaceId addFace(WireId outerWire, std::vector<WireId> innerWires, const geometry::Plane& supportPlane);
+    FaceId addCylindricalFace(WireId outerWire, const geometry::Cylinder& support);
     ShellId addShell(std::vector<OrientedFaceUse> uses);
     void setRootShell(ShellId shell);
     void setCellDerivedRootShell(ShellId shell);
+    void setGeneralRootShell(ShellId shell);
 
     [[nodiscard]] geometry::Segment3 segment(EdgeId edge) const;
     [[nodiscard]] const std::vector<Vertex>& vertices() const noexcept { return vertices_; }

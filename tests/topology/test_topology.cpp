@@ -2,7 +2,9 @@
 
 #include <gtest/gtest.h>
 #include <array>
+#include <numbers>
 #include <type_traits>
+#include <variant>
 
 namespace
 {
@@ -89,6 +91,60 @@ TEST(TopologySolid, RejectsMissingRoot)
     EXPECT_FALSE(solid.isValid());
     EXPECT_THROW((void)solid.rootShell(), std::logic_error);
     EXPECT_THROW(solid.setRootShell(ShellId{}), std::out_of_range);
+}
+
+TEST(TopologyCurvedEdge, PreservesExactCircularGeometryInATwoEdgeWire)
+{
+    Solid solid;
+    const auto right = solid.addVertex({2, 0, 0});
+    const auto left = solid.addVertex({-2, 0, 0});
+    const geometry::CircularArc3 upper{{0, 0, 0}, {0, 0, 1}, {1, 0, 0},
+        2, 0, std::numbers::pi};
+    const geometry::CircularArc3 lower{{0, 0, 0}, {0, 0, 1}, {1, 0, 0},
+        2, std::numbers::pi, std::numbers::pi};
+
+    const auto first = solid.addCircularEdge(right, left, upper);
+    const auto second = solid.addCircularEdge(left, right, lower);
+    const auto wire = solid.addWire({{first, EdgeOrientation::Forward},
+                                     {second, EdgeOrientation::Forward}});
+
+    ASSERT_EQ(solid.find(wire).uses().size(), 2u);
+    ASSERT_TRUE(std::holds_alternative<geometry::CircularArc3>(solid.find(first).geometry()));
+    const auto& stored = std::get<geometry::CircularArc3>(solid.find(first).geometry());
+    EXPECT_DOUBLE_EQ(stored.radius(), 2.0);
+    EXPECT_TRUE(geometry::areCoincident(stored.pointAt(0.5), geometry::Point3{0, 2, 0}));
+    EXPECT_THROW((void)solid.segment(first), std::logic_error);
+}
+
+TEST(TopologyFace, SupportsInnerWiresAndCylindricalGeometry)
+{
+    Solid solid;
+    const std::array outerVertices{solid.addVertex({-2, -2, 0}), solid.addVertex({2, -2, 0}),
+        solid.addVertex({2, 2, 0}), solid.addVertex({-2, 2, 0})};
+    const std::array outerEdges{solid.addEdge(outerVertices[0], outerVertices[1]),
+        solid.addEdge(outerVertices[1], outerVertices[2]),
+        solid.addEdge(outerVertices[2], outerVertices[3]),
+        solid.addEdge(outerVertices[3], outerVertices[0])};
+    const auto outer = solid.addWire({{outerEdges[0], EdgeOrientation::Forward},
+        {outerEdges[1], EdgeOrientation::Forward}, {outerEdges[2], EdgeOrientation::Forward},
+        {outerEdges[3], EdgeOrientation::Forward}});
+
+    const auto right = solid.addVertex({1, 0, 0});
+    const auto left = solid.addVertex({-1, 0, 0});
+    const auto upper = solid.addCircularEdge(right, left,
+        {{0, 0, 0}, {0, 0, 1}, {1, 0, 0}, 1, 0, std::numbers::pi});
+    const auto lower = solid.addCircularEdge(left, right,
+        {{0, 0, 0}, {0, 0, 1}, {1, 0, 0}, 1, std::numbers::pi, std::numbers::pi});
+    const auto inner = solid.addWire({{lower, EdgeOrientation::Reversed},
+                                      {upper, EdgeOrientation::Reversed}});
+
+    const auto cap = solid.addFace(outer, {inner}, {{0, 0, 0}, {0, 0, 1}});
+    EXPECT_EQ(solid.find(cap).innerWires(), std::vector<WireId>{inner});
+    EXPECT_TRUE(std::holds_alternative<geometry::Plane>(solid.find(cap).support()));
+
+    const auto cylinderFace = solid.addCylindricalFace(inner, {{0, 0, 0}, {0, 0, 1}, 1});
+    ASSERT_TRUE(std::holds_alternative<geometry::Cylinder>(solid.find(cylinderFace).support()));
+    EXPECT_DOUBLE_EQ(std::get<geometry::Cylinder>(solid.find(cylinderFace).support()).radius(), 1.0);
 }
 
 }
