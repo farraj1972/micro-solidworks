@@ -781,7 +781,7 @@ initial v1.1 roadmap is:
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
 | V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
 | V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
-| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | NOT STARTED / NEXT ACTIVE AFTER D17 FREEZE | Safe editing history and session workflow |
+| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | NOT STARTED / NEXT ACTIVE | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
@@ -979,7 +979,7 @@ STATUS: FROZEN
 ADR-0059–0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
 V1.1-C2A: FROZEN
-V1.1-C3: NOT STARTED / NEXT ACTIVE AFTER D17 FREEZE
+V1.1-C3: NOT STARTED / NEXT ACTIVE
 ```
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel rather than a
@@ -1005,19 +1005,19 @@ excludes Undo/Redo, Document Safety, Cut Extrude, Sketch on Face, persistent
 topological naming, feature reorder, suppression, advanced shared-Sketch
 semantics, reference geometry objects and materials/PBR. C2A is FROZEN after a
 fresh configure, full Debug build with zero warnings, 837/837 tests and an
-approved manual Experience Gate. C3 follows D17 approval and freeze.
+approved manual Experience Gate. C3 is next under the frozen D17 contract.
 
 ## D17 — Document Safety, Undo/Redo & Session History Semantics
 
 ```text
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0061–0063: PROPOSED
-ADR inventory: 60 ACCEPTED / 3 PROPOSED / 63 total
+STATUS: FROZEN
+ADR-0061–0063: ACCEPTED
+ADR inventory: 63/63 ACCEPTED
 V1.1-C2A: FROZEN
-V1.1-C3: NOT STARTED / NEXT ACTIVE AFTER D17 FREEZE
+V1.1-C3: NOT STARTED / NEXT ACTIVE
 ```
 
-D17 proposes Application-owned document dirty and saved-baseline state distinct
+D17 freezes Application-owned document dirty and saved-baseline state distinct
 from feature rebuild dirtiness. Successful New/Open/Save/Save As establish a
 saved checkpoint; rebuild does not clear dirty. Undo or Redo reaching the saved
 checkpoint is clean, while branch truncation or eviction of that checkpoint
@@ -1030,7 +1030,9 @@ caches and Presentation remain excluded and are rebuilt after restore. One
 logical user transaction is one step; compound Rectangle creation and accepted
 inference remain atomic. Failed rebuilds remain undoable, new edits after Undo
 discard Redo, and Save retains history. The initial limit is 100 undoable
-transactions plus the current checkpoint.
+transactions plus the current checkpoint. The saved authoritative checkpoint
+is retained separately from that bounded window so eviction cannot corrupt
+dirty-state evaluation.
 
 Dirty New/Open/Exit use Save / Don't Save / Cancel. Save failure or cancellation
 preserves the current session. Open replaces the session only after the target
@@ -1038,5 +1040,5 @@ loads transactionally; New/Open clear history. Undo history, dirty state,
 selection, visibility and view state are not persisted. Autosave, crash recovery,
 recent files, persistent history and multi-document editing remain deferred.
 
-V1.1-C3 must implement and validate these decisions only after D17 approval and
-freeze. No C3 executable work is authorized by this proposal.
+V1.1-C3 is the next active campaign and must implement and validate these frozen
+decisions. No C3 executable work is included in the D17 freeze.

@@ -222,7 +222,7 @@ V1.1-C2A completed this policy without adding dependencies. `FeatureTreeModel`
 derives UI nodes from Features, and Viewer consumes the existing Presentation
 face/edge data. No reverse dependency or CAD-state ownership change was added.
 
-## 10. D17 document safety and undo/redo proposal
+## 10. D17 document safety and undo/redo
 
 D17 introduces no external dependency and does not change the persisted schema.
 A future C3 typed authoritative checkpoint belongs at the Features boundary and

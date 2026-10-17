@@ -1,6 +1,6 @@
 # ADR-0062 — Undo/Redo History and Transaction Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -37,10 +37,12 @@ the succeeding checkpoint equivalently. After Undo, a new committed edit
 discards the Redo branch.
 
 The initial policy retains at most 100 undoable transactions plus the current
-checkpoint. Oldest unreachable checkpoints are evicted first; this count is an
-adjustable implementation policy, not file format. New and successful Open clear
-the previous document history and establish a new initial checkpoint. Save and
-Save As retain history.
+checkpoint. Oldest undoable checkpoints are evicted first; this count is an
+adjustable implementation policy, not file format. The saved authoritative
+checkpoint is retained separately when its history entry leaves this window, so
+capacity eviction cannot corrupt dirty-state evaluation. New and successful
+Open clear the previous document history and establish a new initial checkpoint.
+Save and Save As retain history.
 
 Restoring a historical checkpoint restores its exact next-ID counters. A new
 edit on a branch may therefore allocate an ID that existed only in the discarded

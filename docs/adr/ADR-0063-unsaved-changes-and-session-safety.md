@@ -1,6 +1,6 @@
 # ADR-0063 — Unsaved Changes, New/Open/Exit and Session Safety
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -32,7 +32,9 @@ D12 result contract and establishes the loaded authoritative file as the clean
 baseline while surfacing rebuild attention.
 
 Exit closes only after prompt resolution and, when Save was chosen, successful
-persistence. Cancel or Save failure keeps the application running. Successful
+persistence. The native window close event enters exactly the same pending Exit
+workflow and cannot bypass the dirty guard. Cancel or Save failure keeps the
+application running. Successful
 Save/Save As updates the saved baseline as defined by ADR-0061; Save As also
 updates the current path. Save does not clear history.
 
@@ -41,6 +43,13 @@ with a visible dirty marker. Undo and Redo appear in the Edit menu and a compact
 General/Edit command group, are disabled when unavailable, and support `Ctrl+Z`
 and `Ctrl+Y` on the current Windows-first application. Platform-standard
 equivalents may be added without changing semantics.
+
+Escape owns cancellation/unwinding of transient uncommitted tool state. Ctrl+Z
+operates only on committed authoritative history; after restoration the
+Application clears invalid hover and topology selection, clears or reconciles
+tool operands and active command state, and retains only UI state that remains
+valid. Face/edge targets clear whenever topology regenerates, as required by
+D15.
 
 ## Rationale
 

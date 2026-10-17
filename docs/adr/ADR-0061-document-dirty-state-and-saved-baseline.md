@@ -1,6 +1,6 @@
 # ADR-0061 — Document Dirty State and Saved Baseline Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
@@ -21,12 +21,14 @@ untitled, empty baseline. Every successful authoritative model transaction moves
 to a new checkpoint and normally makes the document dirty. Rebuild alone never
 changes the saved-baseline marker or clears document dirty.
 
-The saved baseline is identified by the session history checkpoint identity,
-not by serialized JSON, derived caches or a lossy hash. Undo or Redo that moves
-the current position exactly to the saved checkpoint makes the document clean;
-moving away makes it dirty. If a branch truncation or bounded-history eviction
-makes the saved checkpoint unreachable, the document remains dirty until a
-successful Save/Save As establishes a new baseline.
+The saved baseline owns an authoritative checkpoint value and stable session
+identity independently of the bounded undo window. It is not serialized JSON,
+derived cache or a lossy hash. Undo or Redo that moves the current position
+exactly to the saved checkpoint makes the document clean; moving away makes it
+dirty. If history eviction removes the corresponding undo entry, the separate
+saved checkpoint remains available for exact authoritative-state comparison.
+If branch truncation makes that state unreachable, the document remains dirty
+until a successful Save/Save As establishes a new baseline.
 
 Save does not clear undo/redo history. Save As additionally updates the current
 file path. Failed or cancelled Save/Save As changes neither file path nor saved

@@ -1472,9 +1472,9 @@ entity retained for feature identity is never drawn as solid geometry. This
 prevents feature selection from leaking a complete wireframe into Shaded mode.
 The campaign is FROZEN with no change to FeatureModel ownership or dependencies.
 
-## D17 — Document safety and session history proposal
+## D17 — Document safety and session history
 
-D17 proposes a session-owned saved-baseline marker and bounded linear undo/redo
+D17 freezes a session-owned saved-baseline marker and bounded linear undo/redo
 history. `DocumentDirty` is independent of `FeatureState::Dirty`: it compares
 the current authoritative history checkpoint with the last successful
 New/Open/Save/Save As baseline. Rebuild affects derived state and never marks a
@@ -1487,6 +1487,9 @@ states, diagnostics, solved/modeling caches, topology and Presentation. Restore
 is followed by deterministic rebuild and Presentation refresh. Features owns the
 typed capture/restore boundary; Application owns history position, saved marker,
 file path and destructive-action workflow.
+
+The saved authoritative checkpoint is retained separately from the 100-step
+undo window, preserving exact dirty-state evaluation after history eviction.
 
 New, Open and Exit are Application session transactions guarded by Save / Don't
 Save / Cancel when dirty. Open constructs and validates a candidate before
