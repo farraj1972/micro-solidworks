@@ -780,7 +780,8 @@ initial v1.1 roadmap is:
 | --- | --- | --- |
 | V1.1-C1 — CAD Workspace & Guided Sketching | FROZEN | CAD interaction shell plus snap/infer Sketch creation, direct logical selection, graphical constraints/dimensions, general multi-Solid extrusion and derived curved presentation |
 | V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
-| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / SUBJECT TO REVIEW | Safe editing history and session workflow |
+| V1.1-C2A — Feature Manager & Display Mode UX Alignment | NOT STARTED / NEXT ACTIVE AFTER D16 FREEZE | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
+| V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | PLANNED / WAITING FOR C2A | Safe editing history and session workflow |
 | V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
@@ -970,3 +971,36 @@ Cut Extrude, Hole, fillet, chamfer, materials, textures, PBR, section view,
 measure, assemblies and selection persistence across rebuild are excluded.
 Selected Contours remains a separate modeling-workflow follow-up under D14 and
 does not change the frozen C2 solid visualization and sub-element selection gate.
+
+## D16 — Feature Manager Hierarchy & Display Mode UX Semantics
+
+```text
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0059–0060: PROPOSED
+ADR inventory: 60 total / 58 accepted / 2 proposed
+V1.1-C2A: NOT STARTED / NEXT ACTIVE AFTER D16 FREEZE
+V1.1-C3: PLANNED / WAITING FOR C2A
+```
+
+D16 proposes a CAD-first Feature Manager derived from FeatureModel rather than a
+raw record list. Modeling features are primary nodes; an Extrude visually
+absorbs its primary Sketch and unconsumed Sketches remain at the Part root. The
+first direct modeling consumer in history order is the future deterministic
+absorbing parent for a shared Sketch, while secondary dependencies remain in
+properties/context. Boolean operands are not duplicated into a dependency DAG.
+Normal labels and status cues remain human-readable and internal IDs are
+diagnostic only.
+
+D16 also proposes explicit rendering-pass semantics. Shaded draws lit faces
+without global topology edges. Shaded With Edges adds the topology-derived edge
+overlay. Wireframe draws topology edges without face fill. Transient edge hover
+or selection may remain visible in Shaded. Curved surfaces never expose
+tessellation triangle edges, and hole/circular boundaries receive clear overlay
+contrast only where the active mode enables it.
+
+The corrective V1.1-C2A campaign covers hierarchy derivation, absorbed and
+unconsumed Sketch presentation, labels/status cleanup, tree interaction,
+display-mode passes and visual differentiation plus an Experience Gate. It
+excludes Undo/Redo, Document Safety, Cut Extrude, Sketch on Face, persistent
+topological naming, feature reorder, suppression, advanced shared-Sketch
+semantics, reference geometry objects and materials/PBR. C3 waits for C2A.

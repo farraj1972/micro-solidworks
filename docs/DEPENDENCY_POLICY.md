@@ -205,3 +205,15 @@ cylindrical tessellation, triangle rendering, curve overlay and CPU picking.
 No dependency was added. Presentation derives from Topology/Geometry, Viewer
 consumes Presentation for picking and view policy, Rendering stays independent
 of CAD identity, and Application/UI coordinates logical EditorContext state.
+
+## 9. D16 Feature Manager and display-mode UX proposal
+
+ADR-0059–0060 propose no new dependency. Feature Manager hierarchy remains a
+BUILD concern in Application/UI, derived from the existing FeatureModel public
+history and dependency contracts. It must not introduce UI dependencies into
+Features or reinterpret presentation parenting as domain ownership.
+
+Display-mode correction remains within Viewer/Rendering over existing derived
+Presentation data. Viewer chooses face and topology-edge passes; Rendering stays
+identity-free. No external tree, scene, tessellation or rendering framework is
+authorized for V1.1-C2A.
