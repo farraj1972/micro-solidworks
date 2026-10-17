@@ -122,6 +122,7 @@ TEST(Persistence, GeneralizedExtrudeRoundtripsWithFormatVersionOne)
         persistence::SaveStatus::Success);
     std::ifstream input{path};
     const std::string json{std::istreambuf_iterator<char>{input}, {}};
+    input.close();
     EXPECT_NE(json.find("\"formatVersion\": 1"), std::string::npos);
     auto opened = persistence::openFeatureModel(path);
     ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt)

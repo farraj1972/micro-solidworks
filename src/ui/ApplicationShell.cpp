@@ -2,6 +2,7 @@
 
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
+#include "features/PlanarRegion.h"
 
 #include <imgui.h>
 #include <algorithm>
@@ -13,12 +14,9 @@
 
 namespace
 {
-bool supportsExtrusionProfile(const microsw::sketch::Sketch& sketch)
+microsw::features::PlanarRegionSet extrusionRegions(const microsw::sketch::Sketch& sketch)
 {
-    const auto ids = sketch.entityIds();
-    return ids.size() >= 3 && std::all_of(ids.begin(), ids.end(), [&](const auto id) {
-        return sketch.find(id).type() == microsw::sketch::SketchEntityType::Line;
-    });
+    return microsw::features::extractPlanarRegions(sketch);
 }
 
 constexpr float defaultModelPanelWidth = 320.0F;
@@ -247,10 +245,18 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         editing && selected, editor && editor->activeCommand()==interaction::EditorCommand::Dimension,
         [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension; propertyManagerVisible_ = true; });
     ImGui::TextDisabled("|"); ImGui::SameLine();
-    const bool supportedProfile = supportsExtrusionProfile(model);
+    const sketch::Sketch* extrusionSketch = &model;
+    if (editor && !editor->activeSketchFeatureId() && featureModel && selectedFeature_)
+    {
+        const auto& selectedFeature = featureModel->find(*selectedFeature_);
+        if (selectedFeature.kind() == features::FeatureKind::Sketch)
+            extrusionSketch = &std::get<features::SketchFeature>(selectedFeature.data()).sketch;
+    }
+    const auto regions = extrusionRegions(*extrusionSketch);
+    const bool supportedProfile = regions.valid();
     const bool canExtrude = editor && editor->commandAvailable(interaction::EditorCommand::Extrude, supportedProfile);
     commandButton("extrude", "Extrude", supportedProfile ? "Create an extrusion from the active or selected Sketch"
-        : "Extrusion currently requires a closed outline made from lines", CadIcon::Extrude,
+        : regions.diagnostic.message.c_str(), CadIcon::Extrude,
         canExtrude, editor && editor->activeCommand()==interaction::EditorCommand::Extrude,
         [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; });
     ImGui::End();
@@ -384,9 +390,11 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         {
             ImGui::TextWrapped("You have %zu sketch element%s.",
                 model.size(), model.size() == 1 ? "" : "s");
-            if (supportsExtrusionProfile(model))
+            const auto regions = extrusionRegions(model);
+            if (regions.valid())
             {
-                ImGui::TextWrapped("The closed line outline is ready for a 3D extrusion.");
+                ImGui::TextWrapped("%zu closed material region%s ready for 3D extrusion.",
+                    regions.regions.size(), regions.regions.size() == 1 ? " is" : "s are");
                 if (ImGui::Button("Continue to 3D extrusion", ImVec2{230, 36}))
                 {
                     editorCommandRequest_ = interaction::EditorCommand::Extrude;
@@ -395,7 +403,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
             else
                 ImGui::TextColored(ImVec4{1.0F,0.72F,0.25F,1.0F},
-                    "Extrusion currently supports closed outlines made from lines. Circle extrusion is not available in this baseline.");
+                    "%s", regions.diagnostic.message.c_str());
             if (ImGui::Button("Keep drawing", ImVec2{115, 36}))
             {
                 sketchToolRequest_ = SketchTool::Rectangle;
@@ -430,12 +438,19 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGui::TextWrapped("3. Choose Create extrusion");
         ImGui::Spacing();
         ImGui::InputDouble("Depth", &extrusionDistance_, 1.0, 5.0, "%.3f");
-        const bool hasProfile = supportsExtrusionProfile(model);
+        const auto regions = extrusionRegions(model);
+        const bool hasProfile = regions.valid();
         const bool hasPositiveDepth = std::isfinite(extrusionDistance_) && extrusionDistance_ > 0;
         if (!hasProfile)
-            ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "Draw a closed shape first (for example, a rectangle).");
+            ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "%s",
+                regions.diagnostic.message.c_str());
         else
-            ImGui::TextColored(ImVec4{0.35F,0.9F,0.45F,1}, "Sketch detected and ready to use.");
+        {
+            ImGui::TextColored(ImVec4{0.35F,0.9F,0.45F,1},
+                "%zu region%s will create %zu solid bod%s.", regions.regions.size(),
+                regions.regions.size() == 1 ? "" : "s", regions.regions.size(),
+                regions.regions.size() == 1 ? "y" : "ies");
+        }
         if (!hasPositiveDepth)
             ImGui::TextColored(ImVec4{1,0.35F,0.25F,1}, "Depth must be greater than zero.");
         const bool valid = hasProfile && hasPositiveDepth;
