@@ -13,3 +13,27 @@ namespace microsw::features::detail
     const std::vector<geometry::Point2>& points);
 
 }
+
+namespace microsw::features
+{
+enum class RegionBooleanStatus
+{
+    Success,
+    Empty,
+    Ambiguous,
+    NumericalFailure
+};
+
+struct RegionBooleanResult
+{
+    RegionBooleanStatus status{RegionBooleanStatus::NumericalFailure};
+    PlanarRegionSet regions;
+    std::string diagnostic;
+    [[nodiscard]] bool succeeded() const noexcept
+    { return status == RegionBooleanStatus::Success || status == RegionBooleanStatus::Empty; }
+};
+
+[[nodiscard]] RegionBooleanResult subtractPlanarRegions(
+    const PlanarRegionSet& target,
+    const PlanarRegionSet& cutter);
+}
