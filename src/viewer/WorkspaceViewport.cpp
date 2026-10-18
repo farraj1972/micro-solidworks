@@ -330,6 +330,14 @@ std::optional<geometry::Point3> WorkspaceViewport::pointOnGlobalXY(
     const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
     math::Scalar mouseX, math::Scalar mouseY) const
 {
+    return pointOnPlane(layout, framebufferWidth, framebufferHeight, mouseX, mouseY,
+        geometry::Plane{{}, {0, 0, 1}});
+}
+
+std::optional<geometry::Point3> WorkspaceViewport::pointOnPlane(
+    const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+    math::Scalar mouseX, math::Scalar mouseY, const geometry::Plane& plane) const
+{
     const auto rect = framebufferRect(layout, framebufferWidth, framebufferHeight);
     if (rect.width <= 0 || rect.height <= 0) return std::nullopt;
     const auto logicalPerPixelX = layout.displayWidth / framebufferWidth;
@@ -348,8 +356,9 @@ std::optional<geometry::Point3> WorkspaceViewport::pointOnGlobalXY(
     if (context.mouseX < 0 || context.mouseX >= context.width
         || context.mouseY < 0 || context.mouseY >= context.height) return std::nullopt;
     const auto ray = makePickingRay(context);
-    if (std::abs(ray.direction().z()) <= geometry::defaultGeometricTolerance) return std::nullopt;
-    const auto t = -ray.origin().z() / ray.direction().z();
+    const auto denominator=math::dot(ray.direction(),plane.normal());
+    if (std::abs(denominator) <= geometry::defaultGeometricTolerance) return std::nullopt;
+    const auto t=math::dot(plane.origin()-ray.origin(),plane.normal())/denominator;
     if (t < 0 || !std::isfinite(t)) return std::nullopt;
     return ray.pointAt(t);
 }

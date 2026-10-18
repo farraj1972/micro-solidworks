@@ -112,6 +112,13 @@ Extrude/Cut parameter modes. MMB orbit now follows the pointer in the familiar
 direct-manipulation direction. The affected interaction and OpenGL navigation
 set passed 28/28 tests.
 
+The next manual review exposed a separate projection defect: pointer-to-world
+conversion was still hard-coded to global XY while Front or Right sketch
+editing was active. The Viewer now intersects the picking ray with the active
+SketchPlane, and creation, preview and logical sub-element selection all use
+that same plane. Focused SketchPlane and OpenGL Workspace coverage passed 19/19,
+including all three principal orientations.
+
 The gate remains not approved because two requested behaviors exceed the frozen
 contracts. D18 permits semantic Sketch support only on a single-body Extrude
 StartCap/EndCap; it explicitly excludes arbitrary result faces and persistent

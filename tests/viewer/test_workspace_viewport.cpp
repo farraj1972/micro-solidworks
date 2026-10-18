@@ -11,6 +11,7 @@
 #include "presentation/GeometryPresentation.h"
 #include "presentation/FeaturePresentation.h"
 #include "features/FeatureModel.h"
+#include "core/sketch/SketchPlane.h"
 
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
@@ -415,6 +416,22 @@ TEST_F(WorkspaceViewportTest, PickingUsesLogicalLayoutAndIsIndependentOfFramebuf
     EXPECT_FALSE(viewport.pick(layout, 128, 128, 15, 64));
     EXPECT_FALSE(viewport.pick(layout, 128, 128, 112, 64));
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
+TEST_F(WorkspaceViewportTest, ActiveSketchPlaneReceivesPointerForAllPrincipalOrientations)
+{
+    WorkspaceViewport viewport;
+    const WorkspaceLayout layout{16,16,96,96,128,128};
+    const std::array<microsw::sketch::SketchPlane,3> planes{
+        microsw::sketch::SketchPlane{{},{1,0,0},{0,1,0}},
+        microsw::sketch::SketchPlane{{},{1,0,0},{0,0,1}},
+        microsw::sketch::SketchPlane{{},{0,1,0},{0,0,1}}};
+    for(const auto& plane:planes){
+        viewport.setViewBasis(-plane.normal(),plane.yAxis());
+        const auto hit=viewport.pointOnPlane(layout,128,128,64,64,plane.plane());
+        ASSERT_TRUE(hit);
+        EXPECT_TRUE(microsw::geometry::areCoincident(*hit,plane.origin()));
+    }
 }
 
 TEST_F(WorkspaceViewportTest, PickingTracksProjectionAndZoomWithoutStoredHitState)

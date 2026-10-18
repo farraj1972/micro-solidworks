@@ -4,6 +4,7 @@
 #include "app/WorkspaceInput.h"
 #include "core/math/Scalar.h"
 #include "core/math/Vector3.h"
+#include "core/geometry/Plane.h"
 #include "viewer/GeometryPicker.h"
 #include "viewer/SolidPicker.h"
 
@@ -100,6 +101,9 @@ public:
     [[nodiscard]] std::optional<geometry::Point3> pointOnGlobalXY(
         const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
         math::Scalar mouseX, math::Scalar mouseY) const;
+    [[nodiscard]] std::optional<geometry::Point3> pointOnPlane(
+        const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
+        math::Scalar mouseX, math::Scalar mouseY, const geometry::Plane& plane) const;
     [[nodiscard]] std::optional<ScreenPoint> projectPoint(
         const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight,
         const geometry::Point3& point) const;
