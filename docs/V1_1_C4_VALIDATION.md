@@ -119,6 +119,12 @@ SketchPlane, and creation, preview and logical sub-element selection all use
 that same plane. Focused SketchPlane and OpenGL Workspace coverage passed 19/19,
 including all three principal orientations.
 
+Manual corrective smoke: PASS. The owner confirmed the corrected principal-plane
+selection and orientation, active-plane sketch projection, Extrude cancellation,
+workflow-state cues and direct-manipulation MMB orbit behavior. The executable
+state was unchanged after this observation, so build and automated tests were
+not repeated.
+
 The gate remains not approved because two requested behaviors exceed the frozen
 contracts. D18 permits semantic Sketch support only on a single-body Extrude
 StartCap/EndCap; it explicitly excludes arbitrary result faces and persistent
