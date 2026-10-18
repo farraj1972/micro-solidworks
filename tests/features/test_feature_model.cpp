@@ -210,3 +210,36 @@ TEST(FeatureModel, SemanticCapRejectsMultiBodySourceWithoutReattachment)
     EXPECT_EQ(model.find(supported).state(), microsw::features::FeatureState::Failed);
     EXPECT_EQ(result.diagnostic, "Sketch support requires a single-body Extrude cap");
 }
+
+TEST(FeatureModel, CutExtrudeOwnsExplicitBackwardDependenciesAndParameters)
+{
+    microsw::features::FeatureModel model;
+    const auto target = model.addExtrude(model.addSketch(rectangle(0, 0, 4, 4)), 4);
+    microsw::sketch::Sketch profile; (void)profile.addCircle({{2, 2}, 1});
+    const auto source = model.addFaceSketch(std::move(profile), target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(source, target, 2,
+        microsw::features::CutDirection::Reverse);
+    EXPECT_EQ(model.find(cut).dependencies(), (std::vector{source, target}));
+    const auto& value = std::get<microsw::features::CutExtrudeFeature>(model.find(cut).data());
+    EXPECT_EQ(value.sourceSketchFeatureId, source);
+    EXPECT_EQ(value.targetResultFeatureId, target);
+    EXPECT_DOUBLE_EQ(value.distance, 2);
+    EXPECT_EQ(value.direction, microsw::features::CutDirection::Reverse);
+    EXPECT_EQ(model.find(cut).displayName(), "CutExtrude1");
+}
+
+TEST(FeatureModel, CutExtrudeValidatesTargetOrderAndEditsAtomically)
+{
+    microsw::features::FeatureModel model;
+    const auto target = model.addExtrude(model.addSketch(rectangle(0, 0, 4, 4)), 4);
+    const auto source = model.addFaceSketch({}, target, microsw::features::ExtrudeCapRole::EndCap);
+    EXPECT_THROW(model.addCutExtrude(source, target, 0), std::invalid_argument);
+    const auto cut = model.addCutExtrude(source, target, 1);
+    model.setCutExtrude(cut, 3, microsw::features::CutDirection::Reverse);
+    const auto& value = std::get<microsw::features::CutExtrudeFeature>(model.find(cut).data());
+    EXPECT_DOUBLE_EQ(value.distance, 3);
+    EXPECT_EQ(value.direction, microsw::features::CutDirection::Reverse);
+    EXPECT_THROW(model.setCutExtrude(cut, -1, microsw::features::CutDirection::Forward), std::invalid_argument);
+    EXPECT_DOUBLE_EQ(std::get<microsw::features::CutExtrudeFeature>(model.find(cut).data()).distance, 3);
+}

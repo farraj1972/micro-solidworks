@@ -22,8 +22,16 @@ struct SemanticFaceSupport { FeatureId sourceFeatureId; ExtrudeCapRole capRole; 
 using SketchSupport = std::variant<ExplicitPlaneSupport, SemanticFaceSupport>;
 struct SketchFeature { sketch::Sketch sketch; SketchSupport support{ExplicitPlaneSupport{}}; };
 struct ExtrudeFeature { FeatureId sourceSketchFeatureId; math::Scalar distance; };
+enum class CutDirection { Forward, Reverse };
+struct CutExtrudeFeature
+{
+    FeatureId sourceSketchFeatureId;
+    FeatureId targetResultFeatureId;
+    math::Scalar distance;
+    CutDirection direction{CutDirection::Forward};
+};
 struct BooleanFeature { FeatureId inputA; FeatureId inputB; modeling::BooleanOperation operation; };
-using FeatureData = std::variant<SketchFeature, ExtrudeFeature, BooleanFeature>;
+using FeatureData = std::variant<SketchFeature, ExtrudeFeature, BooleanFeature, CutExtrudeFeature>;
 
 struct SketchFeatureCache { sketch::Sketch solvedSketch; };
 struct SolidFeatureCache
@@ -91,9 +99,12 @@ public:
     FeatureId addSketch(sketch::Sketch sketch);
     FeatureId addFaceSketch(sketch::Sketch sketch, FeatureId sourceExtrude, ExtrudeCapRole role);
     FeatureId addExtrude(FeatureId sketchId, math::Scalar distance);
+    FeatureId addCutExtrude(FeatureId sketchId, FeatureId targetResultId,
+        math::Scalar distance, CutDirection direction = CutDirection::Forward);
     FeatureId addBoolean(FeatureId inputA, FeatureId inputB, modeling::BooleanOperation operation);
     void editSketch(FeatureId id, const SketchEdit& edit);
     void setExtrudeDistance(FeatureId id, math::Scalar distance);
+    void setCutExtrude(FeatureId id, math::Scalar distance, CutDirection direction);
     void setBooleanOperation(FeatureId id, modeling::BooleanOperation operation);
     void setResultFeatureId(FeatureId id);
     [[nodiscard]] FeatureId resultFeatureId() const noexcept { return resultFeatureId_; }

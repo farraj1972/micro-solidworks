@@ -168,6 +168,27 @@ TEST(Persistence, OpensVersionOneAsExplicitPlaneAndSavesVersionTwo)
     std::filesystem::remove(path);
 }
 
+TEST(Persistence, VersionTwoPreservesCutExtrudeContract)
+{
+    features::FeatureModel model;
+    sketch::Sketch base; (void)base.addRectangle({0, 0}, {4, 4});
+    const auto target = model.addExtrude(model.addSketch(std::move(base)), 4);
+    sketch::Sketch profile; (void)profile.addCircle({{2, 2}, 1});
+    const auto source = model.addFaceSketch(std::move(profile), target,
+        features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(source, target, 2, features::CutDirection::Reverse);
+    const auto path = temporaryFile("micro-solidworks-v2-cut-contract.microsw");
+    ASSERT_EQ(persistence::saveFeatureModel(model, path).status, persistence::SaveStatus::Success);
+    auto opened = persistence::openFeatureModel(path);
+    EXPECT_EQ(opened.status, persistence::OpenStatus::SuccessRebuildFailed);
+    const auto& restored = std::get<features::CutExtrudeFeature>(opened.model.find(cut).data());
+    EXPECT_EQ(restored.sourceSketchFeatureId, source);
+    EXPECT_EQ(restored.targetResultFeatureId, target);
+    EXPECT_DOUBLE_EQ(restored.distance, 2);
+    EXPECT_EQ(restored.direction, features::CutDirection::Reverse);
+    std::filesystem::remove(path);
+}
+
 TEST(Persistence, InvalidPathDoesNotMutateModel)
 {
     auto model=sampleModel(); const auto count=model.history().size();

@@ -36,6 +36,7 @@ std::vector<FeatureId> FeatureRecord::dependencies() const
             return {};
         }
         else if constexpr (std::is_same_v<T, ExtrudeFeature>) return {value.sourceSketchFeatureId};
+        else if constexpr (std::is_same_v<T, CutExtrudeFeature>) return {value.sourceSketchFeatureId, value.targetResultFeatureId};
         else return {value.inputA, value.inputB};
     }, data_);
 }
@@ -47,7 +48,7 @@ std::string FeatureModel::nextName(FeatureKind kind) const
 {
     std::size_t count{};
     for (const auto& record : records_) if (record.kind() == kind) ++count;
-    const char* prefix = kind == FeatureKind::Sketch ? "Sketch" : kind == FeatureKind::Extrude ? "Extrude" : "Boolean";
+    const char* prefix = kind == FeatureKind::Sketch ? "Sketch" : kind == FeatureKind::Extrude ? "Extrude" : kind == FeatureKind::CutExtrude ? "CutExtrude" : "Boolean";
     return prefix + std::to_string(count + 1);
 }
 
@@ -87,6 +88,26 @@ FeatureId FeatureModel::addExtrude(FeatureId sketchId, math::Scalar distance)
     return id;
 }
 
+FeatureId FeatureModel::addCutExtrude(FeatureId sketchId, FeatureId targetResultId,
+                                      math::Scalar distance, CutDirection direction)
+{
+    if (find(sketchId).kind() != FeatureKind::Sketch)
+        throw std::invalid_argument{"Cut Extrude source must be an earlier Sketch"};
+    if (!isSolidProducer(targetResultId))
+        throw std::invalid_argument{"Cut Extrude target must be an earlier modeled result"};
+    if (targetResultId.value() >= sketchId.value())
+        throw std::invalid_argument{"Cut Extrude Sketch must follow its target result"};
+    if (!std::isfinite(distance) || distance <= geometry::defaultGeometricTolerance)
+        throw std::invalid_argument{"Cut Extrude distance must exceed geometric tolerance"};
+    const auto id = FeatureId{nextFeatureId_};
+    if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
+    records_.push_back(FeatureRecord{id, FeatureKind::CutExtrude,
+        nextName(FeatureKind::CutExtrude), CutExtrudeFeature{sketchId, targetResultId, distance, direction}});
+    ++nextFeatureId_;
+    resultFeatureId_ = id;
+    return id;
+}
+
 FeatureId FeatureModel::addBoolean(FeatureId inputA, FeatureId inputB, modeling::BooleanOperation operation)
 {
     if (!isSolidProducer(inputA) || !isSolidProducer(inputB))
@@ -111,7 +132,7 @@ FeatureRecord& FeatureModel::mutableFind(FeatureId id)
 bool FeatureModel::isSolidProducer(FeatureId id) const
 {
     const auto kind = find(id).kind();
-    return kind == FeatureKind::Extrude || kind == FeatureKind::Boolean;
+    return kind == FeatureKind::Extrude || kind == FeatureKind::Boolean || kind == FeatureKind::CutExtrude;
 }
 
 void FeatureModel::markDirtyClosure(FeatureId id)
@@ -139,6 +160,17 @@ void FeatureModel::setExtrudeDistance(FeatureId id, math::Scalar distance)
     auto& record = mutableFind(id);
     if (record.kind() != FeatureKind::Extrude) throw std::invalid_argument{"Feature is not an ExtrudeFeature"};
     std::get<ExtrudeFeature>(record.data_).distance = distance;
+    markDirtyClosure(id);
+}
+void FeatureModel::setCutExtrude(FeatureId id, math::Scalar distance, CutDirection direction)
+{
+    if (!std::isfinite(distance) || distance <= geometry::defaultGeometricTolerance)
+        throw std::invalid_argument{"Cut Extrude distance must exceed geometric tolerance"};
+    auto& record = mutableFind(id);
+    if (record.kind() != FeatureKind::CutExtrude)
+        throw std::invalid_argument{"Feature is not a CutExtrudeFeature"};
+    auto& cut = std::get<CutExtrudeFeature>(record.data_);
+    cut.distance = distance; cut.direction = direction;
     markDirtyClosure(id);
 }
 void FeatureModel::setBooleanOperation(FeatureId id, modeling::BooleanOperation operation)
@@ -221,7 +253,7 @@ RebuildResult FeatureModel::rebuild()
                     throw std::runtime_error{extrusion.diagnostic};
                 candidates[record.id().value()] = SolidFeatureCache{std::move(extrusion.solids)};
             }
-            else
+            else if (record.kind() == FeatureKind::Boolean)
             {
                 const auto& data = std::get<BooleanFeature>(record.data_);
                 const auto& aCache = std::get<SolidFeatureCache>(output(data.inputA));
@@ -245,6 +277,8 @@ RebuildResult FeatureModel::rebuild()
                     candidates[record.id().value()] = EmptyFeatureCache{};
                 else throw std::runtime_error{"Boolean rebuild failed"};
             }
+            else
+                throw std::runtime_error{"Cut Extrude exact subtraction is not yet evaluated"};
         }
         catch (const std::exception& error)
         {
@@ -303,7 +337,8 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
             using T = std::decay_t<decltype(value)>;
             if constexpr (std::is_same_v<T, SketchFeature>) return FeatureKind::Sketch;
             if constexpr (std::is_same_v<T, ExtrudeFeature>) return FeatureKind::Extrude;
-            return FeatureKind::Boolean;
+            if constexpr (std::is_same_v<T, BooleanFeature>) return FeatureKind::Boolean;
+            return FeatureKind::CutExtrude;
         }, feature.data);
         if (dataKind != feature.kind) throw std::invalid_argument{"Feature kind/data mismatch"};
         for (const auto dependency : FeatureRecord{feature.id, feature.kind,
@@ -326,6 +361,17 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
             };
             if (!isSolid(data.inputA) || !isSolid(data.inputB))
                 throw std::invalid_argument{"Invalid persisted BooleanFeature inputs"};
+        }
+        if (feature.kind == FeatureKind::CutExtrude)
+        {
+            const auto& data = std::get<CutExtrudeFeature>(feature.data);
+            if (!std::isfinite(data.distance) || data.distance <= geometry::defaultGeometricTolerance
+                || features[data.sourceSketchFeatureId.value()].kind != FeatureKind::Sketch)
+                throw std::invalid_argument{"Invalid persisted CutExtrudeFeature"};
+            const auto targetKind = features[data.targetResultFeatureId.value()].kind;
+            if (targetKind != FeatureKind::Extrude && targetKind != FeatureKind::Boolean
+                && targetKind != FeatureKind::CutExtrude)
+                throw std::invalid_argument{"Invalid CutExtrude target"};
         }
         result.records_.push_back(FeatureRecord{feature.id, feature.kind,
             std::move(feature.displayName), std::move(feature.data)});
