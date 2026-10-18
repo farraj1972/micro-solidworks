@@ -1,6 +1,6 @@
 # ADR-0069 — Generalized Semantic Planar-Face Support for Generated Features
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

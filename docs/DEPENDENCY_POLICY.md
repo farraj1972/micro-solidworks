@@ -253,9 +253,9 @@ external quaternion, camera or scene library is authorized.
 
 ## 13. D20 feature deletion and generated-face semantics
 
-ADR-0068–0069 are PROPOSED under the existing BUILD strategy. Feature deletion
+Accepted ADR-0068–0069 freeze the existing BUILD strategy. Feature deletion
 belongs to FeatureModel with Application/Editor transaction cleanup and uses no
 new dependency. Generated-face provenance is derived at the Features over
 Modeling/Topology boundary; persistence stores only FeatureId plus semantic role.
 No external kernel, persistent FaceId, generic naming framework or schema v3 is
-authorized by the proposal.
+authorized by D20.

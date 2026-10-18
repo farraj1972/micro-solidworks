@@ -1295,16 +1295,17 @@ standard views, picking and projection remain compatibility requirements.
 Camera Roll UI, animated transitions and persisted view state remain deferred.
 
 D20 - Feature Deletion & General Semantic Planar-Face Support
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0068-0069: PROPOSED
-ADR inventory: 69 total / 67 ACCEPTED / 2 PROPOSED
-V1.1-C4: FIX REQUIRED / WAITING FOR D20
+STATUS: FROZEN
+ADR-0068-0069: ACCEPTED
+ADR inventory: 69/69 ACCEPTED
+V1.1-C4: FIX REQUIRED / NEXT ACTIVE AFTER D20 FREEZE
 
-The proposal selects atomic recursive dependant-closure deletion with explicit
+The frozen decision selects atomic recursive dependant-closure deletion with explicit
 confirmation for non-leaf closures, retired forward FeatureIds, exact checkpoint
 Undo/Redo and deterministic latest surviving valid modeled result. It also
-proposes generated semantic roles for unambiguous single-body Cut inherited caps
+freezes generated semantic roles for unambiguous single-body Cut inherited caps
 and a single-region PocketFloor. Every role must resolve to exactly one planar
 Face; missing or ambiguous roles fail without reattachment. Raw topology IDs
-remain derived and .microsw v2 is extended compatibly. No D20 implementation is
-authorized until explicit approval/freeze.
+remain derived and .microsw v2 is extended compatibly. D20 extends semantic
+generated-face support without introducing general persistent topological naming.
+V1.1-C4 corrective implementation is now the next authorized work.

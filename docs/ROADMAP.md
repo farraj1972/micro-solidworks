@@ -1085,23 +1085,24 @@ contract; camera Roll UI and persisted view state remain deferred.
 ## D20 — Feature Deletion & General Semantic Planar-Face Support
 
 ```text
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0068–0069: PROPOSED
-ADR inventory: 69 total / 67 ACCEPTED / 2 PROPOSED
-V1.1-C4: FIX REQUIRED / WAITING FOR D20
+STATUS: FROZEN
+ADR-0068–0069: ACCEPTED
+ADR inventory: 69/69 ACCEPTED
+V1.1-C4: FIX REQUIRED / NEXT ACTIVE AFTER D20 FREEZE
 ```
 
-The proposal defines atomic deletion of the selected feature and its transitive
+The frozen decision defines atomic deletion of the selected feature and its transitive
 dependant closure. Non-leaf deletion requires explicit named confirmation;
 deleted FeatureIds remain retired, Undo/Redo restores/removes the exact closure,
 and persistence writes only surviving features while retaining `nextFeatureId`.
 
-Generated planar-face support extends the semantic reference model with
+Frozen generated planar-face support extends the semantic reference model with
 unambiguous single-body Cut inherited caps and a single-region Cut pocket floor.
 Every role must resolve to exactly one planar Face. Missing or ambiguous roles
 fail without geometric reattachment. Raw FaceId and body indices remain derived;
 the additive role tokens remain compatible with `.microsw` v2. Side,
 cylindrical, Boolean, multi-region and multi-body face support remains deferred.
 
-C4 remains blocked until D20 is approved, implemented, covered by the deletion
-and Sketch-on-Cut-face Experience scenarios, and validated by final V3.
+C4 is the next active corrective implementation. It remains FIX REQUIRED until
+D20 is implemented, covered by the deletion and Sketch-on-Cut-face Experience
+scenarios, and validated by final V3.

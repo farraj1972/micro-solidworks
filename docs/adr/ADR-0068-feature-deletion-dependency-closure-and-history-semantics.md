@@ -1,6 +1,6 @@
 # ADR-0068 — Feature Deletion, Dependency Closure and History Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
