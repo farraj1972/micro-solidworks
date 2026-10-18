@@ -28,16 +28,15 @@ void OrbitNavigation::begin(double x, double y) noexcept
 void OrbitNavigation::update(double x, double y, OrbitCamera& camera)
 {
     if (!active_) return;
-    const double yaw = camera.yaw() + (x - previousX_) * sensitivity();
-    // UI Y grows down: dragging up increases elevation.
-    const double pitch = camera.pitch() - (y - previousY_) * sensitivity();
-    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(yaw) || !std::isfinite(pitch))
+    const double yawDelta = (x - previousX_) * sensitivity();
+    const double pitchDelta = -(y - previousY_) * sensitivity();
+    if (!std::isfinite(x) || !std::isfinite(y)
+        || !std::isfinite(yawDelta) || !std::isfinite(pitchDelta))
     {
         end();
         return;
     }
-    camera.setYaw(yaw); // Deliberately unwrapped.
-    camera.setPitch(pitch); // Only OrbitCamera owns pole protection.
+    camera.orbit(yawDelta, pitchDelta);
     previousX_ = x;
     previousY_ = y;
 }

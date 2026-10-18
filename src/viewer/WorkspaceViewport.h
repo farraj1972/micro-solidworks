@@ -60,6 +60,7 @@ public:
     void setSolidPickingEnabled(bool enabled) noexcept;
     void setDisplayMode(SolidDisplayMode mode) noexcept;
     [[nodiscard]] SolidDisplayMode displayMode() const noexcept;
+    void setViewBasis(const math::Vector3& forward, const math::Vector3& up);
     void setStandardView(StandardView view);
     void fitVisibleGeometry();
 

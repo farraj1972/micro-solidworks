@@ -6,8 +6,7 @@
 namespace microsw::viewer
 {
 
-// Mathematical orbit camera: +Z world up, yaw/pitch in radians.
-// Only target, distance, yaw and pitch are stored; all vectors are derived.
+// Mathematical orbit camera with one authoritative orthonormal orientation.
 class OrbitCamera
 {
 public:
@@ -21,14 +20,20 @@ public:
 
     [[nodiscard]] const math::Vector3& target() const noexcept { return target_; }
     [[nodiscard]] math::Scalar distance() const noexcept { return distance_; }
-    [[nodiscard]] math::Scalar yaw() const noexcept { return yaw_; }
-    [[nodiscard]] math::Scalar pitch() const noexcept { return pitch_; }
+    [[nodiscard]] math::Scalar yaw() const noexcept;
+    [[nodiscard]] math::Scalar pitch() const noexcept;
 
     // Throws std::overflow_error if the derived position cannot remain finite.
     [[nodiscard]] math::Vector3 position() const;
     [[nodiscard]] math::Vector3 forward() const;
     [[nodiscard]] math::Vector3 right() const;
     [[nodiscard]] math::Vector3 up() const;
+
+    // forward and up must be finite, non-zero and perpendicular. The stored
+    // basis is normalized and right-handed.
+    void setOrientation(const math::Vector3& forward, const math::Vector3& up);
+    // Local orbit: yaw rotates around current up, pitch around resulting right.
+    void orbit(math::Scalar yawDelta, math::Scalar pitchDelta);
 
     // Non-finite inputs throw std::invalid_argument without changing state.
     void setTarget(const math::Vector3& target);
@@ -40,12 +45,12 @@ public:
     void setPitch(math::Scalar pitch);
 
 private:
-    [[nodiscard]] math::Vector3 radialDirection() const;
+    void setAngles(math::Scalar yaw, math::Scalar pitch);
 
     math::Vector3 target_{};
     math::Scalar distance_{};
-    math::Scalar yaw_{};
-    math::Scalar pitch_{};
+    math::Vector3 forward_{};
+    math::Vector3 up_{};
 };
 
 }

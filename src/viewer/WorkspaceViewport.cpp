@@ -200,6 +200,8 @@ void WorkspaceViewport::setFeaturePresentation(const presentation::FeaturePresen
 { impl_->featurePresentation=presentation; }
 void WorkspaceViewport::setDisplayMode(SolidDisplayMode mode) noexcept { impl_->displayMode=mode; }
 SolidDisplayMode WorkspaceViewport::displayMode() const noexcept { return impl_->displayMode; }
+void WorkspaceViewport::setViewBasis(const math::Vector3& forward, const math::Vector3& up)
+{ impl_->camera.setOrientation(forward, up); }
 void WorkspaceViewport::setStandardView(StandardView view)
 {
     using std::numbers::pi_v; const auto half=pi_v<math::Scalar>/2;

@@ -103,15 +103,15 @@ TEST(OrbitCamera, DistanceSetterChangesRadiusWithoutChangingOrientation)
     EXPECT_TRUE(almostEqual(camera.up(), before.up()));
 }
 
-TEST(OrbitCamera, YawSetterAcceptsNegativeAndUnwrappedAngles)
+TEST(OrbitCamera, YawSetterAcceptsFiniteAnglesWithEquivalentDerivedOrientation)
 {
     OrbitCamera camera;
     for (const Scalar yaw : {Scalar{-7.3}, Scalar{9.4}})
     {
         camera.setYaw(yaw);
-        EXPECT_TRUE(almostEqual(camera.yaw(), yaw));
         const OrbitCamera expected{camera.target(), camera.distance(), yaw, camera.pitch()};
         EXPECT_TRUE(almostEqual(camera.position(), expected.position()));
+        EXPECT_TRUE(almostEqual(camera.forward(), expected.forward()));
         expectOrthonormalBasis(camera);
     }
 }
@@ -120,9 +120,30 @@ TEST(OrbitCamera, ConstructorAcceptsYawBeyondFullTurn)
 {
     const OrbitCamera camera{Vector3{}, 10.0, Scalar{4.0} * pi + Scalar{0.3}, 0.2};
     const OrbitCamera equivalent{Vector3{}, 10.0, 0.3, 0.2};
-    EXPECT_GT(camera.yaw(), Scalar{2.0} * pi);
     EXPECT_TRUE(almostEqual(camera.position(), equivalent.position()));
     EXPECT_TRUE(almostEqual(camera.forward(), equivalent.forward()));
+}
+
+TEST(OrbitCamera, ArbitraryOrientationPreservesSuppliedScreenFrame)
+{
+    OrbitCamera camera;
+    const auto right = Vector3{1, 2, 0}.normalized();
+    const auto up = Vector3{-2, 1, 3}.normalized();
+    const auto forward = cross(up, right).normalized();
+    camera.setOrientation(forward, up);
+    EXPECT_TRUE(almostEqual(camera.forward(), forward));
+    EXPECT_TRUE(almostEqual(camera.right(), right));
+    EXPECT_TRUE(almostEqual(camera.up(), up));
+    expectOrthonormalBasis(camera);
+}
+
+TEST(OrbitCamera, OrbitAfterArbitraryOrientationKeepsOrthonormalBasis)
+{
+    OrbitCamera camera;
+    camera.setOrientation(Vector3{-1, -2, -3}.normalized(),
+        Vector3{-2, 1, 0}.normalized());
+    camera.orbit(0.3, -0.2);
+    expectOrthonormalBasis(camera);
 }
 
 TEST(OrbitCamera, PitchSetterPreservesValuesInsideLimits)
