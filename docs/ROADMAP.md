@@ -1049,3 +1049,14 @@ Experience Gate was APPROVED. The V1.1-C4 prerequisite review renames the next
 campaign to Subtractive Modeling & Sketch-on-Face and finds a Decision Gate is
 required for semantic cap support, exact subtraction, target-result semantics
 and persistence evolution. V1.1-C5 remains Feature Workflow Hardening.
+
+## D18 — Sketch-on-Face, Exact Subtraction & Persistence v2 Semantics
+
+```text
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0064–0066: PROPOSED
+ADR inventory: 66 total / 63 ACCEPTED / 3 PROPOSED
+V1.1-C4: WAITING FOR D18 APPROVAL AND FREEZE
+```
+
+D18 proposes Option B: semantic StartCap/EndCap support on single-body Extrudes, associative Sketch planes, exact Blind subtraction over all intersected bodies in an explicit target result, 0..N transactional outputs, and persistence v2 with v1 migration. Through All, general topological naming and arbitrary face support remain outside C4.

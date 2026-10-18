@@ -1212,7 +1212,7 @@ D17: FROZEN
 ADR-0061-0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C3: FROZEN
-V1.1-C4: PREREQUISITE REVIEW COMPLETE / DECISION REQUIRED
+V1.1-C4: WAITING FOR D18 APPROVAL AND FREEZE
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
@@ -1269,3 +1269,13 @@ Repository governance and accepted ADRs are authoritative. Future prompts
 should reference them instead of restating them. Prefer compact prompts covering
 increment, scope, expected behavior, affected layers, validation level,
 acceptance criteria, stop conditions and commit policy.
+
+D18 - Sketch-on-Face, Exact Subtraction & Persistence v2 Semantics
+STATUS: PROPOSED / READY FOR REVIEW
+ADR-0064-0066: PROPOSED
+ADR inventory: 66 total / 63 ACCEPTED / 3 PROPOSED
+
+D18 proposes semantic single-body Extrude StartCap/EndCap support, exact
+project-owned prismatic Cut Extrude with 0..N transactional results, and
+persistence v2 with v1 migration. Raw topology IDs remain rebuild-local;
+B11 remains frozen. V1.1-C4 is not implemented pending approval/freeze.

@@ -674,3 +674,5 @@ Undo/Redo, dirty-state tracking, native Windows Open/Save dialogs and shared
 Save / Don't Save / Cancel protection for New, Open and both exit paths. See
 `docs/V1_1_C3_VALIDATION.md`. The V1.1-C4 prerequisite review requires a
 Decision Gate before implementation; see `docs/V1_1_C4_PREREQUISITE_REVIEW.md`.
+
+D18 is PROPOSED / READY FOR REVIEW in ADR-0064–0066. It proposes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. V1.1-C4 remains unimplemented pending approval and freeze.
