@@ -1212,7 +1212,7 @@ D17: FROZEN
 ADR-0061-0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C3: FROZEN
-V1.1-C4: NEXT ACTIVE / SUBJECT TO REVIEW
+V1.1-C4: PREREQUISITE REVIEW COMPLETE / DECISION REQUIRED
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and

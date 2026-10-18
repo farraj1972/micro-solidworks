@@ -110,7 +110,7 @@ Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience
 D17 — Document Safety, Undo/Redo & Session History Semantics: FROZEN
 ADR-0061–0063: ACCEPTED (63/63 total)
 V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: FROZEN
-V1.1-C4 — General Profiles & Cut Extrude: NEXT ACTIVE / SUBJECT TO REVIEW
+V1.1-C4 — Subtractive Modeling & Sketch-on-Face: DECISION REQUIRED
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -672,4 +672,5 @@ V1.1-C3 — Document Safety, Undo/Redo & Session Workflow is FROZEN. The current
 application uses authoritative FeatureModel checkpoints, 100-step session-local
 Undo/Redo, dirty-state tracking, native Windows Open/Save dialogs and shared
 Save / Don't Save / Cancel protection for New, Open and both exit paths. See
-`docs/V1_1_C3_VALIDATION.md`. V1.1-C4 is next and requires roadmap review.
+`docs/V1_1_C3_VALIDATION.md`. The V1.1-C4 prerequisite review requires a
+Decision Gate before implementation; see `docs/V1_1_C4_PREREQUISITE_REVIEW.md`.

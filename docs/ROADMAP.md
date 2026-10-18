@@ -782,7 +782,7 @@ initial v1.1 roadmap is:
 | V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
 | V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | FROZEN | Safe authoritative history, native document workflow and unsaved-change protection |
-| V1.1-C4 — General Profiles & Cut Extrude | PLANNED / SUBJECT TO REVIEW | Broader profile and subtractive modeling capability |
+| V1.1-C4 — Subtractive Modeling & Sketch-on-Face | DECISION REQUIRED | Associative Extrude-cap Sketch support and exact general Cut Extrude require a Decision Gate |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
 V1.1-C1 is graphics-area centric, mouse-first, context-sensitive and icon/tool
@@ -980,7 +980,7 @@ ADR-0059–0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
 V1.1-C2A: FROZEN
 V1.1-C3: FROZEN
-V1.1-C4: NEXT ACTIVE / SUBJECT TO REVIEW
+V1.1-C4: PREREQUISITE REVIEW COMPLETE / DECISION REQUIRED
 ```
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel rather than a
@@ -1016,7 +1016,7 @@ ADR-0061–0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C2A: FROZEN
 V1.1-C3: FROZEN
-V1.1-C4: NEXT ACTIVE / SUBJECT TO REVIEW
+V1.1-C4: PREREQUISITE REVIEW COMPLETE / DECISION REQUIRED
 ```
 
 D17 freezes Application-owned document dirty and saved-baseline state distinct
@@ -1045,5 +1045,7 @@ recent files, persistent history and multi-document editing remain deferred.
 V1.1-C3 implements and validates these frozen decisions with typed authoritative
 checkpoints, bounded Undo/Redo, native Windows file dialogs and one reusable
 unsaved-changes policy. Its final V3 passed 846/846 tests and the manual
-Experience Gate was APPROVED. V1.1-C4 is next, subject to roadmap review; the
-expected focus is Cut Extrude / subtractive modeling.
+Experience Gate was APPROVED. The V1.1-C4 prerequisite review renames the next
+campaign to Subtractive Modeling & Sketch-on-Face and finds a Decision Gate is
+required for semantic cap support, exact subtraction, target-result semantics
+and persistence evolution. V1.1-C5 remains Feature Workflow Hardening.
