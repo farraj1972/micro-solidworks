@@ -41,9 +41,9 @@ TEST(OrbitNavigationTest, RightAndLeftHaveExplicitYawSigns)
     OrbitNavigation navigation;
     navigation.begin(100, 100);
     navigation.update(120, 100, camera);
-    EXPECT_TRUE(almostEqual(camera.yaw(), 20 * navigation.sensitivity()));
-    navigation.update(80, 100, camera);
     EXPECT_TRUE(almostEqual(camera.yaw(), -20 * navigation.sensitivity()));
+    navigation.update(80, 100, camera);
+    EXPECT_TRUE(almostEqual(camera.yaw(), 20 * navigation.sensitivity()));
     EXPECT_TRUE(almostEqual(camera.pitch(), 0.0));
 }
 
@@ -53,9 +53,9 @@ TEST(OrbitNavigationTest, UpAndDownHaveExplicitPitchSigns)
     OrbitNavigation navigation;
     navigation.begin(100, 100);
     navigation.update(100, 80, camera);
-    EXPECT_TRUE(almostEqual(camera.pitch(), 20 * navigation.sensitivity()));
-    navigation.update(100, 120, camera);
     EXPECT_TRUE(almostEqual(camera.pitch(), -20 * navigation.sensitivity()));
+    navigation.update(100, 120, camera);
+    EXPECT_TRUE(almostEqual(camera.pitch(), 20 * navigation.sensitivity()));
     EXPECT_TRUE(almostEqual(camera.yaw(), 0.0));
 }
 
@@ -81,7 +81,7 @@ TEST(OrbitNavigationTest, QuarterTurnReachesPositiveY)
     OrbitNavigation navigation;
     navigation.begin(0, 0);
     navigation.update((pi / 2) / navigation.sensitivity(), 0, camera);
-    EXPECT_TRUE(almostEqual(camera.position(), microsw::math::Vector3{0, 10, 0}));
+    EXPECT_TRUE(almostEqual(camera.position(), microsw::math::Vector3{0, -10, 0}));
 }
 
 TEST(OrbitNavigationTest, WholeTurnYawPreservesOrientation)
@@ -103,7 +103,7 @@ TEST(OrbitNavigationTest, BothPolesUseCameraClampAndKeepFiniteBasis)
         OrbitNavigation navigation;
         navigation.begin(0, 0);
         navigation.update(0, y, camera);
-        expected.setPitch(-y * navigation.sensitivity());
+        expected.setPitch(y * navigation.sensitivity());
         EXPECT_TRUE(almostEqual(camera.pitch(), expected.pitch()));
         EXPECT_LT(camera.pitch(), pi / 2);
         EXPECT_GT(camera.pitch(), -pi / 2);
@@ -141,7 +141,7 @@ TEST(OrbitNavigationTest, RebeginResetsAnchorWithoutJump)
     navigation.update(10, 0, camera);
     navigation.begin(1000, 1000);
     navigation.update(1010, 1000, camera);
-    EXPECT_TRUE(almostEqual(camera.yaw(), 20 * navigation.sensitivity()));
+    EXPECT_TRUE(almostEqual(camera.yaw(), -20 * navigation.sensitivity()));
 }
 
 TEST(OrbitNavigationTest, InvalidCoordinatesAndDeltaOverflowCancelAtomically)

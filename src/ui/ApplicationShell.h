@@ -170,6 +170,7 @@ private:
     DisplayModeRequest displayMode_{DisplayModeRequest::ShadedWithEdges};
     std::string currentFilePath_;
     std::string persistenceStatus_;
+    std::string workflowState_{"Part editing"};
     float modelPanelWidth_{320.0F};
     bool propertyManagerVisible_{};
 };

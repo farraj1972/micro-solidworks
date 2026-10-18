@@ -62,7 +62,7 @@ int main(){
         throw std::invalid_argument{"Select an Extrude start or end cap."};
     const auto role=endDistance<=startDistance?microsw::features::ExtrudeCapRole::EndCap:microsw::features::ExtrudeCapRole::StartCap;
     id=session.model().addFaceSketch({},source.id(),role);session.recordEdit();
-   }else{id=session.model().addSketch({});session.recordEdit();}
+   }else throw std::invalid_argument{"Select Front, Top or Right Plane, or a supported planar face, before starting Sketch."};
    workingSketch=std::get<microsw::features::SketchFeature>(session.model().find(id).data()).sketch;
    const auto rebuild=session.model().rebuild();if(rebuild.status==microsw::features::RebuildStatus::Failed)throw std::runtime_error{rebuild.diagnostic};
    workingSketch=std::get<microsw::features::SketchFeatureCache>(*session.model().find(id).cache()).solvedSketch;
@@ -89,7 +89,7 @@ int main(){
     else if(shell.enterSketchRequest())enterSketch(shell.selectedFeature());
     if(shell.exitSketchRequest()&&editor.activeSketchFeatureId()){(void)commitSketch(false);editor.exitSketch();refreshFeatures();}
     if(shell.editorCommandRequest()){using EC=microsw::interaction::EditorCommand;const auto command=*shell.editorCommandRequest();if((command==EC::Extrude||command==EC::CutExtrude)&&!editor.activeSketchFeatureId()&&shell.selectedFeature()){const auto& source=session.model().find(*shell.selectedFeature());if(source.kind()==microsw::features::FeatureKind::Sketch)workingSketch=std::get<microsw::features::SketchFeature>(source.data()).sketch;}editor.activateCommand(command);switch(command){case EC::Line:tools.setTool(microsw::SketchTool::Line);break;case EC::Rectangle:tools.setTool(microsw::SketchTool::Rectangle);break;case EC::Circle:tools.setTool(microsw::SketchTool::Circle);break;default:tools.setTool(microsw::SketchTool::Select);break;}if(command==EC::Extrude)editor.beginPropertyEdit({microsw::interaction::PropertyEditContext::Kind::ExtrudeDistance,shell.extrusionDistance()});if(command==EC::CutExtrude)editor.beginPropertyEdit({microsw::interaction::PropertyEditContext::Kind::CutExtrudeDepth,shell.cutDepth()});}
-    if(shell.cancelPropertyRequest()){editor.cancelStep();tools.cancel();}
+    if(shell.cancelPropertyRequest()){editor.activateCommand(microsw::interaction::EditorCommand::Select);tools.cancel();}
     if(shell.workspaceInput().escapePressed){editor.escape();tools.cancel();if(editor.activeCommand()==microsw::interaction::EditorCommand::Select)tools.setTool(microsw::SketchTool::Select);}
     if(selectedSketchId&&shell.sketchGeometryRequest()){std::visit([&](const auto& g){using E=std::decay_t<decltype(g)>;if constexpr(std::is_same_v<E,microsw::sketch::SketchLine>)workingSketch.replaceLine(*selectedSketchId,g.geometry);else if constexpr(std::is_same_v<E,microsw::sketch::SketchCircle>)workingSketch.replaceCircle(*selectedSketchId,g.geometry);else workingSketch.replaceArc(*selectedSketchId,g.geometry);},*shell.sketchGeometryRequest());(void)commitSketch();}
     if(selectedSketchId&&shell.deleteSketchRequest()){workingSketch.remove(*selectedSketchId);(void)commitSketch();workspace.clearSelection();}

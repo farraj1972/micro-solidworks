@@ -101,6 +101,17 @@ for the six standard orientations, and makes the Graphics Area context menu
 selection-sensitive. Quantitative Presentation coverage confirms that a cap
 containing a circular opening retains its complete expected tessellated area.
 
+A second manual review found that an unqualified Sketch command still fell back
+to the global XY plane, Extrude Cancel retained the active command, workflow
+mode was not prominent and MMB orbit felt inverted to a SolidWorks user. The
+fallback was removed: Sketch now requires an explicit principal plane,
+supported face or existing Sketch, and Normal To is applied only after that
+choice. Cancel returns to Select without committing an Extrude. The Graphics
+Area and status bar continuously identify Part editing, Sketch editing and
+Extrude/Cut parameter modes. MMB orbit now follows the pointer in the familiar
+direct-manipulation direction. The affected interaction and OpenGL navigation
+set passed 28/28 tests.
+
 The gate remains not approved because two requested behaviors exceed the frozen
 contracts. D18 permits semantic Sketch support only on a single-body Extrude
 StartCap/EndCap; it explicitly excludes arbitrary result faces and persistent

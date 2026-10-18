@@ -196,6 +196,15 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false; sketchPlaneRequest_.reset();
     confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
+    if(editor){
+        using C=interaction::EditorCommand;
+        if(editor->activeCommand()==C::Extrude)workflowState_="Extrude — set parameters, then Confirm or Cancel";
+        else if(editor->activeCommand()==C::CutExtrude)workflowState_="Cut Extrude — set parameters, then Confirm or Cancel";
+        else if(editor->activeSketchFeatureId()){
+            const char* tool=activeTool==SketchTool::Line?"Line":activeTool==SketchTool::Rectangle?"Rectangle":activeTool==SketchTool::Circle?"Circle":"Select";
+            workflowState_=std::string{"Editing Sketch — "}+tool+" tool";
+        }else workflowState_="Part editing — select a plane, face or feature";
+    }
     drawMainMenu(projectionMode);
     drawCommandBar(activeTool, sketch, selected, featureModel, editor);
     drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel, editor);
@@ -271,7 +280,7 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         "This release supports Sketch on Face only on an Extrude start/end cap";
     commandButton("sketch", editing ? "Exit" : "Sketch", sketchTip,
         editing ? CadIcon::ExitSketch : CadIcon::Sketch, editing||supportedSelectedFace, editing,
-        [&]{ if (editing) exitSketchRequest_ = true; else { if(selectedPrincipalPlane_)sketchPlaneRequest_=selectedPrincipalPlane_;else enterSketchRequest_ = true; propertyManagerVisible_ = true; } });
+        [&]{ if (editing) exitSketchRequest_ = true; else if(selectedPrincipalPlane_){sketchPlaneRequest_=selectedPrincipalPlane_;propertyManagerVisible_=true;}else if(faceSelection||selectedFeature_){enterSketchRequest_=true;propertyManagerVisible_=true;}else{sketchError_="Select Front, Top or Right Plane, or a supported planar face, before starting Sketch.";propertyManagerVisible_=false;} });
     const auto tool = [&](const char* id, const char* label, const char* tip, CadIcon icon,
                           SketchTool sketchTool, interaction::EditorCommand command)
     {
@@ -992,6 +1001,7 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
         ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::TextDisabled("Workspace");
+    ImGui::SameLine();ImGui::TextColored(ImVec4{1.0F,0.82F,0.25F,1.0F},"[%s]",workflowState_.c_str());
     ImGui::SameLine();
     ImGui::TextColored(ImVec4{1.0F, 0.25F, 0.25F, 1.0F}, "X");
     ImGui::SameLine();
@@ -1086,7 +1096,7 @@ void ApplicationShell::drawStatusBar()
         position,
         ImVec2{viewport->WorkSize.x, statusBarHeight});
     const std::string documentLabel = (currentFilePath_.empty() ? "Untitled" : currentFilePath_) + (documentDirty_ ? " *" : "");
-    ImGui::Text("%s | %s", documentLabel.c_str(),
+    ImGui::Text("%s | %s | %s", documentLabel.c_str(), workflowState_.c_str(),
         persistenceStatus_.empty() ? "Ready" : persistenceStatus_.c_str());
     ImGui::End();
 }

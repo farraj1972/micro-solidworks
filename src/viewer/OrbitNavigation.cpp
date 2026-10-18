@@ -28,8 +28,10 @@ void OrbitNavigation::begin(double x, double y) noexcept
 void OrbitNavigation::update(double x, double y, OrbitCamera& camera)
 {
     if (!active_) return;
-    const double yawDelta = (x - previousX_) * sensitivity();
-    const double pitchDelta = -(y - previousY_) * sensitivity();
+    // CAD direct-manipulation convention: the model follows the MMB drag.
+    // Orbiting the camera therefore uses the inverse pointer deltas.
+    const double yawDelta = -(x - previousX_) * sensitivity();
+    const double pitchDelta = (y - previousY_) * sensitivity();
     if (!std::isfinite(x) || !std::isfinite(y)
         || !std::isfinite(yawDelta) || !std::isfinite(pitchDelta))
     {
