@@ -9,6 +9,7 @@
 #include "interaction/EditorContext.h"
 
 #include <optional>
+#include <array>
 #include <string>
 #include <tuple>
 
@@ -122,6 +123,8 @@ private:
     std::optional<sketch::SketchGeometry> sketchGeometryRequest_;
     bool deleteSketchRequest_{};
     std::optional<sketch::SketchEntityId> sketchEditorEntity_;
+    std::array<double, 5> sketchGeometryDraft_{};
+    bool sketchGeometryDraftDirty_{};
     std::string sketchError_;
     std::optional<sketch::SketchConstraintValue> addConstraintRequest_;
     std::optional<sketch::SketchConstraintId> removeConstraintRequest_;
@@ -145,6 +148,9 @@ private:
     std::optional<std::pair<features::FeatureId, math::Scalar>> featureDistanceRequest_;
     std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>> featureBooleanRequest_;
     std::optional<std::tuple<features::FeatureId, math::Scalar, features::CutDirection>> featureCutRequest_;
+    std::optional<features::FeatureId> featureEditorEntity_;
+    double featureDepthDraft_{};
+    bool featureReverseDraft_{};
     bool rebuildFeaturesRequest_{};
     std::string featureRebuildStatus_;
     bool newDocumentRequest_{};

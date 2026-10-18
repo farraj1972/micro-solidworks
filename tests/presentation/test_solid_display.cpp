@@ -3,6 +3,7 @@
 #include "viewer/SolidPicker.h"
 #include "features/GeneralExtrusion.h"
 #include "features/PlanarRegion.h"
+#include "features/FeatureModel.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cmath>
@@ -51,5 +52,24 @@ TEST(SolidDisplay, DistinguishesBodiesFromOneFeature)
  const auto a=presentation::deriveSolidDisplay(topology::makeCuboid(1,1,1),features::FeatureId{4},{0});
  const auto b=presentation::deriveSolidDisplay(topology::makeCuboid(1,1,1),features::FeatureId{4},{1});
  ASSERT_FALSE(a.triangles.empty());ASSERT_FALSE(b.triangles.empty());ASSERT_FALSE(a.edges.empty());ASSERT_FALSE(b.edges.empty());EXPECT_NE(a.triangles.front().target.body,b.triangles.front().target.body);
+}
+TEST(SolidDisplay, BlindPocketDoesNotExposeCoplanarOuterFaceSeams)
+{
+ features::FeatureModel model;sketch::Sketch base;(void)base.addRectangle({0,0},{10,10});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),10);
+ sketch::Sketch profile;(void)profile.addCircle({{5,5},2});
+ const auto sketchId=model.addFaceSketch(std::move(profile),target,features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(sketchId,target,4,features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+ const auto&solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
+ const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
+ const auto outerSeam=[](const presentation::PresentedEdge&e){
+  if(e.points.size()!=2)return false;const auto&a=e.points[0];const auto&b=e.points[1];
+  if(std::abs(a.z()-6)>1e-8||std::abs(b.z()-6)>1e-8)return false;
+  return (std::abs(a.x())<1e-8&&std::abs(b.x())<1e-8)||(std::abs(a.x()-10)<1e-8&&std::abs(b.x()-10)<1e-8)
+   ||(std::abs(a.y())<1e-8&&std::abs(b.y())<1e-8)||(std::abs(a.y()-10)<1e-8&&std::abs(b.y()-10)<1e-8);
+ };
+ EXPECT_EQ(std::count_if(display.edges.begin(),display.edges.end(),outerSeam),0);
+ EXPECT_GT(std::count_if(display.edges.begin(),display.edges.end(),[](const auto&e){return e.points.size()>2;}),0);
 }
 }

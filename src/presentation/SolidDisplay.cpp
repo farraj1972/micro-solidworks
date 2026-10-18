@@ -13,6 +13,31 @@ namespace
 {
 constexpr int curveSegments = 24;
 
+bool samePlane(const geometry::Plane& a, const geometry::Plane& b)
+{
+    return geometry::isParallel(a, b) && a.contains(b.origin());
+}
+
+bool isCoplanarSeam(const topology::Solid& solid, topology::EdgeId edge)
+{
+    std::vector<const topology::Face*> incident;
+    const auto containsEdge = [&](topology::WireId wire) {
+        const auto& uses = solid.find(wire).uses();
+        return std::any_of(uses.begin(), uses.end(),
+            [&](const topology::OrientedEdgeUse& use) { return use.edge == edge; });
+    };
+    for (const auto& face : solid.faces())
+    {
+        bool contains = containsEdge(face.outerWire());
+        for (const auto wire : face.innerWires()) contains = contains || containsEdge(wire);
+        if (contains) incident.push_back(&face);
+    }
+    if (incident.size() != 2) return false;
+    const auto* first = std::get_if<geometry::Plane>(&incident[0]->support());
+    const auto* second = std::get_if<geometry::Plane>(&incident[1]->support());
+    return first && second && samePlane(*first, *second);
+}
+
 std::vector<geometry::Point3> edgePoints(const topology::Edge& edge, bool reversed)
 {
     std::vector<geometry::Point3> result;
@@ -126,7 +151,11 @@ SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::Feat
     if(!solid.isValid()||!feature.isValid()) throw std::invalid_argument{"Solid display requires valid inputs"};
     SolidDisplayData result;
     for(std::size_t i=0;i<solid.edges().size();++i)
-        result.edges.push_back({edgePoints(solid.edges()[i],false),{feature,body,topology::EdgeId{static_cast<std::uint32_t>(i)}}});
+    {
+        const auto edge = topology::EdgeId{static_cast<std::uint32_t>(i)};
+        if (!isCoplanarSeam(solid, edge))
+            result.edges.push_back({edgePoints(solid.edges()[i],false),{feature,body,edge}});
+    }
     for(const auto& use:solid.rootShell().uses())
     {
         const auto& face=solid.find(use.face);
