@@ -97,11 +97,12 @@ build, 708/708 tests and runtime PASS. See [B6 validation](docs/B6_VALIDATION.md
 | Selected entity Transform panel | Edit XYZ translation, rotation in degrees and positive scale; valid edits apply immediately |
 | View → Projection | Perspective / Orthographic; each preserves its zoom state |
 | Help → About | Application information |
-| Document path + File → Save As | Atomically save the parametric model as `.microsw` |
-| File → Save | Save to the current session path |
-| Document path + File → Open | Transactionally load and rebuild a `.microsw` model |
-| File → New | Reset model, path, presentation and transient interaction state |
-| File → Exit or native X | Close the application |
+| File → Save As | Choose a `.microsw` filename with the native Windows dialog and save atomically |
+| File → Save | Save to the current path, or open native Save As for an untitled document |
+| File → Open | Choose a `.microsw` file with the native Windows dialog, then load transactionally |
+| Ctrl+Z / Ctrl+Y | Undo / Redo the last committed CAD transaction |
+| File → New | Protect dirty work, then reset model, path, history and transient interaction state |
+| File → Exit or native X | Protect dirty work with Save / Don't Save / Cancel, then close |
 
 The v1.1 CAD workspace adds icon commands and Model/Edit panels. Start a Sketch,
 draw Line/Rectangle/Circle geometry with endpoint/midpoint/grid snapping and

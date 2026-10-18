@@ -1495,3 +1495,10 @@ New, Open and Exit are Application session transactions guarded by Save / Don't
 Save / Cancel when dirty. Open constructs and validates a candidate before
 replacing the current session. This proposal does not add a Document domain
 aggregate, schema v2, multiple documents or persistent undo history.
+
+V1.1-C3 implements this boundary. Features exposes controlled typed checkpoint
+capture/restore; Application owns the bounded cursor and saved checkpoint;
+PersistenceSession owns path and save/open state. Restore rebuilds derived
+caches, then Application regenerates Presentation and clears invalid transient
+selection/operands. Standard Windows file dialogs remain in the GLFW/windowing
+adapter and do not enter CAD modules.

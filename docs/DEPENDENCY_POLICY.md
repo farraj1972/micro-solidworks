@@ -225,7 +225,7 @@ face/edge data. No reverse dependency or CAD-state ownership change was added.
 ## 10. D17 document safety and undo/redo
 
 D17 introduces no external dependency and does not change the persisted schema.
-A future C3 typed authoritative checkpoint belongs at the Features boundary and
+A typed authoritative checkpoint belongs at the Features boundary and
 must not depend on Application, UI, Persistence or JSON. Application/session may
 own a bounded sequence of those checkpoint values, the current position, saved
 baseline marker and pending New/Open/Exit action.
@@ -234,3 +234,8 @@ Checkpoint restore uses existing Features and deterministic rebuild contracts;
 Presentation remains derived. Persistence continues to depend on Features and
 stores only the current authoritative model. Undo history, dirty state and
 transient editor/display state do not cross the persistence boundary.
+
+V1.1-C3 implements this policy without a new external dependency. Features owns
+`FeatureModelCheckpoint`; Application owns `DocumentHistory`, saved state and
+destructive-action policy; the GLFW boundary supplies the owner HWND to standard
+Windows Open/Save dialogs. Persistence schema version 1 is unchanged.

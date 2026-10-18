@@ -1211,7 +1211,8 @@ V1.1-C2A: FROZEN
 D17: FROZEN
 ADR-0061-0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
-V1.1-C3: NOT STARTED / NEXT ACTIVE
+V1.1-C3: FROZEN
+V1.1-C4: NEXT ACTIVE / SUBJECT TO REVIEW
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
@@ -1228,7 +1229,7 @@ transient feedback in Shaded. Display mode remains Viewer/session state. C2A is 
 configure, full Debug build with zero warnings, 837/837 CTest tests,
 targeted correction validation and the manual Experience Gate. The solid
 identity proxy is never drawn as geometry; explicit face and topology
-passes exclusively control solid display. C3 is next under the frozen D17 contract.
+passes exclusively control solid display. C3 is FROZEN under the D17 contract.
 
 D17 is FROZEN in accepted ADR-0061-0063. It separates
 DocumentDirty from FeatureState::Dirty, marks successful New/Open/Save/Save As
@@ -1241,7 +1242,13 @@ initial limit is 100 undoable transactions plus current state; the saved
 authoritative checkpoint is retained separately from that bounded window. Dirty New/Open/Exit
 use Save / Don't Save / Cancel. Undo history and session/editor state remain
 nonpersistent; schema v1, D11 and D13 remain unchanged. V1.1-C3 executable work
-is the next active campaign under the frozen D17 contract.
+is FROZEN under the D17 contract after 846/846 tests and an APPROVED manual Experience Gate.
+
+V1.1-C3 implements typed authoritative FeatureModel checkpoints, bounded linear
+Undo/Redo, saved-baseline dirty tracking, deterministic rebuild/Presentation
+refresh, native Windows Open/Save dialogs and shared dirty protection for New,
+Open, File Exit and native close. ADR-0061-0063 are CONFORMANT. Persistence stays
+at `.microsw` format version 1 and undo history remains session-local.
 
 No increment without explicit authorization.
 No new Decision Gate without explicit authorization.

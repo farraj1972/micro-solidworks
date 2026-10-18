@@ -109,7 +109,8 @@ V1.1-C2A — Feature Manager & Display Mode UX Alignment: FROZEN
 Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience Gate PASS, 0 warnings
 D17 — Document Safety, Undo/Redo & Session History Semantics: FROZEN
 ADR-0061–0063: ACCEPTED (63/63 total)
-V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: NOT STARTED / NEXT ACTIVE
+V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: FROZEN
+V1.1-C4 — General Profiles & Cut Extrude: NEXT ACTIVE / SUBJECT TO REVIEW
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -664,3 +665,11 @@ For this project:
 > A small stable increment is more valuable than a larger speculative implementation.
 
 Preserve the learning value, architecture and stability of the repository at every step.
+
+## Current post-MVP state
+
+V1.1-C3 — Document Safety, Undo/Redo & Session Workflow is FROZEN. The current
+application uses authoritative FeatureModel checkpoints, 100-step session-local
+Undo/Redo, dirty-state tracking, native Windows Open/Save dialogs and shared
+Save / Don't Save / Cancel protection for New, Open and both exit paths. See
+`docs/V1_1_C3_VALIDATION.md`. V1.1-C4 is next and requires roadmap review.
