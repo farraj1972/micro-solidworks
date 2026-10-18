@@ -722,6 +722,26 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             else{constexpr double d=180.0/std::numbers::pi;sketchGeometryDraft_={typed.geometry.center().x(),typed.geometry.center().y(),typed.geometry.radius(),typed.geometry.startAngle()*d,typed.geometry.sweepAngle()*d};}
         },selected->geometry());
     }
+    const auto dimensionFor = [&](sketch::SketchEntityId entityId, bool radius) {
+        std::optional<sketch::SketchConstraintId> result;
+        for (const auto constraintId : model.constraintIds())
+        {
+            std::visit([&](const auto& constraint) {
+                using T = std::decay_t<decltype(constraint)>;
+                if constexpr (std::is_same_v<T, sketch::LineLength>)
+                {
+                    if (!radius && constraint.line.entity == entityId) result = constraintId;
+                }
+                else if constexpr (std::is_same_v<T, sketch::CircleRadius>)
+                {
+                    if (radius && constraint.radius.entity == entityId) result = constraintId;
+                }
+            }, model.findConstraint(constraintId).value());
+        }
+        return result;
+    };
+    const auto primaryDimension = selected ? dimensionFor(selected->id(),
+        selected->type() == sketch::SketchEntityType::Circle) : std::nullopt;
     if (!selected) ImGui::TextWrapped("Choose a tool or select a sketch entity.");
     else
     {
@@ -738,11 +758,14 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
             else if constexpr (std::is_same_v<Entity, sketch::SketchCircle>)
             {
-                ImGui::TextUnformatted("Circle: center X/Y, radius");
-                if (ImGui::InputScalarN("##SketchCircle", ImGuiDataType_Double, sketchGeometryDraft_.data(), 3))sketchGeometryDraftDirty_=true;
+                ImGui::TextUnformatted(primaryDimension
+                    ? "Circle center X/Y — radius is controlled by the dimension below"
+                    : "Circle: center X/Y, radius");
+                const int componentCount=primaryDimension?2:3;
+                if (ImGui::InputScalarN("##SketchCircle", ImGuiDataType_Double, sketchGeometryDraft_.data(), componentCount))sketchGeometryDraftDirty_=true;
                 const bool commitGeometry=sketchGeometryDraftDirty_&&ImGui::IsItemDeactivatedAfterEdit();
                 const bool applyGeometry=sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry");
-                if(commitGeometry||applyGeometry)try{sketchGeometryRequest_=sketch::SketchCircle{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},sketchGeometryDraft_[2]}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
+                if(commitGeometry||applyGeometry)try{const auto radius=primaryDimension?typed.geometry.radius():sketchGeometryDraft_[2];sketchGeometryRequest_=sketch::SketchCircle{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},radius}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
             }
             else
             {
@@ -772,31 +795,13 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (selected)
     {
         const auto id = selected->id();
-        const auto dimensionFor = [&](sketch::SketchEntityId entityId, bool radius) {
-            std::optional<sketch::SketchConstraintId> result;
-            for (const auto constraintId : model.constraintIds())
-            {
-                std::visit([&](const auto& constraint) {
-                    using T = std::decay_t<decltype(constraint)>;
-                    if constexpr (std::is_same_v<T, sketch::LineLength>)
-                    {
-                        if (!radius && constraint.line.entity == entityId) result = constraintId;
-                    }
-                    else if constexpr (std::is_same_v<T, sketch::CircleRadius>)
-                    {
-                        if (radius && constraint.radius.entity == entityId) result = constraintId;
-                    }
-                }, model.findConstraint(constraintId).value());
-            }
-            return result;
-        };
         if (selected->type() == sketch::SketchEntityType::Line)
         {
             const sketch::SketchElementRef ref{id, sketch::SubElementKind::LineBody};
             if (ImGui::Button("Add Horizontal")) addConstraintRequest_ = sketch::Horizontal{ref};
             if (ImGui::Button("Add Vertical")) addConstraintRequest_ = sketch::Vertical{ref};
             const auto& line = std::get<sketch::SketchLine>(selected->geometry()).geometry;
-            if (const auto constraintId = dimensionFor(id, false))
+            if (const auto constraintId = primaryDimension)
             {
                 double length = std::get<sketch::LineLength>(model.findConstraint(*constraintId).value()).value;
                 if (ImGui::InputDouble("Line length constraint", &length))
@@ -813,7 +818,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         {
             const auto radiusRef = sketch::SketchElementRef{id, sketch::SubElementKind::CircleRadius};
             const auto& circle = std::get<sketch::SketchCircle>(selected->geometry()).geometry;
-            if (const auto constraintId = dimensionFor(id, true))
+            if (const auto constraintId = primaryDimension)
             {
                 double radius = std::get<sketch::CircleRadius>(model.findConstraint(*constraintId).value()).value;
                 if (ImGui::InputDouble("Radius constraint", &radius))
@@ -857,8 +862,13 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     || std::is_same_v<T, sketch::CircleRadius>) return c.value;
                 else return 0;
             }, value);
-            ImGui::InputDouble("Value", &driving);
-            if (ImGui::Button("Apply dimension")) drivingValueRequest_ = std::pair{id, driving};
+            if(primaryDimension&&*primaryDimension==id)
+                ImGui::TextDisabled("Value is edited in the selected entity properties above.");
+            else
+            {
+                ImGui::InputDouble("Value", &driving);
+                if (ImGui::Button("Apply dimension")) drivingValueRequest_ = std::pair{id, driving};
+            }
         }
         if (ImGui::Button("Remove constraint")) removeConstraintRequest_ = id;
         ImGui::PopID();

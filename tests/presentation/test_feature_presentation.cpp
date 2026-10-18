@@ -36,3 +36,9 @@ TEST(FeaturePresentation,RemovesDeletedFeatureVisualMappingsImmediately){
  (void)model.deleteFeature(solid);p.update(model);
  EXPECT_FALSE(p.visualId(solid));EXPECT_FALSE(p.featureId(*visual));EXPECT_EQ(p.geometry().size(),0u);
 }
+TEST(FeaturePresentation,PresentsVisibleSketchesAsIndependentReferences){
+ microsw::features::FeatureModel model;const auto sketch=model.addSketch(rectangle(0,0,4,4));(void)model.addExtrude(sketch,4);
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
+ EXPECT_EQ(p.sketchReferences().size(),4u);
+ p.update(model,[&](auto id){return id!=sketch;});EXPECT_TRUE(p.sketchReferences().empty());
+}

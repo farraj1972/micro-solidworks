@@ -14,9 +14,11 @@ public:
  [[nodiscard]] std::optional<VisualEntityId> visualId(features::FeatureId id) const noexcept;
  [[nodiscard]] std::optional<features::FeatureId> featureId(VisualEntityId id) const noexcept;
  [[nodiscard]] const SolidDisplayData& solidDisplay() const noexcept { return solidDisplay_; }
+ [[nodiscard]] const GeometryPresentation& sketchReferences() const noexcept { return sketchReferences_; }
 private:
  std::map<features::FeatureId,std::vector<VisualEntityId>> visualIds_;
  GeometryPresentation current_;
+ GeometryPresentation sketchReferences_;
  SolidDisplayData solidDisplay_;
 };
 }

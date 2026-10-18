@@ -495,6 +495,13 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
         impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));
         impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(
             impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
+        // Visible sketches remain as subdued CAD references after their feature
+        // has been consumed. They are intentionally excluded from picking here;
+        // editing activates the dedicated SketchPresentation instead.
+        impl_->segments.setVertices(presentedSegmentVertices(
+            impl_->featurePresentation->sketchReferences()));
+        impl_->shader.setVector3("uColor",{0.32,0.42,0.48});
+        glDepthFunc(GL_LEQUAL);impl_->segments.draw();glDepthFunc(GL_LESS);
     }
 
     // Reuse three generic GPU buffers for successive state batches. IDs stay on CPU.

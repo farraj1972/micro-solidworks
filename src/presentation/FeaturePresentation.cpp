@@ -1,11 +1,17 @@
 #include "presentation/FeaturePresentation.h"
+#include "presentation/SketchPresentation.h"
 #include <algorithm>
 #include <stdexcept>
 namespace microsw::presentation {
 void FeaturePresentation::update(const features::FeatureModel& model, const Visibility& visible) {
- solidDisplay_={};std::vector<features::FeatureId> presented;
+ solidDisplay_={};sketchReferences_={};std::vector<features::FeatureId> presented;
  for(const auto& record:model.history()){
   if(record.state()!=features::FeatureState::Clean||!record.cache())continue;
+  if(record.kind()==features::FeatureKind::Sketch&&(!visible||visible(record.id()))){
+   SketchPresentation sketch;sketch.regenerate(std::get<features::SketchFeatureCache>(*record.cache()).solvedSketch);
+   for(const auto& entity:sketch.geometry().entities())std::visit([&](const auto& geometry){(void)sketchReferences_.add(geometry);},entity.geometry());
+   continue;
+  }
   const auto* solid=std::get_if<features::SolidFeatureCache>(&*record.cache());
   if(!solid||(visible&&!visible(record.id())))continue;
   presented.push_back(record.id());auto& ids=visualIds_[record.id()];
