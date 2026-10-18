@@ -6,6 +6,7 @@
 STATUS: FIX REQUIRED
 Technical Gate: PASS
 Experience Gate: NOT APPROVED
+D20: PROPOSED / READY FOR REVIEW
 ```
 
 V1.1-C4 implements the frozen D18, D18-R1 and D19 contracts. A Sketch may
@@ -132,6 +133,23 @@ topological naming. D11 does not define transactional Feature deletion. The UI
 now reports the Cut-face limitation explicitly instead of appearing
 unresponsive. Supporting Sketch on a face produced by Cut Extrude and deleting
 a Sketch Feature require an approved follow-up decision before implementation.
+
+D20 now proposes the two missing contracts in ADR-0068–0069: atomic recursive
+dependant-closure deletion and narrow generated semantic support for unambiguous
+Cut caps plus a single-region, single-body pocket floor. No executable D20 work
+has started. V1.1-C4 remains FIX REQUIRED / WAITING FOR D20 approval,
+implementation, Experience Gate approval and a final V3 against executable HEAD.
+
+The post-D20 Experience Gate adds these mandatory scenarios:
+
+- delete a leaf Sketch, then Undo and Redo with exact identity restoration;
+- delete a Sketch with a Cut Extrude dependant after a dialog names the complete
+  deletion closure, then Undo the whole operation in one step;
+- verify immediate FeatureManager, selection, active-tool and result updates;
+- create a block and blind single-region pocket, select its pocket floor, start
+  a Sketch, draw geometry, edit Cut depth and confirm associative movement;
+- make the semantic floor disappear or ambiguous and confirm a human-readable
+  failure without topology IDs or automatic reattachment.
 
 ## Deliberate limits
 

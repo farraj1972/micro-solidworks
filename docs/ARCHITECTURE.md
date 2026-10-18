@@ -1516,3 +1516,18 @@ authoritative right-handed orthonormal basis. Normal To maps SketchPlane X/Y to
 screen right/up and looks along the negative plane normal. CAD, topology and
 persistence layers do not own camera state; no external Math dependency or Roll
 UI is introduced.
+
+## D20 — Feature deletion and generated planar-face support
+
+D20 is PROPOSED in ADR-0068–0069. Feature deletion is an atomic recursive
+dependant-closure transaction. Leaf deletion is direct and undoable; a closure
+with dependants requires explicit human-readable confirmation. Forward history
+never reuses deleted FeatureIds, Undo restores exact IDs and dependencies, and
+the latest surviving successfully rebuilt modeling feature becomes the result.
+
+Generated planar-face support remains semantic rather than topological. The C4
+proposal adds unambiguous single-body Cut inherited caps and a single-region
+`CutPocketFloor` role, each resolving to exactly one planar Face through derived
+provenance. Missing or ambiguous roles fail without reattachment. FaceId and
+body index remain rebuild-local and absent from persistence. `.microsw` v2 gains
+compatible semantic-role tokens; generic topological naming remains deferred.

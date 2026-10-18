@@ -680,3 +680,9 @@ D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extru
 D19 is FROZEN in accepted ADR-0067 (67/67 accepted). Viewer orientation becomes
 one authoritative arbitrary orthonormal basis; Normal To maps SketchPlane +X/+Y
 to screen right/up without adding an external Math dependency or Roll UI.
+
+D20 is PROPOSED / READY FOR REVIEW in ADR-0068–0069. It proposes atomic
+recursive dependant-closure Feature deletion and narrow semantic generated-face
+support for unambiguous Cut caps and a single-region pocket floor. ADR inventory:
+69 total, 67 ACCEPTED, 2 PROPOSED. V1.1-C4 remains FIX REQUIRED / WAITING FOR D20;
+no D20 executable work is implemented.
