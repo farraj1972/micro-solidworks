@@ -262,3 +262,42 @@ TEST(FeatureModel, CutExtrudeRejectsObliqueOrientationBeforeKernelEvaluation)
         "on a supported Extrude start/end face and cut normal to that face.");
     EXPECT_FALSE(model.find(cut).cache());
 }
+
+TEST(FeatureModel, RebuildsExactBlindCutAndPreservesAssociativity)
+{
+    microsw::features::FeatureModel model;
+    const auto base=model.addSketch(rectangle(0,0,10,10));
+    const auto target=model.addExtrude(base,10);
+    microsw::sketch::Sketch profile;(void)profile.addCircle({{5,5},2});
+    const auto source=model.addFaceSketch(std::move(profile),target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut=model.addCutExtrude(source,target,4,
+        microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    const auto& first=std::get<microsw::features::SolidFeatureCache>(*model.find(cut).cache());
+    ASSERT_EQ(first.solids.size(),1u);EXPECT_TRUE(first.solids.front().isValid());
+    model.setExtrudeDistance(target,20);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    const auto& supported=std::get<microsw::features::SketchFeatureCache>(*model.find(source).cache());
+    EXPECT_NEAR(supported.solvedSketch.plane().origin().z(),20,1e-12);
+    EXPECT_TRUE(std::get<microsw::features::SolidFeatureCache>(*model.find(cut).cache()).solids.front().isValid());
+}
+
+TEST(FeatureModel, CutFailurePreservesLastKnownGoodAndRecovers)
+{
+    microsw::features::FeatureModel model;
+    const auto target=model.addExtrude(model.addSketch(rectangle(0,0,10,10)),10);
+    const auto source=model.addFaceSketch(rectangle(2,2,8,8),target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut=model.addCutExtrude(source,target,4,microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    const auto* previous=&*model.find(cut).cache();
+    model.editSketch(source,[](auto&sketch){sketch=rectangle(20,20,22,22);});
+    const auto failed=model.rebuild();
+    EXPECT_EQ(failed.status,microsw::features::RebuildStatus::Failed);
+    EXPECT_EQ(failed.failedFeature,cut);
+    EXPECT_EQ(&*model.find(cut).cache(),previous);
+    EXPECT_EQ(failed.diagnostic,"Cut profile does not intersect the target solid.");
+    model.editSketch(source,[](auto&sketch){sketch=rectangle(2,2,8,8);});
+    EXPECT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+}

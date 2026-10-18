@@ -100,3 +100,15 @@ TEST(PlanarRegionBoolean, TangentialContactDoesNotCreateMicroRegions)
     ASSERT_EQ(result.regions.regions.size(),1u);
     EXPECT_TRUE(result.regions.regions.front().holes.empty());
 }
+
+TEST(PlanarRegionBoolean, IntersectsAndPartitionsExactBoundaries)
+{
+    const auto target=regions(rectangle(0,0,10,10));
+    const auto cutter=regions(rectangle(8,2,12,8));
+    const auto intersection=features::intersectPlanarRegions(target,cutter);
+    ASSERT_EQ(intersection.status,features::RegionBooleanStatus::Success);
+    ASSERT_EQ(intersection.regions.regions.size(),1u);
+    const auto partitioned=features::partitionPlanarRegions(target,cutter);
+    ASSERT_EQ(partitioned.status,features::RegionBooleanStatus::Success);
+    EXPECT_EQ(partitioned.regions.regions.front().outer.uses.size(),6u);
+}

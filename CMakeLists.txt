@@ -166,6 +166,7 @@ target_link_libraries(microsw_modeling PUBLIC microsw_topology)
 
 add_library(microsw_features STATIC
     src/features/AxialCut.cpp
+    src/features/AxialSubtraction.cpp
     src/features/GeneralExtrusion.cpp
     src/features/PlanarRegion.cpp
     src/features/PlanarRegionBoolean.cpp
@@ -405,6 +406,7 @@ if(BUILD_TESTING)
         tests/interaction/test_editor_context.cpp
         tests/interaction/test_guided_workflow.cpp
         tests/features/test_axial_cut.cpp
+        tests/features/test_axial_subtraction.cpp
         tests/features/test_planar_region_boolean.cpp
         tests/features/test_feature_model.cpp
         tests/persistence/test_persistence.cpp

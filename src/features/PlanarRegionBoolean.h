@@ -36,4 +36,12 @@ struct RegionBooleanResult
 [[nodiscard]] RegionBooleanResult subtractPlanarRegions(
     const PlanarRegionSet& target,
     const PlanarRegionSet& cutter);
+
+[[nodiscard]] RegionBooleanResult intersectPlanarRegions(
+    const PlanarRegionSet& first,
+    const PlanarRegionSet& second);
+
+[[nodiscard]] RegionBooleanResult partitionPlanarRegions(
+    const PlanarRegionSet& regions,
+    const PlanarRegionSet& splitter);
 }

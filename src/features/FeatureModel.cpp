@@ -2,6 +2,7 @@
 
 #include "core/geometry/GeometricTolerance.h"
 #include "features/AxialCut.h"
+#include "features/AxialSubtraction.h"
 #include "features/GeneralExtrusion.h"
 #include "features/PlanarRegion.h"
 
@@ -316,7 +317,31 @@ RebuildResult FeatureModel::rebuild()
                         "This Cut Extrude orientation is not supported yet. "
                         "Create the sketch on a supported Extrude start/end face "
                         "and cut normal to that face."};
-                throw std::runtime_error{"Cut Extrude exact axial subtraction is not yet evaluated"};
+                const auto& targetRecord = find(data.targetResultFeatureId);
+                if (targetRecord.kind() != FeatureKind::Extrude)
+                    throw std::runtime_error{
+                        "This Cut Extrude target cannot be reconstructed as a supported axial extrusion"};
+                const auto& target = std::get<ExtrudeFeature>(targetRecord.data());
+                const auto& targetSketch = std::get<SketchFeatureCache>(
+                    output(target.sourceSketchFeatureId)).solvedSketch;
+                const auto targetRegions = extractPlanarRegions(targetSketch);
+                const auto cutterRegions = extractPlanarRegions(sketchCache.solvedSketch);
+                auto subtraction = subtractAxialRegions(targetRegions, targetSketch.plane(),
+                    target.distance, cutterRegions, sketchCache.solvedSketch.plane(),
+                    cutDirection, data.distance);
+                if (subtraction.status == AxialSubtractionStatus::Success)
+                    candidates[record.id().value()] = SolidFeatureCache{std::move(subtraction.solids)};
+                else if (subtraction.status == AxialSubtractionStatus::SuccessEmpty)
+                    candidates[record.id().value()] = EmptyFeatureCache{};
+                else if (subtraction.status == AxialSubtractionStatus::NoIntersection)
+                    throw std::runtime_error{
+                        "Cut profile does not intersect the target solid."};
+                else if (subtraction.status == AxialSubtractionStatus::UnsupportedTarget)
+                    throw std::runtime_error{
+                        "Cut Extrude supports exact face-normal cuts on current Extrude results. "
+                        + subtraction.diagnostic};
+                else
+                    throw std::runtime_error{"Cut Extrude failed: " + subtraction.diagnostic};
             }
         }
         catch (const std::exception& error)

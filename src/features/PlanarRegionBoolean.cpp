@@ -85,6 +85,16 @@ bool insidePolygon(const geometry::Point2&p,const std::vector<geometry::Point2>&
 bool materialAt(const geometry::Point2&p,const PlanarRegionSet&s){bool material=false;for(const auto&r:s.regions){if(insidePolygon(p,sample(r.outer))){bool hole=false;for(const auto&h:r.holes)if(insidePolygon(p,sample(h)))hole=!hole;if(!hole)material=true;}}return material;}
 double area(const RegionBoundary&b){const auto p=sample(b);double a=0;for(size_t i=0;i<p.size();++i){const auto&q=p[(i+1)%p.size()];a+=p[i].x()*q.y()-q.x()*p[i].y();}return a/2;}
 void reverseBoundary(RegionBoundary&b){std::reverse(b.uses.begin(),b.uses.end());for(auto&u:b.uses)u.reversed=!u.reversed;}
+
+RegionBooleanResult assemble(std::vector<Piece> kept)
+{
+ if(kept.empty())return{RegionBooleanStatus::Empty,{}, {}};
+ std::vector<RegionBoundary> loops;while(!kept.empty()){RegionBoundary loop;auto current=kept.back();kept.pop_back();const auto start=first(current.curve);auto cursor=last(current.curve);loop.uses.push_back({current.source,current.curve,false});while(!same(cursor,start)){auto it=std::find_if(kept.begin(),kept.end(),[&](const auto&p){return same(first(p.curve),cursor);});if(it==kept.end())return{RegionBooleanStatus::Ambiguous,{},"Boolean boundary did not reconstruct a closed loop"};cursor=last(it->curve);loop.uses.push_back({it->source,it->curve,false});kept.erase(it);}loops.push_back(std::move(loop));}
+ struct L{RegionBoundary boundary;double signedArea;int parent{-1};int depth{};};std::vector<L> classified;for(auto&l:loops)classified.push_back({std::move(l),0});for(auto&l:classified)l.signedArea=area(l.boundary);
+ for(size_t i=0;i<classified.size();++i){double best=std::numeric_limits<double>::infinity();const auto point=first(classified[i].boundary.uses.front().curve);for(size_t j=0;j<classified.size();++j)if(i!=j&&std::abs(classified[j].signedArea)>std::abs(classified[i].signedArea)&&insidePolygon(point,sample(classified[j].boundary))&&std::abs(classified[j].signedArea)<best){best=std::abs(classified[j].signedArea);classified[i].parent=int(j);}}
+ for(auto&l:classified){for(int p=l.parent;p>=0;p=classified[p].parent)++l.depth;const bool ccw=l.depth%2==0;if((l.signedArea>0)!=ccw)reverseBoundary(l.boundary);}
+ PlanarRegionSet out;for(size_t i=0;i<classified.size();++i)if(classified[i].depth%2==0){PlanarRegion r{classified[i].boundary,{}};for(size_t j=0;j<classified.size();++j)if(classified[j].parent==int(i)&&classified[j].depth%2==1)r.holes.push_back(classified[j].boundary);out.regions.push_back(std::move(r));}return{RegionBooleanStatus::Success,std::move(out),{}};
+}
 }
 
 std::vector<RegionCurve2> splitRegionCurve(const RegionCurve2& value,
@@ -111,12 +121,29 @@ RegionBooleanResult subtractPlanarRegions(const PlanarRegionSet&target,const Pla
   for(size_t i=0;i<a.size();++i)for(size_t j=0;j<b.size();++j){const auto x=detail::intersection(a[i].curve,b[j].curve);if(x.kind==geometry::IntersectionKind::Overlap||x.kind==geometry::IntersectionKind::Coincident||x.kind==geometry::IntersectionKind::Ambiguous)return{RegionBooleanStatus::Ambiguous,{},"Ambiguous coincident planar boundaries"};for(const auto&p:x.points){ap[i].push_back(p);bp[j].push_back(p);}}
   std::vector<detail::Piece> kept;for(size_t i=0;i<a.size();++i)for(auto&c:detail::splitRegionCurve(a[i].curve,ap[i]))if(!detail::materialAt(detail::middle(c),cutter))kept.push_back({a[i].source,c});
   for(size_t i=0;i<b.size();++i)for(auto&c:detail::splitRegionCurve(b[i].curve,bp[i]))if(detail::materialAt(detail::middle(c),target))kept.push_back({b[i].source,detail::reversed(c)});
-  if(kept.empty())return{RegionBooleanStatus::Empty,{}, {}};
-  std::vector<RegionBoundary> loops;while(!kept.empty()){RegionBoundary loop;auto current=kept.back();kept.pop_back();const auto start=detail::first(current.curve);auto cursor=detail::last(current.curve);loop.uses.push_back({current.source,current.curve,false});while(!detail::same(cursor,start)){auto it=std::find_if(kept.begin(),kept.end(),[&](const auto&p){return detail::same(detail::first(p.curve),cursor);});if(it==kept.end())return{RegionBooleanStatus::Ambiguous,{},"Boolean boundary did not reconstruct a closed loop"};cursor=detail::last(it->curve);loop.uses.push_back({it->source,it->curve,false});kept.erase(it);}loops.push_back(std::move(loop));}
-  struct L{RegionBoundary boundary;double signedArea;int parent{-1};int depth{};};std::vector<L> classified;for(auto&l:loops)classified.push_back({std::move(l),0});for(auto&l:classified)l.signedArea=detail::area(l.boundary);
-  for(size_t i=0;i<classified.size();++i){double best=std::numeric_limits<double>::infinity();const auto point=detail::first(classified[i].boundary.uses.front().curve);for(size_t j=0;j<classified.size();++j)if(i!=j&&std::abs(classified[j].signedArea)>std::abs(classified[i].signedArea)&&detail::insidePolygon(point,detail::sample(classified[j].boundary))&&std::abs(classified[j].signedArea)<best){best=std::abs(classified[j].signedArea);classified[i].parent=int(j);}}
-  for(auto&l:classified){for(int p=l.parent;p>=0;p=classified[p].parent)++l.depth;const bool ccw=l.depth%2==0;if((l.signedArea>0)!=ccw)detail::reverseBoundary(l.boundary);}
-  PlanarRegionSet out;for(size_t i=0;i<classified.size();++i)if(classified[i].depth%2==0){PlanarRegion r{classified[i].boundary,{}};for(size_t j=0;j<classified.size();++j)if(classified[j].parent==int(i)&&classified[j].depth%2==1)r.holes.push_back(classified[j].boundary);out.regions.push_back(std::move(r));}return{RegionBooleanStatus::Success,std::move(out),{}};
+  return detail::assemble(std::move(kept));
  }catch(const std::exception&e){return{RegionBooleanStatus::NumericalFailure,{},e.what()};}
+}
+
+RegionBooleanResult intersectPlanarRegions(const PlanarRegionSet&first,const PlanarRegionSet&second)
+{
+ if(!first.valid()||!second.valid())return{RegionBooleanStatus::Ambiguous,{},"Invalid planar region input"};
+ try{
+  auto a=detail::flatten(first),b=detail::flatten(second);std::vector<std::vector<geometry::Point2>>ap(a.size()),bp(b.size());
+  for(size_t i=0;i<a.size();++i)for(size_t j=0;j<b.size();++j){const auto x=detail::intersection(a[i].curve,b[j].curve);if(x.kind==geometry::IntersectionKind::Overlap||x.kind==geometry::IntersectionKind::Coincident||x.kind==geometry::IntersectionKind::Ambiguous)return{RegionBooleanStatus::Ambiguous,{},"Ambiguous coincident planar boundaries"};for(const auto&p:x.points){ap[i].push_back(p);bp[j].push_back(p);}}
+  std::vector<detail::Piece> kept;for(size_t i=0;i<a.size();++i)for(auto&c:detail::splitRegionCurve(a[i].curve,ap[i]))if(detail::materialAt(detail::middle(c),second))kept.push_back({a[i].source,c});
+  for(size_t i=0;i<b.size();++i)for(auto&c:detail::splitRegionCurve(b[i].curve,bp[i]))if(detail::materialAt(detail::middle(c),first))kept.push_back({b[i].source,c});
+  return detail::assemble(std::move(kept));
+ }catch(const std::exception&e){return{RegionBooleanStatus::NumericalFailure,{},e.what()};}
+}
+
+RegionBooleanResult partitionPlanarRegions(const PlanarRegionSet&regions,const PlanarRegionSet&splitter)
+{
+ if(!regions.valid()||!splitter.valid())return{RegionBooleanStatus::Ambiguous,{},"Invalid planar region input"};
+ try{
+  const auto cutters=detail::flatten(splitter);PlanarRegionSet output=regions;
+  auto partition=[&](RegionBoundary&boundary){RegionBoundary result;for(const auto&use:boundary.uses){auto curve=use.reversed?detail::reversed(use.curve):use.curve;std::vector<geometry::Point2>points;for(const auto&other:cutters){const auto hit=detail::intersection(curve,other.curve);if(hit.kind==geometry::IntersectionKind::Overlap||hit.kind==geometry::IntersectionKind::Coincident||hit.kind==geometry::IntersectionKind::Ambiguous)throw std::invalid_argument{"Ambiguous coincident planar boundaries"};points.insert(points.end(),hit.points.begin(),hit.points.end());}for(auto&piece:detail::splitRegionCurve(curve,points))result.uses.push_back({use.source,std::move(piece),false});}boundary=std::move(result);};
+  for(auto&region:output.regions){partition(region.outer);for(auto&hole:region.holes)partition(hole);}return{RegionBooleanStatus::Success,std::move(output),{}};
+ }catch(const std::exception&e){return{RegionBooleanStatus::Ambiguous,{},e.what()};}
 }
 }
