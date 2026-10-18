@@ -1508,3 +1508,11 @@ adapter and do not enter CAD modules.
 D18 is FROZEN in accepted ADR-0064–0066. Face-supported Sketch stores a semantic single-body Extrude StartCap/EndCap reference; topology/body IDs remain derived. Rebuild resolves a deterministic SketchPlane before solving and blocks dependants on failure without reattachment.
 
 Cut Extrude stores source Sketch and target-result FeatureIds, Blind distance and direction. Project-owned exact prismatic subtraction handles D14 analytic regions transactionally and returns 0..N Solids; B11 remains unchanged. D18-R1 restricts the C4 kernel to cutting directions parallel or anti-parallel to every affected body's recoverable extrusion axis. Unsupported oblique cuts fail transactionally with `UNSUPPORTED_TARGET`; C4 does not approximate conic boundaries or derive topology from tessellation. Persistence v2 stores the new authoritative values and migrates v1 through versioned DTOs. C4 implementation is in progress.
+
+## D19 — Arbitrary Viewer orientation and Normal To
+
+D19 is FROZEN in accepted ADR-0067. Viewer/session camera orientation is one
+authoritative right-handed orthonormal basis. Normal To maps SketchPlane X/Y to
+screen right/up and looks along the negative plane normal. CAD, topology and
+persistence layers do not own camera state; no external Math dependency or Roll
+UI is introduced.

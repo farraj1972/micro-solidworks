@@ -1282,3 +1282,14 @@ B11 remains frozen. D18-R1 restricts C4 exact subtraction to directions parallel
 or anti-parallel to recoverable target extrusion axes. Oblique cuts requiring
 conic boundaries return UNSUPPORTED_TARGET transactionally; conic topology is
 deferred to a future Decision Gate. V1.1-C4 is IN PROGRESS.
+
+D19 — Arbitrary Viewer Orientation & Normal-To Semantics
+STATUS: FROZEN
+ADR-0067: ACCEPTED
+ADR inventory: 67/67 ACCEPTED
+
+D19 freezes a Viewer-owned arbitrary right-handed orthonormal camera basis.
+Normal To maps SketchPlane +X/+Y to screen right/up and looks along -normal.
+Yaw/pitch are not competing authoritative state. Existing orbit, pan, zoom, Fit,
+standard views, picking and projection remain compatibility requirements.
+Camera Roll UI, animated transitions and persisted view state remain deferred.

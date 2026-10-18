@@ -1067,3 +1067,17 @@ axis of every affected supported target body. Oblique cuts and targets requiring
 elliptical or other conic intersection topology return `UNSUPPORTED_TARGET`
 without partial commit or approximation. General oblique cuts and conic
 topology are DEFERRED and require a future Decision Gate.
+
+## D19 — Arbitrary Viewer Orientation & Normal-To Semantics
+
+```text
+STATUS: FROZEN
+ADR-0067: ACCEPTED
+ADR inventory: 67/67 ACCEPTED
+V1.1-C4: IN PROGRESS
+```
+
+D19 replaces authoritative yaw/pitch orientation with a Viewer-owned arbitrary
+orthonormal basis. Normal To deterministically maps SketchPlane +X/+Y to screen
+right/up. Standard views and existing navigation remain part of the compatibility
+contract; camera Roll UI and persisted view state remain deferred.

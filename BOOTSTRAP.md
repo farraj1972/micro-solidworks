@@ -676,3 +676,7 @@ Save / Don't Save / Cancel protection for New, Open and both exit paths. See
 `docs/V1_1_C4_PREREQUISITE_REVIEW.md` and ADR-0064–0066.
 
 D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. D18-R1 restricts C4 exact subtraction to directions parallel or anti-parallel to recoverable target extrusion axes; unsupported oblique cuts return `UNSUPPORTED_TARGET`, and conic topology remains deferred. V1.1-C4 implementation is in progress.
+
+D19 is FROZEN in accepted ADR-0067 (67/67 accepted). Viewer orientation becomes
+one authoritative arbitrary orthonormal basis; Normal To maps SketchPlane +X/+Y
+to screen right/up without adding an external Math dependency or Roll UI.

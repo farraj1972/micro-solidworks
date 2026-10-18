@@ -29,6 +29,14 @@ allowed.
 General oblique cuts and conic topology are deferred and require a future
 Decision Gate.
 
+## D19 camera decision
+
+ADR-0067 freezes a Viewer-owned arbitrary orthonormal camera basis. Normal To
+uses `forward = -SketchPlane.normal`, `right = +SketchPlane.xAxis` and
+`up = +SketchPlane.yAxis`. Existing navigation and standard views remain a
+compatibility requirement. D19 documentary validation used V0; executable
+camera validation follows as part of C4.
+
 ## Validation record
 
 - D18-R1 documentation consistency: PASS

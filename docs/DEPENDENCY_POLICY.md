@@ -243,3 +243,10 @@ Windows Open/Save dialogs. Persistence schema version 1 is unchanged.
 ## 11. D18 Sketch-on-Face and subtractive modeling
 
 Accepted ADR-0064–0066 freeze BUILD. D18-R1 restricts C4 exact subtraction to cutting directions parallel or anti-parallel to recoverable target extrusion axes. Support resolution belongs to Features over Sketch/Modeling; exact axial prismatic subtraction belongs to Modeling/Topology/Geometry; Persistence v2 remains an adapter depending on Features. No external kernel, conic library, Boolean, tessellation or migration dependency is authorized. B11 stays frozen and rendering remains derived. General oblique subtraction and conic topology require a future Decision Gate.
+
+## 12. D19 Viewer orientation
+
+Accepted ADR-0067 keeps arbitrary camera orientation inside Viewer using the
+project-owned Math library. The Application/Viewer boundary converts a
+SketchPlane into a camera basis. Viewer must not depend on Sketch, and no
+external quaternion, camera or scene library is authorized.
