@@ -541,8 +541,11 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             {
                 ImGui::TextUnformatted("Property Manager — Extrude");
                 ImGui::InputDouble("Distance", &featureDepthDraft_);
+                const bool commitDistance = ImGui::IsItemDeactivatedAfterEdit();
                 const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
-                if (ImGui::Button("Confirm")) featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};
+                const bool confirmDistance=ImGui::Button("Confirm");
+                if (valid&&(commitDistance||confirmDistance))
+                    featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};
                 if(!valid)ImGui::EndDisabled();
                 ImGui::SameLine(); if (ImGui::Button("Cancel")) {featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;cancelPropertyRequest_ = true;}
             }
@@ -553,9 +556,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::Text("Profile: %s",featureModel->find(cut.sourceSketchFeatureId).displayName().c_str());
                 ImGui::Text("Target: %s",featureModel->find(cut.targetResultFeatureId).displayName().c_str());
                 ImGui::InputDouble("Depth",&featureDepthDraft_,1.0,5.0,"%.3f");
+                const bool commitDepth=ImGui::IsItemDeactivatedAfterEdit();
                 ImGui::Checkbox("Reverse Direction",&featureReverseDraft_);
+                const bool commitDirection=ImGui::IsItemDeactivatedAfterEdit();
                 const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
-                if(ImGui::Button("Confirm"))featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
+                const bool confirmCut=ImGui::Button("Confirm");
+                if(valid&&(commitDepth||commitDirection||confirmCut))featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
                     featureReverseDraft_?features::CutDirection::Reverse:features::CutDirection::Forward};
                 if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;cancelPropertyRequest_=true;}
             }
@@ -726,20 +732,26 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             {
                 ImGui::TextUnformatted("Line: start X/Y, end X/Y");
                 if (ImGui::InputScalarN("##SketchLine", ImGuiDataType_Double, sketchGeometryDraft_.data(), 4))sketchGeometryDraftDirty_=true;
-                if(sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry"))try{sketchGeometryRequest_=sketch::SketchLine{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},{sketchGeometryDraft_[2],sketchGeometryDraft_[3]}}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
+                const bool commitGeometry=sketchGeometryDraftDirty_&&ImGui::IsItemDeactivatedAfterEdit();
+                const bool applyGeometry=sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry");
+                if(commitGeometry||applyGeometry)try{sketchGeometryRequest_=sketch::SketchLine{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},{sketchGeometryDraft_[2],sketchGeometryDraft_[3]}}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
             }
             else if constexpr (std::is_same_v<Entity, sketch::SketchCircle>)
             {
                 ImGui::TextUnformatted("Circle: center X/Y, radius");
                 if (ImGui::InputScalarN("##SketchCircle", ImGuiDataType_Double, sketchGeometryDraft_.data(), 3))sketchGeometryDraftDirty_=true;
-                if(sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry"))try{sketchGeometryRequest_=sketch::SketchCircle{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},sketchGeometryDraft_[2]}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
+                const bool commitGeometry=sketchGeometryDraftDirty_&&ImGui::IsItemDeactivatedAfterEdit();
+                const bool applyGeometry=sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry");
+                if(commitGeometry||applyGeometry)try{sketchGeometryRequest_=sketch::SketchCircle{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},sketchGeometryDraft_[2]}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
             }
             else
             {
                 constexpr double degreesPerRadian = 180.0 / std::numbers::pi;
                 ImGui::TextUnformatted("Arc: center X/Y, radius, start/sweep degrees");
                 if (ImGui::InputScalarN("##SketchArc", ImGuiDataType_Double, sketchGeometryDraft_.data(), 5))sketchGeometryDraftDirty_=true;
-                if(sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry"))try{sketchGeometryRequest_=sketch::SketchArc{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},sketchGeometryDraft_[2],sketchGeometryDraft_[3]/degreesPerRadian,sketchGeometryDraft_[4]/degreesPerRadian}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
+                const bool commitGeometry=sketchGeometryDraftDirty_&&ImGui::IsItemDeactivatedAfterEdit();
+                const bool applyGeometry=sketchGeometryDraftDirty_&&ImGui::Button("Apply geometry");
+                if(commitGeometry||applyGeometry)try{sketchGeometryRequest_=sketch::SketchArc{{{sketchGeometryDraft_[0],sketchGeometryDraft_[1]},sketchGeometryDraft_[2],sketchGeometryDraft_[3]/degreesPerRadian,sketchGeometryDraft_[4]/degreesPerRadian}};sketchGeometryDraftDirty_=false;}catch(const std::exception&e){sketchError_=e.what();}
             }
         }, selected->geometry());
         if (ImGui::Button("Delete") || ImGui::IsKeyPressed(ImGuiKey_Delete)) deleteSketchRequest_ = true;
