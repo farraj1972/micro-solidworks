@@ -192,6 +192,93 @@ TEST(Persistence, VersionTwoPreservesCutExtrudeContract)
     std::filesystem::remove(path);
 }
 
+TEST(Persistence, DeletedFeaturesStayAbsentAndFeatureIdCounterRemainsAdvanced)
+{
+    features::FeatureModel model;
+    const auto kept = model.addSketch({});
+    const auto removed = model.addSketch({});
+    (void)model.deleteFeature(removed);
+    const auto path = temporaryFile("micro-solidworks-v2-deleted-features.microsw");
+    ASSERT_EQ(persistence::saveFeatureModel(model, path).status, persistence::SaveStatus::Success);
+    auto opened = persistence::openFeatureModel(path);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt) << opened.diagnostic;
+    ASSERT_EQ(opened.model.history().size(), 1u);
+    EXPECT_EQ(opened.model.history().front().id(), kept);
+    EXPECT_EQ(opened.model.nextFeatureId(), 2u);
+    EXPECT_THROW((void)opened.model.find(removed), std::out_of_range);
+    EXPECT_EQ(opened.model.addSketch({}).value(), 2u);
+    std::filesystem::remove(path);
+}
+
+TEST(Persistence, PocketFloorSemanticSupportRoundtripsInVersionTwo)
+{
+    features::FeatureModel model;
+    sketch::Sketch base; (void)base.addRectangle({0, 0}, {10, 10});
+    const auto target = model.addExtrude(model.addSketch(std::move(base)), 10);
+    sketch::Sketch profile; (void)profile.addCircle({{5, 5}, 2});
+    const auto profileId = model.addFaceSketch(std::move(profile), target,
+        features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(profileId, target, 4,
+        features::CutDirection::Reverse);
+    sketch::Sketch floorGeometry; (void)floorGeometry.addCircle({{5, 5}, 1});
+    const auto floor = model.addFaceSketch(std::move(floorGeometry), cut,
+        features::ExtrudeCapRole::PocketFloor);
+    ASSERT_EQ(model.rebuild().status, features::RebuildStatus::Success);
+    const auto path = temporaryFile("micro-solidworks-v2-pocket-floor.microsw");
+
+    ASSERT_EQ(persistence::saveFeatureModel(model, path).status, persistence::SaveStatus::Success);
+    std::ifstream input{path}; const std::string json{std::istreambuf_iterator<char>{input}, {}};
+    input.close();
+    EXPECT_NE(json.find("\"pocketFloor\""), std::string::npos);
+    auto opened = persistence::openFeatureModel(path);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt) << opened.diagnostic;
+    const auto* support = std::get_if<features::SemanticFaceSupport>(
+        &std::get<features::SketchFeature>(opened.model.find(floor).data()).support);
+    ASSERT_NE(support, nullptr);
+    EXPECT_EQ(support->sourceFeatureId, cut);
+    EXPECT_EQ(support->capRole, features::ExtrudeCapRole::PocketFloor);
+    EXPECT_EQ(std::get<features::SketchFeature>(opened.model.find(floor).data()).sketch.size(), 1u);
+    std::filesystem::remove(path);
+}
+
+TEST(Persistence, RejectsUnknownVersionTwoSemanticFaceRole)
+{
+    const auto path = temporaryFile("micro-solidworks-v2-unknown-face-role.microsw");
+    std::ofstream output{path};
+    output << R"({"formatVersion":2,"featureModel":{"nextFeatureId":2,"resultFeatureId":null,"features":[{"id":0,"displayName":"Extrude1","kind":"extrude","sourceSketchFeatureId":1,"distance":2},{"id":1,"displayName":"Sketch1","kind":"sketch","sketch":{"plane":{"origin":{"x":0,"y":0,"z":0},"xAxis":{"x":1,"y":0,"z":0},"yAxis":{"x":0,"y":1,"z":0}},"nextEntityId":0,"nextConstraintId":0,"entities":[],"constraints":[]},"support":{"kind":"semanticFace","sourceFeatureId":0,"capRole":"nearestFace"}}]}})";
+    output.close();
+    EXPECT_EQ(persistence::openFeatureModel(path).status, persistence::OpenStatus::InvalidModel);
+    std::filesystem::remove(path);
+}
+
+TEST(Persistence, InheritedCapSemanticRolesRoundtripInVersionTwo)
+{
+    features::FeatureModel model;
+    sketch::Sketch base; (void)base.addRectangle({0, 0}, {10, 10});
+    const auto target = model.addExtrude(model.addSketch(std::move(base)), 10);
+    sketch::Sketch profile; (void)profile.addCircle({{5, 5}, 2});
+    const auto profileId = model.addFaceSketch(std::move(profile), target,
+        features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(profileId, target, 4,
+        features::CutDirection::Reverse);
+    const auto start = model.addFaceSketch({}, cut,
+        features::ExtrudeCapRole::InheritedStartCap);
+    const auto end = model.addFaceSketch({}, cut,
+        features::ExtrudeCapRole::InheritedEndCap);
+    ASSERT_EQ(model.rebuild().status, features::RebuildStatus::Success);
+    const auto path = temporaryFile("micro-solidworks-v2-inherited-caps.microsw");
+    ASSERT_EQ(persistence::saveFeatureModel(model, path).status, persistence::SaveStatus::Success);
+    auto opened = persistence::openFeatureModel(path);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt) << opened.diagnostic;
+    const auto role = [&](features::FeatureId id) {
+        return std::get<features::SemanticFaceSupport>(
+            std::get<features::SketchFeature>(opened.model.find(id).data()).support).capRole;
+    };
+    EXPECT_EQ(role(start), features::ExtrudeCapRole::InheritedStartCap);
+    EXPECT_EQ(role(end), features::ExtrudeCapRole::InheritedEndCap);
+    std::filesystem::remove(path);
+}
+
 TEST(Persistence, InvalidPathDoesNotMutateModel)
 {
     auto model=sampleModel(); const auto count=model.history().size();

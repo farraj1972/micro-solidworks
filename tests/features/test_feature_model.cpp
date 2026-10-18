@@ -1,6 +1,7 @@
 #include "features/FeatureModel.h"
 
 #include <gtest/gtest.h>
+#include <algorithm>
 
 namespace
 {
@@ -208,7 +209,7 @@ TEST(FeatureModel, SemanticCapRejectsMultiBodySourceWithoutReattachment)
     EXPECT_EQ(result.status, microsw::features::RebuildStatus::Failed);
     EXPECT_EQ(result.failedFeature, supported);
     EXPECT_EQ(model.find(supported).state(), microsw::features::FeatureState::Failed);
-    EXPECT_EQ(result.diagnostic, "Sketch support requires a single-body Extrude cap");
+    EXPECT_EQ(result.diagnostic, "Sketch support requires a single-body generated face");
 }
 
 TEST(FeatureModel, CutExtrudeOwnsExplicitBackwardDependenciesAndParameters)
@@ -300,4 +301,157 @@ TEST(FeatureModel, CutFailurePreservesLastKnownGoodAndRecovers)
     EXPECT_EQ(failed.diagnostic,"Cut profile does not intersect the target solid.");
     model.editSketch(source,[](auto&sketch){sketch=rectangle(2,2,8,8);});
     EXPECT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+}
+
+TEST(FeatureModel, DeletesLeafAndRetiresItsFeatureId)
+{
+    microsw::features::FeatureModel model;
+    const auto first = model.addSketch({});
+    const auto leaf = model.addSketch({});
+
+    EXPECT_EQ(model.deleteFeature(leaf), (std::vector{leaf}));
+    EXPECT_THROW((void)model.find(leaf), std::out_of_range);
+    EXPECT_EQ(model.nextFeatureId(), 2u);
+    const auto replacement = model.addSketch({});
+    EXPECT_EQ(replacement.value(), 2u);
+    EXPECT_EQ(model.find(replacement).displayName(), "Sketch2");
+    EXPECT_EQ(model.find(first).id(), first);
+}
+
+TEST(FeatureModel, DeletesCompleteTransitiveDependantClosureAndReassignsResult)
+{
+    microsw::features::FeatureModel model;
+    const auto baseSketch = model.addSketch(rectangle(0, 0, 10, 10));
+    const auto base = model.addExtrude(baseSketch, 10);
+    microsw::sketch::Sketch profile; (void)profile.addCircle({{5, 5}, 2});
+    const auto supported = model.addFaceSketch(std::move(profile), base,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(supported, base, 4,
+        microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+
+    EXPECT_EQ(model.deletionClosure(supported), (std::vector{supported, cut}));
+    EXPECT_EQ(model.deleteFeature(supported), (std::vector{supported, cut}));
+    EXPECT_EQ(model.resultFeatureId(), base);
+    EXPECT_THROW((void)model.find(supported), std::out_of_range);
+    EXPECT_THROW((void)model.find(cut), std::out_of_range);
+    EXPECT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+}
+
+TEST(FeatureModel, DeletesSupportProducerAndEveryTransitiveDependant)
+{
+    microsw::features::FeatureModel model;
+    const auto baseSketch = model.addSketch(rectangle(0, 0, 10, 10));
+    const auto base = model.addExtrude(baseSketch, 10);
+    const auto supported = model.addFaceSketch(rectangle(2, 2, 8, 8), base,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(supported, base, 4,
+        microsw::features::CutDirection::Reverse);
+
+    EXPECT_EQ(model.deleteFeature(base), (std::vector{base, supported, cut}));
+    ASSERT_EQ(model.history().size(), 1u);
+    EXPECT_EQ(model.history().front().id(), baseSketch);
+    EXPECT_FALSE(model.resultFeatureId().isValid());
+    EXPECT_EQ(model.nextFeatureId(), 4u);
+}
+
+TEST(FeatureModel, InvalidDeleteIsAtomic)
+{
+    microsw::features::FeatureModel model;
+    const auto sketch = model.addSketch({});
+    const auto before = model.checkpoint();
+    EXPECT_THROW((void)model.deleteFeature(microsw::features::FeatureId{42}), std::out_of_range);
+    EXPECT_EQ(model.history().size(), before.features.size());
+    EXPECT_EQ(model.find(sketch).id(), sketch);
+    EXPECT_EQ(model.nextFeatureId(), before.nextFeatureId);
+}
+
+TEST(FeatureModel, CutPublishesUniquePocketFloorAndInheritedCapProvenance)
+{
+    microsw::features::FeatureModel model;
+    const auto target = model.addExtrude(model.addSketch(rectangle(0, 0, 10, 10)), 10);
+    microsw::sketch::Sketch profile; (void)profile.addCircle({{5, 5}, 2});
+    const auto profileId = model.addFaceSketch(std::move(profile), target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(profileId, target, 4,
+        microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+
+    const auto& cache = std::get<microsw::features::SolidFeatureCache>(*model.find(cut).cache());
+    const auto count = [&](microsw::features::ExtrudeCapRole role) {
+        return std::count_if(cache.semanticFaces.begin(), cache.semanticFaces.end(),
+            [&](const auto& face) { return face.role == role; });
+    };
+    EXPECT_EQ(count(microsw::features::ExtrudeCapRole::InheritedStartCap), 1u);
+    EXPECT_EQ(count(microsw::features::ExtrudeCapRole::InheritedEndCap), 1u);
+    EXPECT_EQ(count(microsw::features::ExtrudeCapRole::PocketFloor), 1u);
+}
+
+TEST(FeatureModel, PocketFloorSupportedSketchFollowsCutDepth)
+{
+    microsw::features::FeatureModel model;
+    const auto target = model.addExtrude(model.addSketch(rectangle(0, 0, 10, 10)), 10);
+    microsw::sketch::Sketch profile; (void)profile.addCircle({{5, 5}, 2});
+    const auto profileId = model.addFaceSketch(std::move(profile), target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(profileId, target, 4,
+        microsw::features::CutDirection::Reverse);
+    const auto floorSketch = model.addFaceSketch({}, cut,
+        microsw::features::ExtrudeCapRole::PocketFloor);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    auto plane = std::get<microsw::features::SketchFeatureCache>(
+        *model.find(floorSketch).cache()).solvedSketch.plane();
+    EXPECT_NEAR(plane.origin().z(), 6, 1e-12);
+
+    model.setCutExtrude(cut, 7, microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    plane = std::get<microsw::features::SketchFeatureCache>(
+        *model.find(floorSketch).cache()).solvedSketch.plane();
+    EXPECT_NEAR(plane.origin().z(), 3, 1e-12);
+}
+
+TEST(FeatureModel, RejectsSemanticRoleOnWrongProducerKind)
+{
+    microsw::features::FeatureModel model;
+    const auto extrude = model.addExtrude(model.addSketch(rectangle(0, 0, 4, 4)), 4);
+    EXPECT_THROW((void)model.addFaceSketch({}, extrude,
+        microsw::features::ExtrudeCapRole::PocketFloor), std::invalid_argument);
+}
+
+TEST(FeatureModel, SplitInheritedCapIsAmbiguousAndCannotSupportSketch)
+{
+    const microsw::sketch::SketchPlane plane;
+    microsw::features::SolidFeatureCache cache;
+    cache.semanticFaces.push_back({microsw::features::ExtrudeCapRole::InheritedEndCap,
+        0, microsw::topology::FaceId{2}, plane});
+    cache.semanticFaces.push_back({microsw::features::ExtrudeCapRole::InheritedEndCap,
+        0, microsw::topology::FaceId{5}, plane});
+    EXPECT_THROW((void)microsw::features::resolveSemanticFacePlane(cache,
+        microsw::features::ExtrudeCapRole::InheritedEndCap), std::runtime_error);
+    EXPECT_THROW((void)microsw::features::resolveSemanticFacePlane(cache,
+        microsw::features::ExtrudeCapRole::PocketFloor), std::runtime_error);
+}
+
+TEST(FeatureModel, DisappearingPocketFloorFailsSketchWithoutReattachment)
+{
+    microsw::features::FeatureModel model;
+    const auto target = model.addExtrude(model.addSketch(rectangle(0, 0, 10, 10)), 10);
+    microsw::sketch::Sketch profile; (void)profile.addCircle({{5, 5}, 2});
+    const auto profileId = model.addFaceSketch(std::move(profile), target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(profileId, target, 4,
+        microsw::features::CutDirection::Reverse);
+    microsw::sketch::Sketch floor; (void)floor.addCircle({{5, 5}, 1});
+    const auto supported = model.addFaceSketch(std::move(floor), cut,
+        microsw::features::ExtrudeCapRole::PocketFloor);
+    const auto dependent = model.addExtrude(supported, 1);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+
+    model.setCutExtrude(cut, 10, microsw::features::CutDirection::Reverse);
+    const auto result = model.rebuild();
+
+    EXPECT_EQ(result.status, microsw::features::RebuildStatus::Failed);
+    EXPECT_TRUE(result.failedFeature == cut || result.failedFeature == supported);
+    EXPECT_EQ(model.find(dependent).state(), microsw::features::FeatureState::BlockedByDependency);
+    EXPECT_TRUE(model.find(supported).cache().has_value());
 }

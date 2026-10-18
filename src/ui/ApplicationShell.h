@@ -89,6 +89,7 @@ public:
     [[nodiscard]] bool cancelPropertyRequest() const noexcept { return cancelPropertyRequest_; }
     [[nodiscard]] bool gridSnapEnabled() const noexcept { return gridSnapEnabled_; }
     [[nodiscard]] const std::optional<features::FeatureId>& visibilityToggleRequest() const noexcept { return visibilityToggleRequest_; }
+    [[nodiscard]] const std::optional<features::FeatureId>& deleteFeatureRequest() const noexcept { return deleteFeatureRequest_; }
     [[nodiscard]] const std::optional<ViewCommand>& viewCommandRequest() const noexcept { return viewCommandRequest_; }
     [[nodiscard]] const std::optional<DisplayModeRequest>& displayModeRequest() const noexcept { return displayModeRequest_; }
 
@@ -165,6 +166,9 @@ private:
     bool cancelPropertyRequest_{};
     bool gridSnapEnabled_{true};
     std::optional<features::FeatureId> visibilityToggleRequest_;
+    std::optional<features::FeatureId> deleteFeatureRequest_;
+    std::optional<features::FeatureId> pendingDeleteFeature_;
+    bool openDeleteConfirmation_{};
     std::optional<ViewCommand> viewCommandRequest_;
     std::optional<DisplayModeRequest> displayModeRequest_;
     DisplayModeRequest displayMode_{DisplayModeRequest::ShadedWithEdges};

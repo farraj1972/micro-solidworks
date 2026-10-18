@@ -196,6 +196,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false; sketchPlaneRequest_.reset();
     confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
+    deleteFeatureRequest_.reset();
     if(editor){
         using C=interaction::EditorCommand;
         if(editor->activeCommand()==C::Extrude)workflowState_="Extrude — set parameters, then Confirm or Cancel";
@@ -274,10 +275,11 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     ImGui::TextDisabled("|"); ImGui::SameLine();
     const bool editing = editor && editor->activeSketchFeatureId();
     const auto* faceSelection=editor&&editor->selection()?std::get_if<interaction::TopologyFaceTarget>(&*editor->selection()):nullptr;
-    const bool supportedSelectedFace=!faceSelection||(featureModel&&featureModel->find(faceSelection->feature).kind()==features::FeatureKind::Extrude);
+    const bool supportedSelectedFace=!faceSelection||(featureModel&&featureModel->semanticFaceRole(
+        faceSelection->feature,faceSelection->body.index,faceSelection->face).has_value());
     const char* sketchTip=editing?"Finish editing the active Sketch":supportedSelectedFace?
         "Create a Sketch on the selected plane or supported Extrude cap":
-        "This release supports Sketch on Face only on an Extrude start/end cap";
+        "Sketch on this face is not yet supported";
     commandButton("sketch", editing ? "Exit" : "Sketch", sketchTip,
         editing ? CadIcon::ExitSketch : CadIcon::Sketch, editing||supportedSelectedFace, editing,
         [&]{ if (editing) exitSketchRequest_ = true; else if(selectedPrincipalPlane_){sketchPlaneRequest_=selectedPrincipalPlane_;propertyManagerVisible_=true;}else if(faceSelection||selectedFeature_){enterSketchRequest_=true;propertyManagerVisible_=true;}else{sketchError_="Select Front, Top or Right Plane, or a supported planar face, before starting Sketch.";propertyManagerVisible_=false;} });
@@ -414,6 +416,11 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
                 if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide"))
                     visibilityToggleRequest_=node.featureId;
+                if(ImGui::MenuItem("Delete")){
+                    const auto closure=featureModel->deletionClosure(node.featureId);
+                    if(closure.size()==1)deleteFeatureRequest_=node.featureId;
+                    else{pendingDeleteFeature_=node.featureId;openDeleteConfirmation_=true;}
+                }
                 ImGui::EndPopup();
             }
             if(const auto cue=statusCue(node);cue.first){
@@ -452,6 +459,19 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             for(const auto& node:tree.roots)drawNode(node);
             ImGui::TreePop();
         }
+        if(openDeleteConfirmation_){ImGui::OpenPopup("Confirm feature deletion");openDeleteConfirmation_=false;}
+        if(ImGui::BeginPopupModal("Confirm feature deletion",nullptr,ImGuiWindowFlags_AlwaysAutoResize)){
+            if(pendingDeleteFeature_){
+                const auto closure=featureModel->deletionClosure(*pendingDeleteFeature_);
+                ImGui::Text("Delete %s?",featureModel->find(*pendingDeleteFeature_).displayName().c_str());
+                ImGui::TextUnformatted("This will also delete:");
+                for(std::size_t i=1;i<closure.size();++i)
+                    ImGui::BulletText("%s",featureModel->find(closure[i]).displayName().c_str());
+                if(ImGui::Button("Delete")){deleteFeatureRequest_=pendingDeleteFeature_;pendingDeleteFeature_.reset();ImGui::CloseCurrentPopup();}
+                ImGui::SameLine();if(ImGui::Button("Cancel")){pendingDeleteFeature_.reset();ImGui::CloseCurrentPopup();}
+            }else ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+        }
         if(selectedPrincipalPlane_){
             ImGui::Separator();
             const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
@@ -474,7 +494,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                         }
                     }
                     ImGui::Text("Owning feature: %s",owner.displayName().c_str());
-                    if(owner.kind()==features::FeatureKind::Extrude&&ImGui::Button("Sketch on this face"))
+                    const auto role=featureModel->semanticFaceRole(t->feature,t->body.index,t->face);
+                    if(role){ImGui::Text("Support: %s of %s",features::semanticFaceRoleName(*role),owner.displayName().c_str());}
+                    else ImGui::TextDisabled("Sketch on this face is not yet supported.");
+                    if(role&&ImGui::Button("Sketch on this face"))
                         {selectedFeature_=owner.id();enterSketchRequest_=true;propertyManagerVisible_=true;}
                 }
                 else if(const auto*t=std::get_if<interaction::TopologyEdgeTarget>(&*editor->selection())){
@@ -494,6 +517,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             {
                 const auto& sketch = std::get<features::SketchFeature>(feature.data()).sketch;
                 ImGui::Text("%zu entities, %zu constraints", sketch.size(), sketch.constraintCount());
+                if(const auto*support=std::get_if<features::SemanticFaceSupport>(
+                    &std::get<features::SketchFeature>(feature.data()).support))
+                    ImGui::Text("Support: %s of %s",features::semanticFaceRoleName(support->capRole),
+                        featureModel->find(support->sourceFeatureId).displayName().c_str());
                 if (ImGui::Button("Edit Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
                 ImGui::SameLine();
                 if (ImGui::Button("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
@@ -1028,9 +1055,9 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
     {
         const bool faceSelected=editor&&editor->selection()&&std::holds_alternative<interaction::TopologyFaceTarget>(*editor->selection());
         bool supportedFace=false;
-        if(faceSelected&&featureModel){const auto&t=std::get<interaction::TopologyFaceTarget>(*editor->selection());supportedFace=featureModel->find(t.feature).kind()==features::FeatureKind::Extrude;}
+        if(faceSelected&&featureModel){const auto&t=std::get<interaction::TopologyFaceTarget>(*editor->selection());supportedFace=featureModel->semanticFaceRole(t.feature,t.body.index,t.face).has_value();}
         if(faceSelected&&ImGui::MenuItem("Sketch on selected face",nullptr,false,supportedFace)){enterSketchRequest_=true;propertyManagerVisible_=true;}
-        if(faceSelected&&!supportedFace)ImGui::TextDisabled("Sketch on Cut faces requires a future modeling contract");
+        if(faceSelected&&!supportedFace)ImGui::TextDisabled("Sketch on this face is not yet supported.");
         if (selectedFeature_)
         {
             if (!faceSelected&&ImGui::MenuItem("Edit selected Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }

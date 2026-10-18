@@ -113,6 +113,7 @@ public:
     [[nodiscard]] bool commandAvailable(EditorCommand command, bool hasClosedSketch) const noexcept;
     void resetSession() noexcept;
     void clearTopologySelectionOnRebuild() noexcept;
+    void reconcileDeletedFeatures(const std::vector<features::FeatureId>& deleted) noexcept;
 
 private:
     std::optional<features::FeatureId> activeFeature_;

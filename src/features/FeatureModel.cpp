@@ -14,6 +14,32 @@
 
 namespace microsw::features
 {
+const char* semanticFaceRoleName(ExtrudeCapRole role) noexcept
+{
+    switch (role)
+    {
+    case ExtrudeCapRole::StartCap: return "Start cap";
+    case ExtrudeCapRole::EndCap: return "End cap";
+    case ExtrudeCapRole::InheritedStartCap: return "Inherited start cap";
+    case ExtrudeCapRole::InheritedEndCap: return "Inherited end cap";
+    case ExtrudeCapRole::PocketFloor: return "Pocket floor";
+    }
+    return "Generated face";
+}
+
+const sketch::SketchPlane& resolveSemanticFacePlane(
+    const SolidFeatureCache& cache, ExtrudeCapRole role)
+{
+    const SemanticFaceProvenance* match{};
+    std::size_t count{};
+    for (const auto& provenance : cache.semanticFaces)
+        if (provenance.role == role) { match = &provenance; ++count; }
+    if (count == 0)
+        throw std::runtime_error{"The sketch support face is unavailable after rebuild."};
+    if (count != 1)
+        throw std::runtime_error{"The sketch support face is ambiguous after rebuild."};
+    return match->sketchPlane;
+}
 namespace
 {
 constraints::SolverPolicy featureSolverPolicy()
@@ -25,6 +51,27 @@ constraints::SolverPolicy featureSolverPolicy()
     policy.residualSatisfactionTolerance = 1.0e-10;
     policy.initialStateRegularization = 1.0e-12;
     return policy;
+}
+
+bool samePlane(const geometry::Plane& a, const geometry::Plane& b)
+{
+    return std::abs(std::abs(math::dot(a.normal(), b.normal())) - 1.0)
+            <= geometry::defaultGeometricTolerance
+        && a.contains(b.origin());
+}
+
+void addSemanticFaces(SolidFeatureCache& cache, ExtrudeCapRole role,
+                      const geometry::Plane& plane, const sketch::SketchPlane& sketchPlane)
+{
+    for (std::size_t body = 0; body < cache.solids.size(); ++body)
+        for (std::size_t face = 0; face < cache.solids[body].faces().size(); ++face)
+        {
+            const auto& candidate = cache.solids[body].faces()[face];
+            if (const auto* support = std::get_if<geometry::Plane>(&candidate.support());
+                support && samePlane(*support, plane))
+                cache.semanticFaces.push_back({role, body,
+                    topology::FaceId{static_cast<topology::FaceId::Value>(face)}, sketchPlane});
+        }
 }
 }
 
@@ -48,10 +95,15 @@ FeatureModel::FeatureModel(constraints::ConstraintSolver solver) : solver_{std::
 
 std::string FeatureModel::nextName(FeatureKind kind) const
 {
-    std::size_t count{};
-    for (const auto& record : records_) if (record.kind() == kind) ++count;
     const char* prefix = kind == FeatureKind::Sketch ? "Sketch" : kind == FeatureKind::Extrude ? "Extrude" : kind == FeatureKind::CutExtrude ? "CutExtrude" : "Boolean";
-    return prefix + std::to_string(count + 1);
+    std::size_t largest{};
+    const std::string prefixText{prefix};
+    for (const auto& record : records_)
+        if (record.kind() == kind && record.displayName().starts_with(prefixText))
+            try { largest = std::max(largest, static_cast<std::size_t>(
+                std::stoul(record.displayName().substr(prefixText.size())))); }
+            catch (const std::exception&) {}
+    return prefixText + std::to_string(largest + 1);
 }
 
 FeatureId FeatureModel::addSketch(sketch::Sketch sketch)
@@ -66,8 +118,13 @@ FeatureId FeatureModel::addSketch(sketch::Sketch sketch)
 FeatureId FeatureModel::addFaceSketch(sketch::Sketch sketch, FeatureId sourceExtrude,
                                       ExtrudeCapRole role)
 {
-    if (find(sourceExtrude).kind() != FeatureKind::Extrude)
-        throw std::invalid_argument{"Semantic face support requires an earlier Extrude"};
+    const auto sourceKind = find(sourceExtrude).kind();
+    const auto extrudeRole = role == ExtrudeCapRole::StartCap || role == ExtrudeCapRole::EndCap;
+    const auto cutRole = role == ExtrudeCapRole::InheritedStartCap
+        || role == ExtrudeCapRole::InheritedEndCap || role == ExtrudeCapRole::PocketFloor;
+    if ((extrudeRole && sourceKind != FeatureKind::Extrude)
+        || (cutRole && sourceKind != FeatureKind::CutExtrude))
+        throw std::invalid_argument{"Semantic face role is not supported by the source feature"};
     const auto id = FeatureId{nextFeatureId_};
     if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
     records_.push_back(FeatureRecord{id, FeatureKind::Sketch, nextName(FeatureKind::Sketch),
@@ -124,12 +181,38 @@ FeatureId FeatureModel::addBoolean(FeatureId inputA, FeatureId inputB, modeling:
 
 const FeatureRecord& FeatureModel::find(FeatureId id) const
 {
-    if (!id.isValid() || id.value() >= records_.size()) throw std::out_of_range{"Invalid FeatureId"};
-    return records_[id.value()];
+    if (const auto* record = tryFind(id)) return *record;
+    throw std::out_of_range{"Invalid FeatureId"};
+}
+const FeatureRecord* FeatureModel::tryFind(FeatureId id) const noexcept
+{
+    if (!id.isValid()) return nullptr;
+    const auto found = std::lower_bound(records_.begin(), records_.end(), id,
+        [](const FeatureRecord& record, FeatureId value) { return record.id() < value; });
+    return found != records_.end() && found->id() == id ? &*found : nullptr;
 }
 FeatureRecord& FeatureModel::mutableFind(FeatureId id)
 {
     return const_cast<FeatureRecord&>(std::as_const(*this).find(id));
+}
+std::optional<ExtrudeCapRole> FeatureModel::semanticFaceRole(
+    FeatureId source, std::size_t bodyIndex, topology::FaceId faceId) const
+{
+    const auto& record = find(source);
+    if (!record.cache()) return std::nullopt;
+    const auto* cache = std::get_if<SolidFeatureCache>(&*record.cache());
+    if (!cache || cache->solids.size() != 1) return std::nullopt;
+    std::optional<ExtrudeCapRole> result;
+    for (const auto& provenance : cache->semanticFaces)
+        if (provenance.bodyIndex == bodyIndex && provenance.faceId == faceId)
+        {
+            if (result && *result != provenance.role) return std::nullopt;
+            result = provenance.role;
+        }
+    if (result && std::count_if(cache->semanticFaces.begin(), cache->semanticFaces.end(),
+            [&](const SemanticFaceProvenance& provenance) { return provenance.role == *result; }) != 1)
+        return std::nullopt;
+    return result;
 }
 bool FeatureModel::isSolidProducer(FeatureId id) const
 {
@@ -188,10 +271,43 @@ void FeatureModel::setResultFeatureId(FeatureId id)
     resultFeatureId_ = id;
 }
 
+std::vector<FeatureId> FeatureModel::deletionClosure(FeatureId id) const
+{
+    (void)find(id);
+    std::vector<FeatureId> closure{id};
+    for (const auto& record : records_)
+    {
+        const auto dependencies = record.dependencies();
+        if (std::any_of(dependencies.begin(), dependencies.end(),
+                [&](FeatureId dependency) {
+                    return std::find(closure.begin(), closure.end(), dependency) != closure.end();
+                }))
+            closure.push_back(record.id());
+    }
+    return closure;
+}
+
+std::vector<FeatureId> FeatureModel::deleteFeature(FeatureId id)
+{
+    const auto closure = deletionClosure(id);
+    records_.erase(std::remove_if(records_.begin(), records_.end(), [&](const FeatureRecord& record) {
+        return std::find(closure.begin(), closure.end(), record.id()) != closure.end();
+    }), records_.end());
+    resultFeatureId_ = {};
+    for (auto record = records_.rbegin(); record != records_.rend(); ++record)
+        if (isSolidProducer(record->id()) && record->state() == FeatureState::Clean
+            && record->cache())
+        {
+            resultFeatureId_ = record->id();
+            break;
+        }
+    return closure;
+}
+
 RebuildResult FeatureModel::rebuild()
 {
-    std::vector<std::optional<FeatureCache>> candidates(records_.size());
-    std::vector<bool> affected(records_.size());
+    std::vector<std::optional<FeatureCache>> candidates(nextFeatureId_);
+    std::vector<bool> affected(nextFeatureId_);
     for (const auto& record : records_) affected[record.id().value()] = record.state() != FeatureState::Clean;
     std::optional<FeatureId> failure;
     std::string diagnostic;
@@ -248,17 +364,9 @@ RebuildResult FeatureModel::rebuild()
                 {
                     const auto& source = find(support->sourceFeatureId);
                     const auto& sourceCache = std::get<SolidFeatureCache>(output(source.id()));
-                    if (source.kind() != FeatureKind::Extrude || sourceCache.solids.size() != 1)
-                        throw std::runtime_error{"Sketch support requires a single-body Extrude cap"};
-                    const auto& extrusion = std::get<ExtrudeFeature>(source.data());
-                    const auto& sourceSketch = std::get<SketchFeatureCache>(
-                        output(extrusion.sourceSketchFeatureId)).solvedSketch;
-                    const auto& p = sourceSketch.plane();
-                    if (support->capRole == ExtrudeCapRole::EndCap)
-                        solved = solved.withPlane({p.origin() + p.normal() * extrusion.distance,
-                            p.xAxis(), p.yAxis()});
-                    else
-                        solved = solved.withPlane({p.origin(), p.xAxis(), p.yAxis() * -1.0});
+                    if (sourceCache.solids.size() != 1)
+                        throw std::runtime_error{"Sketch support requires a single-body generated face"};
+                    solved = solved.withPlane(resolveSemanticFacePlane(sourceCache, support->capRole));
                 }
                 if (solved.constraintCount() != 0)
                 {
@@ -276,7 +384,16 @@ RebuildResult FeatureModel::rebuild()
                 auto extrusion = extrudeRegions(regions, sketchCache.solvedSketch.plane(), data.distance);
                 if (!extrusion.succeeded())
                     throw std::runtime_error{extrusion.diagnostic};
-                candidates[record.id().value()] = SolidFeatureCache{std::move(extrusion.solids)};
+                SolidFeatureCache cache{std::move(extrusion.solids)};
+                const auto& p = sketchCache.solvedSketch.plane();
+                addSemanticFaces(cache, ExtrudeCapRole::StartCap,
+                    geometry::Plane{p.origin(), p.normal()},
+                    sketch::SketchPlane{p.origin(), p.xAxis(), p.yAxis() * -1.0});
+                const auto endOrigin = p.origin() + p.normal() * data.distance;
+                addSemanticFaces(cache, ExtrudeCapRole::EndCap,
+                    geometry::Plane{endOrigin, p.normal()},
+                    sketch::SketchPlane{endOrigin, p.xAxis(), p.yAxis()});
+                candidates[record.id().value()] = std::move(cache);
             }
             else if (record.kind() == FeatureKind::Boolean)
             {
@@ -297,7 +414,7 @@ RebuildResult FeatureModel::rebuild()
                 const auto& b = bCache.solids.front();
                 auto result = modeling::booleanOperation(a, b, data.operation);
                 if (result.status() == modeling::BooleanStatus::SUCCESS)
-                    candidates[record.id().value()] = SolidFeatureCache{{*result.solid()}};
+                    candidates[record.id().value()] = SolidFeatureCache{{*result.solid()}, {}};
                 else if (result.status() == modeling::BooleanStatus::EMPTY)
                     candidates[record.id().value()] = EmptyFeatureCache{};
                 else throw std::runtime_error{"Boolean rebuild failed"};
@@ -330,7 +447,32 @@ RebuildResult FeatureModel::rebuild()
                     target.distance, cutterRegions, sketchCache.solvedSketch.plane(),
                     cutDirection, data.distance);
                 if (subtraction.status == AxialSubtractionStatus::Success)
-                    candidates[record.id().value()] = SolidFeatureCache{std::move(subtraction.solids)};
+                {
+                    SolidFeatureCache cache{std::move(subtraction.solids)};
+                    if (cache.solids.size() == 1)
+                    {
+                        const auto& targetPlane = targetSketch.plane();
+                        const auto targetEnd = targetPlane.origin()
+                            + targetPlane.normal() * target.distance;
+                        addSemanticFaces(cache, ExtrudeCapRole::InheritedStartCap,
+                            geometry::Plane{targetPlane.origin(), targetPlane.normal()},
+                            sketch::SketchPlane{targetPlane.origin(), targetPlane.xAxis(),
+                                targetPlane.yAxis() * -1.0});
+                        addSemanticFaces(cache, ExtrudeCapRole::InheritedEndCap,
+                            geometry::Plane{targetEnd, targetPlane.normal()},
+                            sketch::SketchPlane{targetEnd, targetPlane.xAxis(), targetPlane.yAxis()});
+                        const auto& cutterPlane = sketchCache.solvedSketch.plane();
+                        const auto floorOrigin = cutterPlane.origin() + cutDirection * data.distance;
+                        const auto floorOffset = math::dot(
+                            floorOrigin - targetPlane.origin(), targetPlane.normal());
+                        if (floorOffset > geometry::defaultGeometricTolerance
+                            && floorOffset < target.distance - geometry::defaultGeometricTolerance)
+                            addSemanticFaces(cache, ExtrudeCapRole::PocketFloor,
+                                geometry::Plane{floorOrigin, cutterPlane.normal()},
+                                sketch::SketchPlane{floorOrigin, cutterPlane.xAxis(), cutterPlane.yAxis()});
+                    }
+                    candidates[record.id().value()] = std::move(cache);
+                }
                 else if (subtraction.status == AxialSubtractionStatus::SuccessEmpty)
                     candidates[record.id().value()] = EmptyFeatureCache{};
                 else if (subtraction.status == AxialSubtractionStatus::NoIntersection)
@@ -389,13 +531,14 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
                                    FeatureId::Value nextFeatureId,
                                    constraints::ConstraintSolver solver)
 {
-    if (nextFeatureId == FeatureId::invalidValue || nextFeatureId != features.size())
+    if (nextFeatureId == FeatureId::invalidValue)
         throw std::invalid_argument{"Invalid persisted FeatureId counter"};
     FeatureModel result{std::move(solver)};
     for (std::size_t index = 0; index < features.size(); ++index)
     {
         auto& feature = features[index];
-        if (!feature.id.isValid() || feature.id.value() != index || feature.displayName.empty())
+        if (!feature.id.isValid() || feature.id.value() >= nextFeatureId
+            || (index && feature.id <= features[index - 1].id) || feature.displayName.empty())
             throw std::invalid_argument{"Invalid persisted feature identity or name"};
         const auto dataKind = std::visit([](const auto& value) {
             using T = std::decay_t<decltype(value)>;
@@ -407,20 +550,27 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
         if (dataKind != feature.kind) throw std::invalid_argument{"Feature kind/data mismatch"};
         for (const auto dependency : FeatureRecord{feature.id, feature.kind,
                  feature.displayName, feature.data}.dependencies())
-            if (!dependency.isValid() || dependency.value() >= index)
+            if (!dependency.isValid() || dependency >= feature.id
+                || std::none_of(features.begin(), features.begin() + static_cast<std::ptrdiff_t>(index),
+                    [&](const PersistedFeature& candidate) { return candidate.id == dependency; }))
                 throw std::invalid_argument{"Feature dependency must reference an earlier feature"};
         if (feature.kind == FeatureKind::Extrude)
         {
             const auto& data = std::get<ExtrudeFeature>(feature.data);
             if (!std::isfinite(data.distance) || data.distance <= geometry::defaultGeometricTolerance
-                || features[data.sourceSketchFeatureId.value()].kind != FeatureKind::Sketch)
+                || std::find_if(features.begin(), features.end(), [&](const PersistedFeature& candidate) {
+                    return candidate.id == data.sourceSketchFeatureId;
+                })->kind != FeatureKind::Sketch)
                 throw std::invalid_argument{"Invalid persisted ExtrudeFeature"};
         }
         if (feature.kind == FeatureKind::Boolean)
         {
             const auto& data = std::get<BooleanFeature>(feature.data);
             const auto isSolid = [&](FeatureId id) {
-                const auto kind = features[id.value()].kind;
+                const auto found = std::find_if(features.begin(), features.end(),
+                    [&](const PersistedFeature& candidate) { return candidate.id == id; });
+                if (found == features.end()) return false;
+                const auto kind = found->kind;
                 return kind == FeatureKind::Extrude || kind == FeatureKind::Boolean;
             };
             if (!isSolid(data.inputA) || !isSolid(data.inputB))
@@ -430,9 +580,14 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
         {
             const auto& data = std::get<CutExtrudeFeature>(feature.data);
             if (!std::isfinite(data.distance) || data.distance <= geometry::defaultGeometricTolerance
-                || features[data.sourceSketchFeatureId.value()].kind != FeatureKind::Sketch)
+                || std::find_if(features.begin(), features.end(), [&](const PersistedFeature& candidate) {
+                    return candidate.id == data.sourceSketchFeatureId;
+                })->kind != FeatureKind::Sketch)
                 throw std::invalid_argument{"Invalid persisted CutExtrudeFeature"};
-            const auto targetKind = features[data.targetResultFeatureId.value()].kind;
+            const auto target = std::find_if(features.begin(), features.end(),
+                [&](const PersistedFeature& candidate) { return candidate.id == data.targetResultFeatureId; });
+            if (target == features.end()) throw std::invalid_argument{"Invalid CutExtrude target"};
+            const auto targetKind = target->kind;
             if (targetKind != FeatureKind::Extrude && targetKind != FeatureKind::Boolean
                 && targetKind != FeatureKind::CutExtrude)
                 throw std::invalid_argument{"Invalid CutExtrude target"};
@@ -443,8 +598,7 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
     result.nextFeatureId_ = nextFeatureId;
     if (resultFeatureId.isValid())
     {
-        if (resultFeatureId.value() >= result.records_.size()
-            || !result.isSolidProducer(resultFeatureId))
+        if (!result.tryFind(resultFeatureId) || !result.isSolidProducer(resultFeatureId))
             throw std::invalid_argument{"Invalid persisted resultFeatureId"};
         result.resultFeatureId_ = resultFeatureId;
     }

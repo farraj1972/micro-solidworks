@@ -55,6 +55,28 @@ TEST(EditorContext, EnteringSketchClearsDerivedTopologySelection)
     EXPECT_EQ(context.activeSketchFeatureId(), features::FeatureId{8});
 }
 
+TEST(EditorContext, FeatureDeletionClearsOwnedTransientStateAndPreservesSurvivorDisplay)
+{
+    interaction::EditorContext context;
+    const features::FeatureId removed{4};
+    const features::FeatureId survivor{2};
+    context.activateSketch(removed);
+    context.select(interaction::LogicalTarget{TopologyFaceTarget{removed, {0}, topology::FaceId{1}}});
+    context.setHover(interaction::LogicalTarget{TopologyEdgeTarget{removed, {0}, topology::EdgeId{1}}});
+    context.setDisplayState(survivor, interaction::DisplayState::Hidden);
+    context.beginPropertyEdit({interaction::PropertyEditContext::Kind::DrivingDimension, 3});
+
+    context.reconcileDeletedFeatures({removed});
+
+    EXPECT_FALSE(context.activeSketchFeatureId());
+    EXPECT_FALSE(context.activeFeatureId());
+    EXPECT_FALSE(context.selection());
+    EXPECT_FALSE(context.hover());
+    EXPECT_FALSE(context.propertyEdit());
+    EXPECT_EQ(context.activeCommand(), interaction::EditorCommand::Select);
+    EXPECT_EQ(context.displayState(survivor), interaction::DisplayState::Hidden);
+}
+
 TEST(EditorContext, CommandAvailabilityIsContextSensitive)
 {
     EditorContext context;

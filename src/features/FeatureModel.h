@@ -16,7 +16,15 @@ enum class FeatureKind { Sketch, Extrude, Boolean, CutExtrude };
 enum class FeatureState { Clean, Dirty, Failed, BlockedByDependency };
 enum class RebuildStatus { Success, SuccessEmpty, Failed };
 
-enum class ExtrudeCapRole { StartCap, EndCap };
+enum class ExtrudeCapRole
+{
+    StartCap,
+    EndCap,
+    InheritedStartCap,
+    InheritedEndCap,
+    PocketFloor
+};
+[[nodiscard]] const char* semanticFaceRoleName(ExtrudeCapRole role) noexcept;
 struct ExplicitPlaneSupport {};
 struct SemanticFaceSupport { FeatureId sourceFeatureId; ExtrudeCapRole capRole; };
 using SketchSupport = std::variant<ExplicitPlaneSupport, SemanticFaceSupport>;
@@ -34,10 +42,20 @@ struct BooleanFeature { FeatureId inputA; FeatureId inputB; modeling::BooleanOpe
 using FeatureData = std::variant<SketchFeature, ExtrudeFeature, BooleanFeature, CutExtrudeFeature>;
 
 struct SketchFeatureCache { sketch::Sketch solvedSketch; };
+struct SemanticFaceProvenance
+{
+    ExtrudeCapRole role;
+    std::size_t bodyIndex;
+    topology::FaceId faceId;
+    sketch::SketchPlane sketchPlane;
+};
 struct SolidFeatureCache
 {
     std::vector<topology::Solid> solids;
+    std::vector<SemanticFaceProvenance> semanticFaces;
 };
+[[nodiscard]] const sketch::SketchPlane& resolveSemanticFacePlane(
+    const SolidFeatureCache& cache, ExtrudeCapRole role);
 struct EmptyFeatureCache {};
 using FeatureCache = std::variant<SketchFeatureCache, SolidFeatureCache, EmptyFeatureCache>;
 
@@ -106,10 +124,14 @@ public:
     void setExtrudeDistance(FeatureId id, math::Scalar distance);
     void setCutExtrude(FeatureId id, math::Scalar distance, CutDirection direction);
     void setBooleanOperation(FeatureId id, modeling::BooleanOperation operation);
+    [[nodiscard]] std::vector<FeatureId> deletionClosure(FeatureId id) const;
+    [[nodiscard]] std::vector<FeatureId> deleteFeature(FeatureId id);
     void setResultFeatureId(FeatureId id);
     [[nodiscard]] FeatureId resultFeatureId() const noexcept { return resultFeatureId_; }
     [[nodiscard]] const std::vector<FeatureRecord>& history() const noexcept { return records_; }
     [[nodiscard]] const FeatureRecord& find(FeatureId id) const;
+    [[nodiscard]] std::optional<ExtrudeCapRole> semanticFaceRole(
+        FeatureId source, std::size_t bodyIndex, topology::FaceId faceId) const;
     [[nodiscard]] RebuildResult rebuild();
     [[nodiscard]] FeatureId::Value nextFeatureId() const noexcept { return nextFeatureId_; }
     [[nodiscard]] FeatureModelCheckpoint checkpoint() const;
@@ -119,6 +141,7 @@ public:
         constraints::ConstraintSolver solver = constraints::ConstraintSolver{constraints::SolverPolicy{}});
 private:
     FeatureRecord& mutableFind(FeatureId id);
+    [[nodiscard]] const FeatureRecord* tryFind(FeatureId id) const noexcept;
     void markDirtyClosure(FeatureId id);
     [[nodiscard]] bool isSolidProducer(FeatureId id) const;
     [[nodiscard]] std::string nextName(FeatureKind kind) const;

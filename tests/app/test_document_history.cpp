@@ -181,4 +181,29 @@ TEST(PersistenceSessionHistory, CutCreateEditAndUpstreamChangeUndoRedoAsCadTrans
     EXPECT_DOUBLE_EQ(std::get<features::ExtrudeFeature>(session.model().find(target).data()).distance,10);
     ASSERT_EQ(session.model().rebuild().status,features::RebuildStatus::Success);
 }
+
+TEST(DocumentHistory, DeletionUndoRedoRestoresExactClosureAndRetiredCounter)
+{
+    features::FeatureModel model;
+    sketch::Sketch base; (void)base.addRectangle({0, 0}, {10, 10});
+    const auto baseId = model.addExtrude(model.addSketch(std::move(base)), 10);
+    sketch::Sketch profile; (void)profile.addRectangle({2, 2}, {8, 8});
+    const auto supported = model.addFaceSketch(std::move(profile), baseId,
+        features::ExtrudeCapRole::EndCap);
+    const auto cut = model.addCutExtrude(supported, baseId, 2,
+        features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status, features::RebuildStatus::Success);
+    DocumentHistory history{model};
+
+    EXPECT_EQ(model.deleteFeature(supported), (std::vector{supported, cut}));
+    history.record(model);
+    EXPECT_TRUE(history.undo(model));
+    EXPECT_EQ(model.nextFeatureId(), 4u);
+    EXPECT_EQ(model.find(cut).dependencies(), (std::vector{supported, baseId}));
+    EXPECT_EQ(model.resultFeatureId(), cut);
+    EXPECT_TRUE(history.redo(model));
+    EXPECT_EQ(model.nextFeatureId(), 4u);
+    EXPECT_THROW((void)model.find(supported), std::out_of_range);
+    EXPECT_EQ(model.resultFeatureId(), baseId);
+}
 }

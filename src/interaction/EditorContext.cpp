@@ -82,6 +82,29 @@ bool isTopologyTarget(const LogicalTarget& target) noexcept
 void EditorContext::clearTopologySelectionOnRebuild() noexcept
 { if(selection_&&isTopologyTarget(*selection_))selection_.reset();if(hover_&&isTopologyTarget(*hover_))hover_.reset(); }
 
+void EditorContext::reconcileDeletedFeatures(const std::vector<features::FeatureId>& deleted) noexcept
+{
+    const auto removed = [&](features::FeatureId id) {
+        return std::find(deleted.begin(), deleted.end(), id) != deleted.end();
+    };
+    const bool activeSketchRemoved = activeSketch_ && removed(*activeSketch_);
+    if (activeFeature_ && removed(*activeFeature_)) activeFeature_.reset();
+    if (activeSketchRemoved) activeSketch_.reset();
+    if (selection_)
+    {
+        const auto owner = owningFeature(*selection_);
+        if ((owner && removed(*owner)) || (activeSketchRemoved && !owner)) selection_.reset();
+    }
+    if (hover_)
+    {
+        const auto owner = owningFeature(*hover_);
+        if ((owner && removed(*owner)) || (activeSketchRemoved && !owner)) hover_.reset();
+    }
+    for (const auto id : deleted) display_.erase(id);
+    operands_.clear(); snap_.reset(); inference_.reset(); clearPreview(); propertyEdit_.reset();
+    activateCommand(EditorCommand::Select);
+}
+
 void EditorContext::addOperand(sketch::SketchElementRef operand)
 {
     if (std::find(operands_.begin(), operands_.end(), operand) == operands_.end()) operands_.push_back(operand);

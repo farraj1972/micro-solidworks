@@ -29,3 +29,10 @@ TEST(FeaturePresentation,PresentsIndependentSolidFeaturesAndAppliesVisibilityPol
  ASSERT_EQ(p.geometry().size(),2u);ASSERT_TRUE(p.visualId(a));ASSERT_TRUE(p.visualId(b));EXPECT_NE(p.visualId(a),p.visualId(b));
  const auto aVisual=*p.visualId(a);p.update(model,[&](auto id){return id!=b;});EXPECT_EQ(p.geometry().size(),1u);EXPECT_EQ(p.visualId(a),aVisual);EXPECT_FALSE(p.visualId(b));
 }
+TEST(FeaturePresentation,RemovesDeletedFeatureVisualMappingsImmediately){
+ microsw::features::FeatureModel model;const auto sketch=model.addSketch(rectangle(0,0,4,4));const auto solid=model.addExtrude(sketch,4);
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
+ const auto visual=p.visualId(solid);ASSERT_TRUE(visual);EXPECT_EQ(p.featureId(*visual),solid);
+ (void)model.deleteFeature(solid);p.update(model);
+ EXPECT_FALSE(p.visualId(solid));EXPECT_FALSE(p.featureId(*visual));EXPECT_EQ(p.geometry().size(),0u);
+}

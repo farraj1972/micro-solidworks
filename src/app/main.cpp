@@ -47,21 +47,9 @@ int main(){
    else if(editor.selection()&&std::holds_alternative<microsw::interaction::TopologyFaceTarget>(*editor.selection())){
     const auto faceTarget=std::get<microsw::interaction::TopologyFaceTarget>(*editor.selection());
     const auto&source=session.model().find(faceTarget.feature);
-    if(source.kind()!=microsw::features::FeatureKind::Extrude)throw std::invalid_argument{"Sketch on Face currently supports Extrude start/end caps."};
-    const auto&cache=std::get<microsw::features::SolidFeatureCache>(*source.cache());
-    if(cache.solids.size()!=1)throw std::invalid_argument{"Sketch on Face requires a single-body Extrude."};
-    const auto&face=cache.solids.at(faceTarget.body.index).find(faceTarget.face);
-    if(!std::holds_alternative<microsw::geometry::Plane>(face.support()))throw std::invalid_argument{"Select a planar Extrude cap."};
-    const auto&extrude=std::get<microsw::features::ExtrudeFeature>(source.data());
-    const auto&base=std::get<microsw::features::SketchFeatureCache>(*session.model().find(extrude.sourceSketchFeatureId).cache()).solvedSketch.plane();
-    const auto&support=std::get<microsw::geometry::Plane>(face.support());
-    const auto start=base.origin(),end=base.origin()+base.normal()*extrude.distance;
-    const auto startDistance=std::abs(microsw::math::dot(support.origin()-start,base.normal()));
-    const auto endDistance=std::abs(microsw::math::dot(support.origin()-end,base.normal()));
-    if(startDistance>microsw::geometry::defaultGeometricTolerance&&endDistance>microsw::geometry::defaultGeometricTolerance)
-        throw std::invalid_argument{"Select an Extrude start or end cap."};
-    const auto role=endDistance<=startDistance?microsw::features::ExtrudeCapRole::EndCap:microsw::features::ExtrudeCapRole::StartCap;
-    id=session.model().addFaceSketch({},source.id(),role);session.recordEdit();
+    const auto role=session.model().semanticFaceRole(source.id(),faceTarget.body.index,faceTarget.face);
+    if(!role)throw std::invalid_argument{"Sketch on this face is not yet supported. Select an Extrude cap or a unique Cut pocket floor."};
+    id=session.model().addFaceSketch({},source.id(),*role);session.recordEdit();
    }else throw std::invalid_argument{"Select Front, Top or Right Plane, or a supported planar face, before starting Sketch."};
    workingSketch=std::get<microsw::features::SketchFeature>(session.model().find(id).data()).sketch;
    const auto rebuild=session.model().rebuild();if(rebuild.status==microsw::features::RebuildStatus::Failed)throw std::runtime_error{rebuild.diagnostic};
@@ -103,6 +91,15 @@ int main(){
     if(shell.extrusionRequest()){const auto source=editor.activeSketchFeatureId().value_or(shell.selectedFeature().value_or(microsw::features::FeatureId{}));if(!source.isValid()||session.model().find(source).kind()!=microsw::features::FeatureKind::Sketch)throw std::invalid_argument{"Select a valid Sketch before Extrude"};(void)commitSketch(false);const auto extrude=session.model().addExtrude(source,shell.extrusionDistance());const auto r=session.model().rebuild();session.recordEdit();shell.reportFeatureRebuild(r);if(r.status==microsw::features::RebuildStatus::Failed)throw std::runtime_error{r.diagnostic};editor.exitSketch();editor.select(microsw::interaction::LogicalTarget{extrude});shell.setSelectedFeature(extrude);refreshFeatures();if(const auto visual=featureView.visualId(extrude))workspace.selectEntity(visual);shell.reportExtrusionSuccess();}
     if(shell.cutExtrudeRequest()){const auto request=*shell.cutExtrudeRequest();if(editor.activeSketchFeatureId())(void)commitSketch(false);const auto cut=session.model().addCutExtrude(request.sketch,request.target,request.depth,request.direction);const auto r=session.model().rebuild();session.recordEdit();shell.reportFeatureRebuild(r);if(r.status==microsw::features::RebuildStatus::Failed)throw std::runtime_error{r.diagnostic};editor.exitSketch();editor.setDisplayState(request.target,microsw::interaction::DisplayState::Hidden);editor.select(microsw::interaction::LogicalTarget{cut});shell.setSelectedFeature(cut);refreshFeatures();if(const auto visual=featureView.visualId(cut))workspace.selectEntity(visual);}
     if(shell.visibilityToggleRequest()){const auto f=*shell.visibilityToggleRequest();const bool hide=editor.displayState(f)!=microsw::interaction::DisplayState::Hidden;editor.setDisplayState(f,hide?microsw::interaction::DisplayState::Hidden:microsw::interaction::DisplayState::Visible);if(hide&&editor.selection()&&microsw::interaction::owningFeature(*editor.selection())==f){workspace.clearSelection();editor.select(std::nullopt);}if(editor.activeSketchFeatureId())refreshSketch();else refreshFeatures();}
+    if(shell.deleteFeatureRequest()){
+     const auto activeSketch=editor.activeSketchFeatureId();
+     const auto deleted=session.model().deleteFeature(*shell.deleteFeatureRequest());
+     editor.reconcileDeletedFeatures(deleted);workspace.clearSelection();shell.setSelectedFeature(std::nullopt);
+     session.recordEdit();
+     if(activeSketch&&editor.activeSketchFeatureId())refreshSketch();
+     else{workingSketch={};tools.setTool(microsw::SketchTool::Select);refreshFeatures();}
+     shell.reportPersistenceStatus("Feature deletion completed — Undo restores the complete feature set");
+    }
     if(shell.displayModeRequest()){using D=microsw::DisplayModeRequest;workspace.setDisplayMode(*shell.displayModeRequest()==D::Wireframe?microsw::viewer::SolidDisplayMode::Wireframe:*shell.displayModeRequest()==D::Shaded?microsw::viewer::SolidDisplayMode::Shaded:microsw::viewer::SolidDisplayMode::ShadedWithEdges);}
     if(shell.viewCommandRequest()){using V=microsw::ViewCommand;const auto v=*shell.viewCommandRequest();if(v==V::Fit)workspace.fitVisibleGeometry();else workspace.setStandardView(v==V::Front?microsw::viewer::StandardView::Front:v==V::Back?microsw::viewer::StandardView::Back:v==V::Left?microsw::viewer::StandardView::Left:v==V::Right?microsw::viewer::StandardView::Right:v==V::Top?microsw::viewer::StandardView::Top:v==V::Bottom?microsw::viewer::StandardView::Bottom:microsw::viewer::StandardView::Isometric);}
    }catch(const std::exception& e){shell.reportSketchError(e.what());}
