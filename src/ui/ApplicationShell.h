@@ -82,7 +82,7 @@ public:
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
     [[nodiscard]] const std::optional<interaction::EditorCommand>& editorCommandRequest() const noexcept { return editorCommandRequest_; }
     [[nodiscard]] const std::optional<features::FeatureId>& selectedFeature() const noexcept { return selectedFeature_; }
-    void setSelectedFeature(std::optional<features::FeatureId> feature) { selectedFeature_ = feature; if (feature) selectedPrincipalPlane_.reset(); }
+    void setSelectedFeature(std::optional<features::FeatureId> feature) { if(feature!=selectedFeature_)editingFeature_.reset();selectedFeature_ = feature; if (feature) selectedPrincipalPlane_.reset(); }
     [[nodiscard]] bool enterSketchRequest() const noexcept { return enterSketchRequest_; }
     [[nodiscard]] const std::optional<PrincipalPlane>& sketchPlaneRequest() const noexcept { return sketchPlaneRequest_; }
     [[nodiscard]] bool exitSketchRequest() const noexcept { return exitSketchRequest_; }
@@ -149,6 +149,7 @@ private:
     std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>> featureBooleanRequest_;
     std::optional<std::tuple<features::FeatureId, math::Scalar, features::CutDirection>> featureCutRequest_;
     std::optional<features::FeatureId> featureEditorEntity_;
+    std::optional<features::FeatureId> editingFeature_;
     double featureDepthDraft_{};
     bool featureReverseDraft_{};
     bool rebuildFeaturesRequest_{};

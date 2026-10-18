@@ -13,6 +13,7 @@
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
 #include <exception>
+#include <algorithm>
 #include <cmath>
 #include <numbers>
 #include <optional>
@@ -31,7 +32,11 @@ int main(){
   microsw::constraints::ConstraintSolver solver{solverPolicy()}; microsw::PersistenceSession session{microsw::features::FeatureModel{solver}}; microsw::interaction::EditorContext editor;
   microsw::sketch::Sketch workingSketch; microsw::SketchToolController tools{workingSketch}; microsw::presentation::SketchPresentation sketchView; microsw::presentation::FeaturePresentation featureView; microsw::presentation::GeometryPresentation hiddenView;
   featureView.update(session.model()); sketchView.regenerate(workingSketch); microsw::viewer::WorkspaceViewport workspace{featureView.geometry()};workspace.setFeaturePresentation(&featureView);
-  const auto featureVisible=[&](microsw::features::FeatureId id){const auto state=editor.displayState(id);return state!=microsw::interaction::DisplayState::Hidden&&state!=microsw::interaction::DisplayState::ActiveEditing;};
+  const auto featureVisible=[&](microsw::features::FeatureId id){
+   const auto state=editor.displayState(id);if(state==microsw::interaction::DisplayState::Hidden||state==microsw::interaction::DisplayState::ActiveEditing)return false;
+   if(const auto active=editor.activeSketchFeatureId()){const auto closure=session.model().deletionClosure(*active);if(std::find(closure.begin(),closure.end(),id)!=closure.end())return false;}
+   return true;
+  };
   const auto refreshFeatures=[&]{featureView.update(session.model(),featureVisible);workspace.setPresentation(featureView.geometry());workspace.setFeaturePresentation(&featureView);workspace.setSolidPickingEnabled(true);};
   const auto refreshSketch=[&]{featureView.update(session.model(),featureVisible);sketchView.regenerate(workingSketch);workspace.setPresentation(sketchView.geometry());workspace.setFeaturePresentation(&featureView);workspace.setSolidPickingEnabled(false);};
   const auto commitSketch=[&](bool record=true){ microsw::features::RebuildResult result; if(const auto id=editor.activeSketchFeatureId()){session.model().editSketch(*id,[&](auto& s){s=workingSketch;});result=session.model().rebuild();if(record)session.recordEdit();shell.reportFeatureRebuild(result);refreshSketch();} return result; };

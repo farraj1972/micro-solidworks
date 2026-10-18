@@ -394,7 +394,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             if(node.children.empty())flags|=ImGuiTreeNodeFlags_Leaf|ImGuiTreeNodeFlags_NoTreePushOnOpen;
             const bool open=ImGui::TreeNodeEx(node.displayName.c_str(),flags);
             if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
-                selectedFeature_=node.featureId;
+                if(selectedFeature_!=node.featureId)editingFeature_.reset();selectedFeature_=node.featureId;
                 if(editor)editor->select(interaction::LogicalTarget{node.featureId});
             }
             if(ImGui::IsItemHovered()&&ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)){
@@ -409,9 +409,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Cut Extrude"))
                     {selectedFeature_=node.featureId;editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;}
                 if(node.kind==features::FeatureKind::Extrude&&ImGui::MenuItem("Edit"))
-                    {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                    {selectedFeature_=node.featureId;editingFeature_=node.featureId;featureEditorEntity_.reset();propertyManagerVisible_=true;}
                 if(node.kind==features::FeatureKind::CutExtrude&&ImGui::MenuItem("Edit"))
-                    {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                    {selectedFeature_=node.featureId;editingFeature_=node.featureId;featureEditorEntity_.reset();propertyManagerVisible_=true;}
                 if(node.kind==features::FeatureKind::Boolean&&ImGui::MenuItem("Inspect"))
                     {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
                 if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide"))
@@ -540,14 +540,18 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
                 ImGui::TextUnformatted("Property Manager — Extrude");
-                ImGui::InputDouble("Distance", &featureDepthDraft_);
-                const bool commitDistance = ImGui::IsItemDeactivatedAfterEdit();
-                const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
-                const bool confirmDistance=ImGui::Button("Confirm");
-                if (valid&&(commitDistance||confirmDistance))
-                    featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};
-                if(!valid)ImGui::EndDisabled();
-                ImGui::SameLine(); if (ImGui::Button("Cancel")) {featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;cancelPropertyRequest_ = true;}
+                if(editingFeature_==feature.id()){
+                    ImGui::InputDouble("Distance", &featureDepthDraft_);
+                    const bool commitDistance = ImGui::IsItemDeactivatedAfterEdit();
+                    const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
+                    const bool confirmDistance=ImGui::Button("Confirm");
+                    if (valid&&(commitDistance||confirmDistance)){featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};editingFeature_.reset();}
+                    if(!valid)ImGui::EndDisabled();
+                    ImGui::SameLine(); if (ImGui::Button("Cancel")) {featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;editingFeature_.reset();cancelPropertyRequest_ = true;}
+                }else{
+                    ImGui::Text("Distance: %.6g",std::get<features::ExtrudeFeature>(feature.data()).distance);
+                    if(ImGui::Button("Edit parameters")){featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;editingFeature_=feature.id();}
+                }
             }
             else if(feature.kind()==features::FeatureKind::CutExtrude)
             {
@@ -555,15 +559,20 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::TextUnformatted("Property Manager — Cut Extrude");
                 ImGui::Text("Profile: %s",featureModel->find(cut.sourceSketchFeatureId).displayName().c_str());
                 ImGui::Text("Target: %s",featureModel->find(cut.targetResultFeatureId).displayName().c_str());
-                ImGui::InputDouble("Depth",&featureDepthDraft_,1.0,5.0,"%.3f");
-                const bool commitDepth=ImGui::IsItemDeactivatedAfterEdit();
-                ImGui::Checkbox("Reverse Direction",&featureReverseDraft_);
-                const bool commitDirection=ImGui::IsItemDeactivatedAfterEdit();
-                const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
-                const bool confirmCut=ImGui::Button("Confirm");
-                if(valid&&(commitDepth||commitDirection||confirmCut))featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
-                    featureReverseDraft_?features::CutDirection::Reverse:features::CutDirection::Forward};
-                if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;cancelPropertyRequest_=true;}
+                if(editingFeature_==feature.id()){
+                    ImGui::InputDouble("Depth",&featureDepthDraft_,1.0,5.0,"%.3f");
+                    const bool commitDepth=ImGui::IsItemDeactivatedAfterEdit();
+                    ImGui::Checkbox("Reverse Direction",&featureReverseDraft_);
+                    const bool commitDirection=ImGui::IsItemDeactivatedAfterEdit();
+                    const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
+                    const bool confirmCut=ImGui::Button("Confirm");
+                    if(valid&&(commitDepth||commitDirection||confirmCut)){featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
+                        featureReverseDraft_?features::CutDirection::Reverse:features::CutDirection::Forward};editingFeature_.reset();}
+                    if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;editingFeature_.reset();cancelPropertyRequest_=true;}
+                }else{
+                    ImGui::Text("Depth: %.6g",cut.distance);ImGui::Text("Direction: %s",cut.direction==features::CutDirection::Reverse?"Reverse":"Forward");
+                    if(ImGui::Button("Edit parameters")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;editingFeature_=feature.id();}
+                }
             }
             else
             {
