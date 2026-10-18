@@ -86,7 +86,7 @@ TEST(Persistence, DistinguishesInvalidJsonVersionAndInvalidModel)
     const auto path=temporaryFile("micro-solidworks-invalid.microsw");
     {std::ofstream out(path);out<<"{";}
     EXPECT_EQ(persistence::openFeatureModel(path).status,persistence::OpenStatus::ParseError);
-    {std::ofstream out(path);out<<R"({"formatVersion":2,"featureModel":{}})";}
+    {std::ofstream out(path);out<<R"({"formatVersion":3,"featureModel":{}})";}
     EXPECT_EQ(persistence::openFeatureModel(path).status,persistence::OpenStatus::UnsupportedVersion);
     {std::ofstream out(path);out<<R"({"formatVersion":1,"featureModel":{"nextFeatureId":0,"resultFeatureId":null,"features":[{"id":0,"kind":"mystery","displayName":"X"}]}})";}
     EXPECT_EQ(persistence::openFeatureModel(path).status,persistence::OpenStatus::InvalidModel);
@@ -108,7 +108,7 @@ TEST(Persistence, FailedRebuildIsSuccessfulStructuralOpen)
     std::filesystem::remove(path);
 }
 
-TEST(Persistence, GeneralizedExtrudeRoundtripsWithFormatVersionOne)
+TEST(Persistence, GeneralizedExtrudeRoundtripsWithFormatVersionTwo)
 {
     features::FeatureModel model;
     sketch::Sketch sketch;
@@ -123,13 +123,48 @@ TEST(Persistence, GeneralizedExtrudeRoundtripsWithFormatVersionOne)
     std::ifstream input{path};
     const std::string json{std::istreambuf_iterator<char>{input}, {}};
     input.close();
-    EXPECT_NE(json.find("\"formatVersion\": 1"), std::string::npos);
+    EXPECT_NE(json.find("\"formatVersion\": 2"), std::string::npos);
     auto opened = persistence::openFeatureModel(path);
     ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt)
         << opened.diagnostic;
     const auto& cache = std::get<features::SolidFeatureCache>(
         *opened.model.find(extrude).cache());
     EXPECT_EQ(cache.solids.size(), 2u);
+    std::filesystem::remove(path);
+}
+
+TEST(Persistence, SemanticFaceSupportRoundtripsInVersionTwo)
+{
+    features::FeatureModel model;
+    const auto base = model.addExtrude(model.addSketch([] {
+        sketch::Sketch s; (void)s.addRectangle({0, 0}, {4, 4}); return s; }()), 5);
+    sketch::Sketch local; (void)local.addCircle({{1, 1}, 0.5});
+    const auto faceSketch = model.addFaceSketch(std::move(local), base,
+        features::ExtrudeCapRole::EndCap);
+    ASSERT_EQ(model.rebuild().status, features::RebuildStatus::Success);
+    const auto path = temporaryFile("micro-solidworks-v2-semantic-face.microsw");
+    ASSERT_EQ(persistence::saveFeatureModel(model, path).status, persistence::SaveStatus::Success);
+    auto opened = persistence::openFeatureModel(path);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt) << opened.diagnostic;
+    const auto& restored = std::get<features::SketchFeature>(opened.model.find(faceSketch).data());
+    const auto* support = std::get_if<features::SemanticFaceSupport>(&restored.support);
+    ASSERT_NE(support, nullptr);
+    EXPECT_EQ(support->sourceFeatureId, base);
+    EXPECT_EQ(support->capRole, features::ExtrudeCapRole::EndCap);
+    std::filesystem::remove(path);
+}
+
+TEST(Persistence, OpensVersionOneAsExplicitPlaneAndSavesVersionTwo)
+{
+    const auto path = temporaryFile("micro-solidworks-v1-migration.microsw");
+    { std::ofstream out(path); out << R"({"formatVersion":1,"featureModel":{"nextFeatureId":1,"resultFeatureId":null,"features":[{"id":0,"displayName":"Sketch1","kind":"sketch","sketch":{"plane":{"origin":{"x":0,"y":0,"z":0},"xAxis":{"x":1,"y":0,"z":0},"yAxis":{"x":0,"y":1,"z":0}},"nextEntityId":0,"nextConstraintId":0,"entities":[],"constraints":[]}}]}})"; }
+    auto opened = persistence::openFeatureModel(path);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt) << opened.diagnostic;
+    const auto& sketchFeature = std::get<features::SketchFeature>(opened.model.find(features::FeatureId{0}).data());
+    EXPECT_TRUE(std::holds_alternative<features::ExplicitPlaneSupport>(sketchFeature.support));
+    ASSERT_EQ(persistence::saveFeatureModel(opened.model, path).status, persistence::SaveStatus::Success);
+    std::ifstream input{path}; const std::string json{std::istreambuf_iterator<char>{input}, {}}; input.close();
+    EXPECT_NE(json.find("\"formatVersion\": 2"), std::string::npos);
     std::filesystem::remove(path);
 }
 
