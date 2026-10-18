@@ -10,6 +10,13 @@
 namespace microsw::sketch
 {
 
+Sketch Sketch::withPlane(const SketchPlane& plane) const
+{
+    auto result = *this;
+    result.plane_ = plane;
+    return result;
+}
+
 Sketch Sketch::restore(const SketchPlane& plane,
                        std::vector<SketchEntity> entities,
                        SketchEntityId::Value nextEntityId,

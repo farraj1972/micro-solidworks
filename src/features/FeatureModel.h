@@ -12,11 +12,15 @@
 
 namespace microsw::features
 {
-enum class FeatureKind { Sketch, Extrude, Boolean };
+enum class FeatureKind { Sketch, Extrude, Boolean, CutExtrude };
 enum class FeatureState { Clean, Dirty, Failed, BlockedByDependency };
 enum class RebuildStatus { Success, SuccessEmpty, Failed };
 
-struct SketchFeature { sketch::Sketch sketch; };
+enum class ExtrudeCapRole { StartCap, EndCap };
+struct ExplicitPlaneSupport {};
+struct SemanticFaceSupport { FeatureId sourceFeatureId; ExtrudeCapRole capRole; };
+using SketchSupport = std::variant<ExplicitPlaneSupport, SemanticFaceSupport>;
+struct SketchFeature { sketch::Sketch sketch; SketchSupport support{ExplicitPlaneSupport{}}; };
 struct ExtrudeFeature { FeatureId sourceSketchFeatureId; math::Scalar distance; };
 struct BooleanFeature { FeatureId inputA; FeatureId inputB; modeling::BooleanOperation operation; };
 using FeatureData = std::variant<SketchFeature, ExtrudeFeature, BooleanFeature>;
@@ -85,6 +89,7 @@ public:
     FeatureModel();
     explicit FeatureModel(constraints::ConstraintSolver solver);
     FeatureId addSketch(sketch::Sketch sketch);
+    FeatureId addFaceSketch(sketch::Sketch sketch, FeatureId sourceExtrude, ExtrudeCapRole role);
     FeatureId addExtrude(FeatureId sketchId, math::Scalar distance);
     FeatureId addBoolean(FeatureId inputA, FeatureId inputB, modeling::BooleanOperation operation);
     void editSketch(FeatureId id, const SketchEdit& edit);

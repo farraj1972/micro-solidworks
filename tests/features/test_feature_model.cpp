@@ -160,3 +160,53 @@ TEST(FeatureModel, RestrictedBooleanRejectsMultipleOrCurvedBodiesWithoutReplacin
     EXPECT_EQ(result.diagnostic, "Boolean supports one axis-aligned linear solid per input");
     EXPECT_FALSE(model.find(boolean).cache());
 }
+
+TEST(FeatureModel, SemanticEndCapSketchFollowsExtrudeDistance)
+{
+    microsw::features::FeatureModel model;
+    const auto base = model.addSketch(rectangle(0, 0, 4, 4));
+    const auto extrude = model.addExtrude(base, 5);
+    microsw::sketch::Sketch local;
+    (void)local.addCircle({{1, 1}, 0.5});
+    const auto supported = model.addFaceSketch(std::move(local), extrude,
+        microsw::features::ExtrudeCapRole::EndCap);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    auto plane = std::get<microsw::features::SketchFeatureCache>(
+        *model.find(supported).cache()).solvedSketch.plane();
+    EXPECT_NEAR(plane.origin().z(), 5.0, 1e-12);
+    model.setExtrudeDistance(extrude, 9);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    plane = std::get<microsw::features::SketchFeatureCache>(
+        *model.find(supported).cache()).solvedSketch.plane();
+    EXPECT_NEAR(plane.origin().z(), 9.0, 1e-12);
+}
+
+TEST(FeatureModel, SemanticStartCapUsesOutwardRightHandedFrame)
+{
+    microsw::features::FeatureModel model;
+    const auto extrude = model.addExtrude(model.addSketch(rectangle(0, 0, 2, 2)), 3);
+    const auto supported = model.addFaceSketch({}, extrude,
+        microsw::features::ExtrudeCapRole::StartCap);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    const auto& plane = std::get<microsw::features::SketchFeatureCache>(
+        *model.find(supported).cache()).solvedSketch.plane();
+    EXPECT_NEAR(plane.normal().z(), -1.0, 1e-12);
+    EXPECT_NEAR(microsw::math::dot(microsw::math::cross(plane.xAxis(), plane.yAxis()),
+        plane.normal()), 1.0, 1e-12);
+}
+
+TEST(FeatureModel, SemanticCapRejectsMultiBodySourceWithoutReattachment)
+{
+    microsw::sketch::Sketch base;
+    (void)base.addCircle({{-2, 0}, 0.5});
+    (void)base.addCircle({{2, 0}, 0.5});
+    microsw::features::FeatureModel model;
+    const auto extrude = model.addExtrude(model.addSketch(std::move(base)), 2);
+    const auto supported = model.addFaceSketch({}, extrude,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto result = model.rebuild();
+    EXPECT_EQ(result.status, microsw::features::RebuildStatus::Failed);
+    EXPECT_EQ(result.failedFeature, supported);
+    EXPECT_EQ(model.find(supported).state(), microsw::features::FeatureState::Failed);
+    EXPECT_EQ(result.diagnostic, "Sketch support requires a single-body Extrude cap");
+}

@@ -30,7 +30,11 @@ std::vector<FeatureId> FeatureRecord::dependencies() const
 {
     return std::visit([](const auto& value) -> std::vector<FeatureId> {
         using T = std::decay_t<decltype(value)>;
-        if constexpr (std::is_same_v<T, SketchFeature>) return {};
+        if constexpr (std::is_same_v<T, SketchFeature>) {
+            if (const auto* support = std::get_if<SemanticFaceSupport>(&value.support))
+                return {support->sourceFeatureId};
+            return {};
+        }
         else if constexpr (std::is_same_v<T, ExtrudeFeature>) return {value.sourceSketchFeatureId};
         else return {value.inputA, value.inputB};
     }, data_);
@@ -52,6 +56,19 @@ FeatureId FeatureModel::addSketch(sketch::Sketch sketch)
     const auto id = FeatureId{nextFeatureId_};
     if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
     records_.push_back(FeatureRecord{id, FeatureKind::Sketch, nextName(FeatureKind::Sketch), SketchFeature{std::move(sketch)}});
+    ++nextFeatureId_;
+    return id;
+}
+
+FeatureId FeatureModel::addFaceSketch(sketch::Sketch sketch, FeatureId sourceExtrude,
+                                      ExtrudeCapRole role)
+{
+    if (find(sourceExtrude).kind() != FeatureKind::Extrude)
+        throw std::invalid_argument{"Semantic face support requires an earlier Extrude"};
+    const auto id = FeatureId{nextFeatureId_};
+    if (!id.isValid()) throw std::overflow_error{"Feature ID space exhausted"};
+    records_.push_back(FeatureRecord{id, FeatureKind::Sketch, nextName(FeatureKind::Sketch),
+        SketchFeature{std::move(sketch), SemanticFaceSupport{sourceExtrude, role}}});
     ++nextFeatureId_;
     return id;
 }
@@ -168,7 +185,24 @@ RebuildResult FeatureModel::rebuild()
         {
             if (record.kind() == FeatureKind::Sketch)
             {
-                auto solved = std::get<SketchFeature>(record.data_).sketch;
+                const auto& data = std::get<SketchFeature>(record.data_);
+                auto solved = data.sketch;
+                if (const auto* support = std::get_if<SemanticFaceSupport>(&data.support))
+                {
+                    const auto& source = find(support->sourceFeatureId);
+                    const auto& sourceCache = std::get<SolidFeatureCache>(output(source.id()));
+                    if (source.kind() != FeatureKind::Extrude || sourceCache.solids.size() != 1)
+                        throw std::runtime_error{"Sketch support requires a single-body Extrude cap"};
+                    const auto& extrusion = std::get<ExtrudeFeature>(source.data());
+                    const auto& sourceSketch = std::get<SketchFeatureCache>(
+                        output(extrusion.sourceSketchFeatureId)).solvedSketch;
+                    const auto& p = sourceSketch.plane();
+                    if (support->capRole == ExtrudeCapRole::EndCap)
+                        solved = solved.withPlane({p.origin() + p.normal() * extrusion.distance,
+                            p.xAxis(), p.yAxis()});
+                    else
+                        solved = solved.withPlane({p.origin(), p.xAxis(), p.yAxis() * -1.0});
+                }
                 if (solved.constraintCount() != 0)
                 {
                     const auto result = solver_.solve(solved);

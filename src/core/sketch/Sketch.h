@@ -19,6 +19,7 @@ public:
     explicit Sketch(const SketchPlane& plane) : plane_{plane} {}
 
     [[nodiscard]] const SketchPlane& plane() const noexcept { return plane_; }
+    [[nodiscard]] Sketch withPlane(const SketchPlane& plane) const;
 
     SketchEntityId addLine(const geometry::Segment2& geometry);
     SketchEntityId addCircle(const geometry::Circle2& geometry);
