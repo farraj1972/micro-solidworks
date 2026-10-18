@@ -180,12 +180,15 @@ TEST(Persistence, VersionTwoPreservesCutExtrudeContract)
     const auto path = temporaryFile("micro-solidworks-v2-cut-contract.microsw");
     ASSERT_EQ(persistence::saveFeatureModel(model, path).status, persistence::SaveStatus::Success);
     auto opened = persistence::openFeatureModel(path);
-    EXPECT_EQ(opened.status, persistence::OpenStatus::SuccessRebuildFailed);
+    ASSERT_EQ(opened.status, persistence::OpenStatus::SuccessRebuilt) << opened.diagnostic;
     const auto& restored = std::get<features::CutExtrudeFeature>(opened.model.find(cut).data());
     EXPECT_EQ(restored.sourceSketchFeatureId, source);
     EXPECT_EQ(restored.targetResultFeatureId, target);
     EXPECT_DOUBLE_EQ(restored.distance, 2);
     EXPECT_EQ(restored.direction, features::CutDirection::Reverse);
+    const auto& cache=std::get<features::SolidFeatureCache>(*opened.model.find(cut).cache());
+    ASSERT_EQ(cache.solids.size(),1u);
+    EXPECT_TRUE(cache.solids.front().isValid());
     std::filesystem::remove(path);
 }
 

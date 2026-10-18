@@ -27,7 +27,7 @@ constexpr float statusBarHeight = 26.0F;
 constexpr float commandBarHeight = 88.0F;
 
 enum class CadIcon { New, Open, Save, SaveAs, Rebuild, Sketch, ExitSketch, Select,
-    Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude, Undo, Redo };
+    Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude, CutExtrude, Undo, Redo };
 
 void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
 {
@@ -77,6 +77,10 @@ void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
     case CadIcon::Extrude:
         draw->AddRect({x-11,y-5},{x+3,y+9},color,0,0,2); draw->AddRect({x-3,y-11},{x+11,y+3},color,0,0,2);
         line(-11,-5,-3,-11); line(3,-5,11,-11); line(3,9,11,3); break;
+    case CadIcon::CutExtrude:
+        draw->AddRect({x-11,y-5},{x+3,y+9},color,0,0,2); draw->AddRect({x-3,y-11},{x+11,y+3},color,0,0,2);
+        line(-11,-5,-3,-11); line(3,-5,11,-11); line(3,9,11,3);
+        circle(0,-1,4,2); line(-3,-4,3,2,2); break;
     case CadIcon::Undo:
     case CadIcon::Redo:
         draw->PathArcTo({x,y+2},9,icon==CadIcon::Undo?-0.5F:-2.6F,icon==CadIcon::Undo?-3.8F:0.6F,18);
@@ -182,6 +186,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     addConstraintRequest_.reset(); removeConstraintRequest_.reset();
     drivingValueRequest_.reset(); solveSketchRequest_ = false;
     extrusionRequest_ = false;
+    cutExtrudeRequest_.reset(); featureCutRequest_.reset();
     loadBooleanDemoRequest_ = false;
     loadBooleanUnsupportedRequest_ = false;
     assignOperandARequest_ = assignOperandBRequest_ = false;
@@ -304,6 +309,18 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         : regions.diagnostic.message.c_str(), CadIcon::Extrude,
         canExtrude, editor && editor->activeCommand()==interaction::EditorCommand::Extrude,
         [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; });
+    bool hasCutTarget=false;
+    if(featureModel&&selectedFeature_&&featureModel->find(*selectedFeature_).kind()==features::FeatureKind::Sketch)
+    {
+        const auto& sketchFeature=std::get<features::SketchFeature>(featureModel->find(*selectedFeature_).data());
+        hasCutTarget=std::holds_alternative<features::SemanticFaceSupport>(sketchFeature.support);
+    }
+    commandButton("cut-extrude", "Cut", hasCutTarget
+        ? "Remove material normal to the selected face-supported Sketch"
+        : "Select a closed Sketch created on an Extrude cap", CadIcon::CutExtrude,
+        supportedProfile&&hasCutTarget,
+        editor&&editor->activeCommand()==interaction::EditorCommand::CutExtrude,
+        [&]{editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;});
     ImGui::End();
 }
 
@@ -373,7 +390,11 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     {selectedFeature_=node.featureId;enterSketchRequest_=true;propertyManagerVisible_=true;}
                 if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Extrude"))
                     {selectedFeature_=node.featureId;editorCommandRequest_=interaction::EditorCommand::Extrude;propertyManagerVisible_=true;}
+                if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Cut Extrude"))
+                    {selectedFeature_=node.featureId;editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;}
                 if(node.kind==features::FeatureKind::Extrude&&ImGui::MenuItem("Edit"))
+                    {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                if(node.kind==features::FeatureKind::CutExtrude&&ImGui::MenuItem("Edit"))
                     {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
                 if(node.kind==features::FeatureKind::Boolean&&ImGui::MenuItem("Inspect"))
                     {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
@@ -410,6 +431,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 if (ImGui::Button("Edit Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
                 ImGui::SameLine();
                 if (ImGui::Button("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
+                const bool faceSupported=std::holds_alternative<features::SemanticFaceSupport>(
+                    std::get<features::SketchFeature>(feature.data()).support);
+                if(faceSupported){ImGui::SameLine();if(ImGui::Button("Cut Extrude")){editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;}}
             }
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
@@ -419,6 +443,20 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::InputDouble("Distance", &distance);
                 if (ImGui::Button("Confirm")) { featureDistanceRequest_ = std::pair{feature.id(), distance}; rebuildFeaturesRequest_ = true; }
                 ImGui::SameLine(); if (ImGui::Button("Cancel")) cancelPropertyRequest_ = true;
+            }
+            else if(feature.kind()==features::FeatureKind::CutExtrude)
+            {
+                const auto&cut=std::get<features::CutExtrudeFeature>(feature.data());
+                double depth=cut.distance;bool reverse=cut.direction==features::CutDirection::Reverse;
+                ImGui::TextUnformatted("Property Manager — Cut Extrude");
+                ImGui::Text("Profile: %s",featureModel->find(cut.sourceSketchFeatureId).displayName().c_str());
+                ImGui::Text("Target: %s",featureModel->find(cut.targetResultFeatureId).displayName().c_str());
+                ImGui::InputDouble("Depth",&depth,1.0,5.0,"%.3f");
+                ImGui::Checkbox("Reverse Direction",&reverse);
+                const bool valid=std::isfinite(depth)&&depth>0;if(!valid)ImGui::BeginDisabled();
+                if(ImGui::Button("Confirm"))featureCutRequest_=std::tuple{feature.id(),depth,
+                    reverse?features::CutDirection::Reverse:features::CutDirection::Forward};
+                if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel"))cancelPropertyRequest_=true;
             }
             else
             {
@@ -541,6 +579,31 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
         ImGui::End();
         return;
+    }
+
+    if(editor&&editor->activeCommand()==interaction::EditorCommand::CutExtrude)
+    {
+        ImGui::TextUnformatted("Create a Cut Extrude");ImGui::Spacing();
+        std::optional<features::FeatureId>target;
+        if(featureModel&&selectedFeature_&&featureModel->find(*selectedFeature_).kind()==features::FeatureKind::Sketch)
+        {
+            const auto&source=std::get<features::SketchFeature>(featureModel->find(*selectedFeature_).data());
+            if(const auto*support=std::get_if<features::SemanticFaceSupport>(&source.support))target=support->sourceFeatureId;
+        }
+        ImGui::Text("Profile: %s",selectedFeature_&&featureModel?featureModel->find(*selectedFeature_).displayName().c_str():"Select a Sketch");
+        ImGui::Text("Target: %s",target&&featureModel?featureModel->find(*target).displayName().c_str():"Unavailable");
+        ImGui::InputDouble("Depth",&cutDepth_,1.0,5.0,"%.3f");
+        ImGui::Checkbox("Reverse Direction",&cutReverseDirection_);
+        const auto regions=extrusionRegions(model);const bool valid=regions.valid()&&target
+            &&std::isfinite(cutDepth_)&&cutDepth_>0;
+        if(!regions.valid())ImGui::TextColored(ImVec4{1,0.35F,0.25F,1},"%s",regions.diagnostic.message.c_str());
+        if(!target)ImGui::TextColored(ImVec4{1,0.35F,0.25F,1},"Create this Sketch on an Extrude start or end face.");
+        if(!valid)ImGui::BeginDisabled();
+        if(ImGui::Button("Create cut",ImVec2{170,34}))cutExtrudeRequest_=CutExtrudeRequest{
+            *selectedFeature_,*target,cutDepth_,cutReverseDirection_?features::CutDirection::Reverse:features::CutDirection::Forward};
+        if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel",ImVec2{90,34}))cancelPropertyRequest_=true;
+        ImGui::TextWrapped("The target is inferred from the supporting face. No internal IDs are required.");
+        ImGui::End();return;
     }
 
     const auto selectedId = selected ? std::optional{selected->id()} : std::nullopt;

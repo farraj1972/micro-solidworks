@@ -25,7 +25,8 @@ enum class EditorCommand
     Horizontal,
     Vertical,
     Coincident,
-    Extrude
+    Extrude,
+    CutExtrude
 };
 
 enum class ToolStep { Idle, PickFirst, PickSecond, EditProperties, Preview };
@@ -56,7 +57,7 @@ struct InferenceCandidate
 
 struct PropertyEditContext
 {
-    enum class Kind { ExtrudeDistance, DrivingDimension };
+    enum class Kind { ExtrudeDistance, CutExtrudeDepth, DrivingDimension };
     Kind kind;
     math::Scalar value;
 };

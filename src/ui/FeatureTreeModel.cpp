@@ -11,8 +11,11 @@ FeatureTreeModel deriveFeatureTree(const features::FeatureModel& model,
     std::map<features::FeatureId, features::FeatureId> primaryConsumer;
     for (const auto& record : model.history())
     {
-        if (record.kind() != features::FeatureKind::Extrude) continue;
-        const auto sketch = std::get<features::ExtrudeFeature>(record.data()).sourceSketchFeatureId;
+        if (record.kind() != features::FeatureKind::Extrude
+            && record.kind() != features::FeatureKind::CutExtrude) continue;
+        const auto sketch = record.kind() == features::FeatureKind::Extrude
+            ? std::get<features::ExtrudeFeature>(record.data()).sourceSketchFeatureId
+            : std::get<features::CutExtrudeFeature>(record.data()).sourceSketchFeatureId;
         primaryConsumer.try_emplace(sketch, record.id());
     }
 

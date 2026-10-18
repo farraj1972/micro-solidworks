@@ -10,12 +10,20 @@
 
 #include <optional>
 #include <string>
+#include <tuple>
 
 namespace microsw
 {
 enum class ViewCommand { Fit, Front, Back, Left, Right, Top, Bottom, Isometric };
 enum class DisplayModeRequest { ShadedWithEdges, Wireframe, Shaded };
 enum class UnsavedDecision { Save, DontSave, Cancel };
+struct CutExtrudeRequest
+{
+    features::FeatureId sketch;
+    features::FeatureId target;
+    math::Scalar depth;
+    features::CutDirection direction;
+};
 class ApplicationWindow;
 
 class ApplicationShell
@@ -40,6 +48,9 @@ public:
     void reportSketchError(const std::string& error) { sketchError_ = error; }
     [[nodiscard]] bool extrusionRequest() const noexcept { return extrusionRequest_; }
     [[nodiscard]] math::Scalar extrusionDistance() const noexcept { return extrusionDistance_; }
+    [[nodiscard]] const std::optional<CutExtrudeRequest>& cutExtrudeRequest() const noexcept { return cutExtrudeRequest_; }
+    [[nodiscard]] const std::optional<std::tuple<features::FeatureId, math::Scalar, features::CutDirection>>& featureCutRequest() const noexcept { return featureCutRequest_; }
+    [[nodiscard]] math::Scalar cutDepth() const noexcept { return cutDepth_; }
     void reportExtrusionError(const std::string& error) { extrusionStatus_ = "Extrusion rejected: " + error; }
     void reportExtrusionSuccess() { extrusionStatus_ = "Solid regenerated"; }
     [[nodiscard]] bool loadBooleanDemoRequest() const noexcept { return loadBooleanDemoRequest_; }
@@ -114,6 +125,9 @@ private:
     bool solveSketchRequest_{};
     bool extrusionRequest_{};
     math::Scalar extrusionDistance_{5.0};
+    math::Scalar cutDepth_{5.0};
+    bool cutReverseDirection_{true};
+    std::optional<CutExtrudeRequest> cutExtrudeRequest_;
     std::string extrusionStatus_;
     bool loadBooleanDemoRequest_{};
     bool loadBooleanUnsupportedRequest_{};
@@ -124,6 +138,7 @@ private:
     std::optional<features::FeatureId> selectedFeature_;
     std::optional<std::pair<features::FeatureId, math::Scalar>> featureDistanceRequest_;
     std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>> featureBooleanRequest_;
+    std::optional<std::tuple<features::FeatureId, math::Scalar, features::CutDirection>> featureCutRequest_;
     bool rebuildFeaturesRequest_{};
     std::string featureRebuildStatus_;
     bool newDocumentRequest_{};

@@ -157,4 +157,28 @@ TEST(PersistenceSessionHistory, FailedOpenPreservesDirtyModelPathAndHistory)
     EXPECT_EQ(session.model().history().size(), 2u);
     std::filesystem::remove(valid); std::filesystem::remove(invalid);
 }
+
+TEST(PersistenceSessionHistory, CutCreateEditAndUpstreamChangeUndoRedoAsCadTransactions)
+{
+    features::FeatureModel model;
+    sketch::Sketch base;(void)base.addRectangle({0,0},{10,10});
+    const auto target=model.addExtrude(model.addSketch(std::move(base)),10);
+    sketch::Sketch profile;(void)profile.addCircle({{5,5},2});
+    const auto source=model.addFaceSketch(std::move(profile),target,features::ExtrudeCapRole::EndCap);
+    ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+    PersistenceSession session{std::move(model)};
+    const auto cut=session.model().addCutExtrude(source,target,4,features::CutDirection::Reverse);
+    ASSERT_EQ(session.model().rebuild().status,features::RebuildStatus::Success);session.recordEdit();
+    ASSERT_TRUE(session.undo());EXPECT_THROW((void)session.model().find(cut),std::out_of_range);
+    ASSERT_TRUE(session.redo());ASSERT_EQ(session.model().rebuild().status,features::RebuildStatus::Success);
+    session.model().setCutExtrude(cut,6,features::CutDirection::Reverse);
+    ASSERT_EQ(session.model().rebuild().status,features::RebuildStatus::Success);session.recordEdit();
+    ASSERT_TRUE(session.undo());
+    EXPECT_DOUBLE_EQ(std::get<features::CutExtrudeFeature>(session.model().find(cut).data()).distance,4);
+    session.model().setExtrudeDistance(target,20);
+    ASSERT_EQ(session.model().rebuild().status,features::RebuildStatus::Success);session.recordEdit();
+    ASSERT_TRUE(session.undo());
+    EXPECT_DOUBLE_EQ(std::get<features::ExtrudeFeature>(session.model().find(target).data()).distance,10);
+    ASSERT_EQ(session.model().rebuild().status,features::RebuildStatus::Success);
+}
 }

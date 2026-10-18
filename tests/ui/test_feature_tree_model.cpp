@@ -83,3 +83,19 @@ TEST(FeatureTreeModel, MapsVisibilityStateAndActiveEditing)
     ASSERT_EQ(tree.roots.front().children.size(), 1u);
     EXPECT_TRUE(tree.roots.front().children.front().activeEditing);
 }
+
+TEST(FeatureTreeModel, CutExtrudeAbsorbsItsProfileSketch)
+{
+    microsw::features::FeatureModel model;
+    const auto base=model.addSketch(rectangle(0));
+    const auto extrude=model.addExtrude(base,4);
+    const auto profile=model.addFaceSketch(rectangle(0.2),extrude,
+        microsw::features::ExtrudeCapRole::EndCap);
+    const auto cut=model.addCutExtrude(profile,extrude,1,
+        microsw::features::CutDirection::Reverse);
+    const auto tree=microsw::ui::deriveFeatureTree(model);
+    ASSERT_EQ(tree.roots.size(),2u);
+    EXPECT_EQ(tree.roots[1].featureId,cut);
+    ASSERT_EQ(tree.roots[1].children.size(),1u);
+    EXPECT_EQ(tree.roots[1].children.front().featureId,profile);
+}

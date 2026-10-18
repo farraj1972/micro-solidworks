@@ -104,7 +104,8 @@ bool EditorContext::commandAvailable(EditorCommand command, bool hasClosedSketch
     case EditorCommand::Horizontal:
     case EditorCommand::Vertical:
     case EditorCommand::Coincident: return activeSketch_.has_value();
-    case EditorCommand::Extrude: return hasClosedSketch && (activeSketch_.has_value()
+    case EditorCommand::Extrude:
+    case EditorCommand::CutExtrude: return hasClosedSketch && (activeSketch_.has_value()
         || (selection_ && std::holds_alternative<features::FeatureId>(*selection_)));
     }
     return false;
