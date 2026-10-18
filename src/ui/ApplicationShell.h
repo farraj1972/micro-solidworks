@@ -15,6 +15,7 @@
 namespace microsw
 {
 enum class ViewCommand { Fit, Front, Back, Left, Right, Top, Bottom, Isometric };
+enum class PrincipalPlane { Front, Top, Right };
 enum class DisplayModeRequest { ShadedWithEdges, Wireframe, Shaded };
 enum class UnsavedDecision { Save, DontSave, Cancel };
 struct CutExtrudeRequest
@@ -80,8 +81,9 @@ public:
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
     [[nodiscard]] const std::optional<interaction::EditorCommand>& editorCommandRequest() const noexcept { return editorCommandRequest_; }
     [[nodiscard]] const std::optional<features::FeatureId>& selectedFeature() const noexcept { return selectedFeature_; }
-    void setSelectedFeature(std::optional<features::FeatureId> feature) { selectedFeature_ = feature; }
+    void setSelectedFeature(std::optional<features::FeatureId> feature) { selectedFeature_ = feature; if (feature) selectedPrincipalPlane_.reset(); }
     [[nodiscard]] bool enterSketchRequest() const noexcept { return enterSketchRequest_; }
+    [[nodiscard]] const std::optional<PrincipalPlane>& sketchPlaneRequest() const noexcept { return sketchPlaneRequest_; }
     [[nodiscard]] bool exitSketchRequest() const noexcept { return exitSketchRequest_; }
     [[nodiscard]] bool confirmPropertyRequest() const noexcept { return confirmPropertyRequest_; }
     [[nodiscard]] bool cancelPropertyRequest() const noexcept { return cancelPropertyRequest_; }
@@ -102,7 +104,8 @@ private:
                         const features::FeatureModel* featureModel,
                         interaction::EditorContext* editor);
     void drawWorkspace(SketchTool activeTool = SketchTool::Select,
-                       const interaction::EditorContext* editor = nullptr);
+                       const interaction::EditorContext* editor = nullptr,
+                       const features::FeatureModel* featureModel = nullptr);
     void drawStatusBar();
     void drawAboutDialog();
     void drawUnsavedChangesDialog();
@@ -136,6 +139,8 @@ private:
     std::optional<modeling::BooleanOperation> booleanRequest_;
     std::string booleanStatus_;
     std::optional<features::FeatureId> selectedFeature_;
+    std::optional<PrincipalPlane> selectedPrincipalPlane_;
+    std::optional<PrincipalPlane> sketchPlaneRequest_;
     std::optional<std::pair<features::FeatureId, math::Scalar>> featureDistanceRequest_;
     std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>> featureBooleanRequest_;
     std::optional<std::tuple<features::FeatureId, math::Scalar, features::CutDirection>> featureCutRequest_;

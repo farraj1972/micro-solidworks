@@ -41,6 +41,20 @@ TEST(EditorContext, TopologySelectionKnowsOwnerAndClearsOnRebuild)
     EXPECT_TRUE(editor.selection());
 }
 
+TEST(EditorContext, EnteringSketchClearsDerivedTopologySelection)
+{
+    EditorContext context;
+    const TopologyFaceTarget face{features::FeatureId{5}, {0}, topology::FaceId{3}};
+    context.select(LogicalTarget{face});
+    context.setHover(LogicalTarget{face});
+
+    context.activateSketch(features::FeatureId{8});
+
+    EXPECT_FALSE(context.selection());
+    EXPECT_FALSE(context.hover());
+    EXPECT_EQ(context.activeSketchFeatureId(), features::FeatureId{8});
+}
+
 TEST(EditorContext, CommandAvailabilityIsContextSensitive)
 {
     EditorContext context;

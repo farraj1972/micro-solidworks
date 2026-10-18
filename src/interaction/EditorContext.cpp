@@ -18,6 +18,9 @@ math::Scalar distance(const geometry::Point2& a, const geometry::Point2& b)
 
 void EditorContext::activateSketch(features::FeatureId id)
 {
+    // Topology targets belong to derived solid caches.  Once sketch editing
+    // starts, those caches are no longer the active selection domain.
+    clearTopologySelectionOnRebuild();
     activeFeature_ = id;
     activeSketch_ = id;
     display_[id] = DisplayState::ActiveEditing;

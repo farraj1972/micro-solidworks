@@ -35,9 +35,15 @@ int main(){
   const auto refreshFeatures=[&]{featureView.update(session.model(),featureVisible);workspace.setPresentation(featureView.geometry());workspace.setFeaturePresentation(&featureView);workspace.setSolidPickingEnabled(true);};
   const auto refreshSketch=[&]{featureView.update(session.model(),featureVisible);sketchView.regenerate(workingSketch);workspace.setPresentation(sketchView.geometry());workspace.setFeaturePresentation(&featureView);workspace.setSolidPickingEnabled(false);};
   const auto commitSketch=[&](bool record=true){ microsw::features::RebuildResult result; if(const auto id=editor.activeSketchFeatureId()){session.model().editSketch(*id,[&](auto& s){s=workingSketch;});result=session.model().rebuild();if(record)session.recordEdit();shell.reportFeatureRebuild(result);refreshSketch();} return result; };
-  const auto enterSketch=[&](std::optional<microsw::features::FeatureId> requested){
+  const auto enterSketch=[&](std::optional<microsw::features::FeatureId> requested,std::optional<microsw::PrincipalPlane> principal=std::nullopt){
    microsw::features::FeatureId id;
-   if(requested&&session.model().find(*requested).kind()==microsw::features::FeatureKind::Sketch)id=*requested;
+   if(principal){
+    using P=microsw::PrincipalPlane;const auto origin=microsw::geometry::Point3{};
+    const auto plane=*principal==P::Top?microsw::sketch::SketchPlane{origin,{1,0,0},{0,1,0}}:
+     *principal==P::Front?microsw::sketch::SketchPlane{origin,{1,0,0},{0,0,1}}:
+     microsw::sketch::SketchPlane{origin,{0,1,0},{0,0,1}};
+    id=session.model().addSketch(microsw::sketch::Sketch{plane});session.recordEdit();
+   }else if(requested&&session.model().find(*requested).kind()==microsw::features::FeatureKind::Sketch)id=*requested;
    else if(editor.selection()&&std::holds_alternative<microsw::interaction::TopologyFaceTarget>(*editor.selection())){
     const auto faceTarget=std::get<microsw::interaction::TopologyFaceTarget>(*editor.selection());
     const auto&source=session.model().find(faceTarget.feature);
@@ -60,7 +66,7 @@ int main(){
    workingSketch=std::get<microsw::features::SketchFeature>(session.model().find(id).data()).sketch;
    const auto rebuild=session.model().rebuild();if(rebuild.status==microsw::features::RebuildStatus::Failed)throw std::runtime_error{rebuild.diagnostic};
    workingSketch=std::get<microsw::features::SketchFeatureCache>(*session.model().find(id).cache()).solvedSketch;
-   editor.activateSketch(id);shell.setSelectedFeature(id);tools.setTool(microsw::SketchTool::Select);refreshSketch();const auto&p=workingSketch.plane();workspace.setViewBasis(-p.normal(),p.yAxis()); };
+   editor.activateSketch(id);editor.select(microsw::interaction::LogicalTarget{id});workspace.clearSelection();shell.setSelectedFeature(id);tools.setTool(microsw::SketchTool::Select);refreshSketch();const auto&p=workingSketch.plane();workspace.setViewBasis(-p.normal(),p.yAxis()); };
   enum class PendingDocumentAction{None,New,Open,Exit}; PendingDocumentAction pendingAction=PendingDocumentAction::None; bool closeApproved=false;
   const auto resetEditor=[&]{editor.resetSession();for(const auto&feature:session.model().history())if(feature.kind()==microsw::features::FeatureKind::CutExtrude)editor.setDisplayState(std::get<microsw::features::CutExtrudeFeature>(feature.data()).targetResultFeatureId,microsw::interaction::DisplayState::Hidden);workingSketch={};sketchView={};featureView={};shell.setSelectedFeature(std::nullopt);tools.setTool(microsw::SketchTool::Select);workspace.clearSelection();};
   const auto performAction=[&](PendingDocumentAction action){if(action==PendingDocumentAction::New){session.newDocument();resetEditor();refreshFeatures();shell.reportPersistenceStatus("New document — choose Sketch to begin");}else if(action==PendingDocumentAction::Open){const auto path=microsw::chooseMicroswFileToOpen(window);if(!path){shell.reportPersistenceStatus("Open cancelled");return;}std::string d;const auto s=session.open(*path,&d);if(s==microsw::persistence::OpenStatus::SuccessRebuilt||s==microsw::persistence::OpenStatus::SuccessRebuildFailed){resetEditor();if(s==microsw::persistence::OpenStatus::SuccessRebuilt)refreshFeatures();else{workspace.setPresentation(hiddenView);workspace.setFeaturePresentation(nullptr);}shell.reportPersistenceStatus(s==microsw::persistence::OpenStatus::SuccessRebuilt?"Open succeeded":"File opened; rebuild needs attention: "+d);}else shell.reportPersistenceStatus("Open failed: "+d);}else if(action==PendingDocumentAction::Exit){closeApproved=true;window.requestClose();}};
@@ -79,7 +85,8 @@ int main(){
     if(shell.unsavedDecision()){if(*shell.unsavedDecision()==microsw::UnsavedDecision::Cancel)pendingAction=PendingDocumentAction::None;else if(*shell.unsavedDecision()==microsw::UnsavedDecision::DontSave){const auto action=pendingAction;pendingAction=PendingDocumentAction::None;performAction(action);}else{const auto r=session.currentFilePath()?session.save():saveAs();if(r.status==microsw::persistence::SaveStatus::Success){const auto action=pendingAction;pendingAction=PendingDocumentAction::None;performAction(action);}else{pendingAction=PendingDocumentAction::None;shell.reportPersistenceStatus(r.diagnostic);}}}
     if(shell.undoRequest()&&session.undo()){resetEditor();refreshFeatures();shell.reportPersistenceStatus("Undo");}
     if(shell.redoRequest()&&session.redo()){resetEditor();refreshFeatures();shell.reportPersistenceStatus("Redo");}
-    if(shell.enterSketchRequest())enterSketch(shell.selectedFeature());
+    if(shell.sketchPlaneRequest())enterSketch(std::nullopt,shell.sketchPlaneRequest());
+    else if(shell.enterSketchRequest())enterSketch(shell.selectedFeature());
     if(shell.exitSketchRequest()&&editor.activeSketchFeatureId()){(void)commitSketch(false);editor.exitSketch();refreshFeatures();}
     if(shell.editorCommandRequest()){using EC=microsw::interaction::EditorCommand;const auto command=*shell.editorCommandRequest();if((command==EC::Extrude||command==EC::CutExtrude)&&!editor.activeSketchFeatureId()&&shell.selectedFeature()){const auto& source=session.model().find(*shell.selectedFeature());if(source.kind()==microsw::features::FeatureKind::Sketch)workingSketch=std::get<microsw::features::SketchFeature>(source.data()).sketch;}editor.activateCommand(command);switch(command){case EC::Line:tools.setTool(microsw::SketchTool::Line);break;case EC::Rectangle:tools.setTool(microsw::SketchTool::Rectangle);break;case EC::Circle:tools.setTool(microsw::SketchTool::Circle);break;default:tools.setTool(microsw::SketchTool::Select);break;}if(command==EC::Extrude)editor.beginPropertyEdit({microsw::interaction::PropertyEditContext::Kind::ExtrudeDistance,shell.extrusionDistance()});if(command==EC::CutExtrude)editor.beginPropertyEdit({microsw::interaction::PropertyEditContext::Kind::CutExtrudeDepth,shell.cutDepth()});}
     if(shell.cancelPropertyRequest()){editor.cancelStep();tools.cancel();}

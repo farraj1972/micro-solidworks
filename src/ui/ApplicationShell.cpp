@@ -194,12 +194,12 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
-    editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false;
+    editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false; sketchPlaneRequest_.reset();
     confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
     drawMainMenu(projectionMode);
     drawCommandBar(activeTool, sketch, selected, featureModel, editor);
     drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel, editor);
-    drawWorkspace(activeTool, editor);
+    drawWorkspace(activeTool, editor, featureModel);
     drawStatusBar();
     drawAboutDialog();
     drawUnsavedChangesDialog();
@@ -264,9 +264,14 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         featureModel != nullptr, false, [&]{ rebuildFeaturesRequest_ = true; });
     ImGui::TextDisabled("|"); ImGui::SameLine();
     const bool editing = editor && editor->activeSketchFeatureId();
-    commandButton("sketch", editing ? "Exit" : "Sketch", editing ? "Finish editing the active Sketch" : "Create or edit a Sketch",
-        editing ? CadIcon::ExitSketch : CadIcon::Sketch, true, editing,
-        [&]{ if (editing) exitSketchRequest_ = true; else { enterSketchRequest_ = true; propertyManagerVisible_ = true; } });
+    const auto* faceSelection=editor&&editor->selection()?std::get_if<interaction::TopologyFaceTarget>(&*editor->selection()):nullptr;
+    const bool supportedSelectedFace=!faceSelection||(featureModel&&featureModel->find(faceSelection->feature).kind()==features::FeatureKind::Extrude);
+    const char* sketchTip=editing?"Finish editing the active Sketch":supportedSelectedFace?
+        "Create a Sketch on the selected plane or supported Extrude cap":
+        "This release supports Sketch on Face only on an Extrude start/end cap";
+    commandButton("sketch", editing ? "Exit" : "Sketch", sketchTip,
+        editing ? CadIcon::ExitSketch : CadIcon::Sketch, editing||supportedSelectedFace, editing,
+        [&]{ if (editing) exitSketchRequest_ = true; else { if(selectedPrincipalPlane_)sketchPlaneRequest_=selectedPrincipalPlane_;else enterSketchRequest_ = true; propertyManagerVisible_ = true; } });
     const auto tool = [&](const char* id, const char* label, const char* tip, CadIcon icon,
                           SketchTool sketchTool, interaction::EditorCommand command)
     {
@@ -342,10 +347,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGuiWindowFlags_NoBringToFrontOnFocus;
     ImGui::Begin("Model", nullptr, sketchPanelFlags);
     modelPanelWidth_ = ImGui::GetWindowSize().x;
-    if (ImGui::Selectable("Model", !propertyManagerVisible_, 0, ImVec2{145, 28}))
+    if (ImGui::Selectable("FeatureManager", !propertyManagerVisible_, 0, ImVec2{145, 28}))
         propertyManagerVisible_ = false;
     ImGui::SameLine();
-    if (ImGui::Selectable("Edit", propertyManagerVisible_, 0, ImVec2{145, 28}))
+    if (ImGui::Selectable("PropertyManager", propertyManagerVisible_, 0, ImVec2{145, 28}))
         propertyManagerVisible_ = true;
     ImGui::Separator();
     if (!propertyManagerVisible_)
@@ -413,16 +418,68 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             ImGui::PopID();
         };
         if(ImGui::TreeNodeEx(tree.rootName.c_str(),ImGuiTreeNodeFlags_DefaultOpen|ImGuiTreeNodeFlags_SpanAvailWidth)){
+            const auto drawPlane=[&](const char* label,PrincipalPlane plane){
+                ImGui::PushID(label);
+                const auto flags=ImGuiTreeNodeFlags_Leaf|ImGuiTreeNodeFlags_NoTreePushOnOpen|
+                    ImGuiTreeNodeFlags_SpanAvailWidth|(selectedPrincipalPlane_==plane?ImGuiTreeNodeFlags_Selected:0);
+                ImGui::TreeNodeEx(label,flags);
+                if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
+                    selectedPrincipalPlane_=plane;selectedFeature_.reset();if(editor)editor->select(std::nullopt);
+                }
+                if(ImGui::BeginPopupContextItem("Plane actions")){
+                    if(ImGui::MenuItem("Sketch on Plane")){
+                        selectedPrincipalPlane_=plane;selectedFeature_.reset();sketchPlaneRequest_=plane;propertyManagerVisible_=true;
+                    }
+                    ImGui::EndPopup();
+                }
+                ImGui::PopID();
+            };
+            if(ImGui::TreeNodeEx("Reference Geometry",ImGuiTreeNodeFlags_DefaultOpen|ImGuiTreeNodeFlags_SpanAvailWidth)){
+                drawPlane("Front Plane",PrincipalPlane::Front);
+                drawPlane("Top Plane",PrincipalPlane::Top);
+                drawPlane("Right Plane",PrincipalPlane::Right);
+                ImGui::TreePop();
+            }
             for(const auto& node:tree.roots)drawNode(node);
             ImGui::TreePop();
+        }
+        if(selectedPrincipalPlane_){
+            ImGui::Separator();
+            const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
+            ImGui::Text("Selected: %s",name);
+            if(ImGui::Button("Sketch on Plane")){sketchPlaneRequest_=selectedPrincipalPlane_;propertyManagerVisible_=true;}
         }
         if (selectedFeature_)
         {
             const auto& feature = featureModel->find(*selectedFeature_);
             ImGui::Separator(); ImGui::Text("Selected: %s", feature.displayName().c_str());
             if(editor&&editor->selection()){
-                if(std::holds_alternative<interaction::TopologyFaceTarget>(*editor->selection())){const auto&t=std::get<interaction::TopologyFaceTarget>(*editor->selection());ImGui::TextUnformatted("Face");const auto& cache=std::get<features::SolidFeatureCache>(*feature.cache());const auto& face=cache.solids.at(t.body.index).find(t.face);ImGui::TextUnformatted(std::holds_alternative<geometry::Plane>(face.support())?"Plane":"Cylinder");ImGui::Text("Owning feature: %s",feature.displayName().c_str());}
-                else if(std::holds_alternative<interaction::TopologyEdgeTarget>(*editor->selection())){const auto&t=std::get<interaction::TopologyEdgeTarget>(*editor->selection());ImGui::TextUnformatted("Edge");const auto& cache=std::get<features::SolidFeatureCache>(*feature.cache());const auto& edge=cache.solids.at(t.body.index).find(t.edge);ImGui::TextUnformatted(std::holds_alternative<geometry::Segment3>(edge.geometry())?"Line":"Arc");ImGui::Text("Owning feature: %s",feature.displayName().c_str());}
+                if(const auto*t=std::get_if<interaction::TopologyFaceTarget>(&*editor->selection())){
+                    const auto& owner=featureModel->find(t->feature);
+                    ImGui::TextUnformatted("Face");
+                    if(owner.cache()&&std::holds_alternative<features::SolidFeatureCache>(*owner.cache())){
+                        const auto& cache=std::get<features::SolidFeatureCache>(*owner.cache());
+                        if(t->body.index<cache.solids.size()){
+                            const auto& face=cache.solids[t->body.index].find(t->face);
+                            ImGui::TextUnformatted(std::holds_alternative<geometry::Plane>(face.support())?"Plane":"Cylinder");
+                        }
+                    }
+                    ImGui::Text("Owning feature: %s",owner.displayName().c_str());
+                    if(owner.kind()==features::FeatureKind::Extrude&&ImGui::Button("Sketch on this face"))
+                        {selectedFeature_=owner.id();enterSketchRequest_=true;propertyManagerVisible_=true;}
+                }
+                else if(const auto*t=std::get_if<interaction::TopologyEdgeTarget>(&*editor->selection())){
+                    const auto& owner=featureModel->find(t->feature);
+                    ImGui::TextUnformatted("Edge");
+                    if(owner.cache()&&std::holds_alternative<features::SolidFeatureCache>(*owner.cache())){
+                        const auto& cache=std::get<features::SolidFeatureCache>(*owner.cache());
+                        if(t->body.index<cache.solids.size()){
+                            const auto& edge=cache.solids[t->body.index].find(t->edge);
+                            ImGui::TextUnformatted(std::holds_alternative<geometry::Segment3>(edge.geometry())?"Line":"Arc");
+                        }
+                    }
+                    ImGui::Text("Owning feature: %s",owner.displayName().c_str());
+                }
             }
             if (feature.kind() == features::FeatureKind::Sketch)
             {
@@ -913,7 +970,8 @@ void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected
     ImGui::End();
 }
 
-void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::EditorContext* editor)
+void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::EditorContext* editor,
+                                     const features::FeatureModel* featureModel)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y + commandBarHeight};
@@ -943,6 +1001,13 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
     ImGui::SameLine();ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(),size.x-235));
     if(ImGui::SmallButton("Fit"))viewCommandRequest_=ViewCommand::Fit;if(ImGui::IsItemHovered())ImGui::SetTooltip("Fit visible modeled geometry");
     ImGui::SameLine();if(ImGui::SmallButton("ISO"))viewCommandRequest_=ViewCommand::Isometric;if(ImGui::IsItemHovered())ImGui::SetTooltip("Isometric view");
+    ImGui::SameLine();if(ImGui::SmallButton("Views"))ImGui::OpenPopup("View orientation");if(ImGui::IsItemHovered())ImGui::SetTooltip("Standard view orientation (Space)");
+    if(!io.WantTextInput&&ImGui::IsKeyPressed(ImGuiKey_Space))ImGui::OpenPopup("View orientation");
+    if(ImGui::BeginPopup("View orientation")){
+        if(ImGui::MenuItem("Front"))viewCommandRequest_=ViewCommand::Front;if(ImGui::MenuItem("Back"))viewCommandRequest_=ViewCommand::Back;
+        if(ImGui::MenuItem("Left"))viewCommandRequest_=ViewCommand::Left;if(ImGui::MenuItem("Right"))viewCommandRequest_=ViewCommand::Right;
+        if(ImGui::MenuItem("Top"))viewCommandRequest_=ViewCommand::Top;if(ImGui::MenuItem("Bottom"))viewCommandRequest_=ViewCommand::Bottom;
+        if(ImGui::MenuItem("Isometric"))viewCommandRequest_=ViewCommand::Isometric;ImGui::EndPopup();}
     ImGui::SameLine();if(displayModeButton(displayMode_))ImGui::OpenPopup("Display mode");
     if(ImGui::BeginPopup("Display mode")){
         const auto mode=[&](const char* label,DisplayModeRequest value){if(ImGui::MenuItem(label,nullptr,displayMode_==value)){displayMode_=value;displayModeRequest_=value;}};
@@ -951,9 +1016,14 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
     if (input_.workspaceHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) ImGui::OpenPopup("Graphics context");
     if (ImGui::BeginPopup("Graphics context"))
     {
+        const bool faceSelected=editor&&editor->selection()&&std::holds_alternative<interaction::TopologyFaceTarget>(*editor->selection());
+        bool supportedFace=false;
+        if(faceSelected&&featureModel){const auto&t=std::get<interaction::TopologyFaceTarget>(*editor->selection());supportedFace=featureModel->find(t.feature).kind()==features::FeatureKind::Extrude;}
+        if(faceSelected&&ImGui::MenuItem("Sketch on selected face",nullptr,false,supportedFace)){enterSketchRequest_=true;propertyManagerVisible_=true;}
+        if(faceSelected&&!supportedFace)ImGui::TextDisabled("Sketch on Cut faces requires a future modeling contract");
         if (selectedFeature_)
         {
-            if (ImGui::MenuItem("Edit selected Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
+            if (!faceSelected&&ImGui::MenuItem("Edit selected Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
             if (ImGui::MenuItem("Show / Hide")) visibilityToggleRequest_ = selectedFeature_;
             if (ImGui::MenuItem("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
         }
