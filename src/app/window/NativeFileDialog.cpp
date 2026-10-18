@@ -5,6 +5,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <commdlg.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 #include <array>
 #include <system_error>
@@ -26,7 +29,7 @@ std::optional<std::filesystem::path> choose(const ApplicationWindow& owner,
     }
     OPENFILENAMEW dialog{};
     dialog.lStructSize = sizeof(dialog);
-    dialog.hwndOwner = static_cast<HWND>(owner.nativeHandle());
+    dialog.hwndOwner = glfwGetWin32Window(static_cast<GLFWwindow*>(owner.nativeHandle()));
     dialog.lpstrFilter = fileFilter;
     dialog.lpstrFile = fileName.data();
     dialog.nMaxFile = static_cast<DWORD>(fileName.size());
