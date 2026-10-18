@@ -251,6 +251,7 @@ target_link_libraries(microsw_viewer PUBLIC microsw_math)
 
 add_library(microsw_windowing STATIC
     src/app/window/ApplicationWindow.cpp
+    src/app/window/NativeFileDialog.cpp
 )
 
 target_compile_features(microsw_windowing PUBLIC cxx_std_20)
@@ -261,6 +262,7 @@ target_include_directories(microsw_windowing PUBLIC src)
 target_link_libraries(microsw_windowing PRIVATE
     glfw
     microsw_logging
+    comdlg32
 )
 
 add_library(microsw_rendering STATIC
