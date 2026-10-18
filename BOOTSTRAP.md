@@ -110,7 +110,7 @@ Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience
 D17 — Document Safety, Undo/Redo & Session History Semantics: FROZEN
 ADR-0061–0063: ACCEPTED (63/63 total)
 V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: FROZEN
-V1.1-C4 — Subtractive Modeling & Sketch-on-Face: NOT STARTED / NEXT ACTIVE
+V1.1-C4 — Subtractive Modeling & Sketch-on-Face: IN PROGRESS
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -675,4 +675,4 @@ Save / Don't Save / Cancel protection for New, Open and both exit paths. See
 `docs/V1_1_C3_VALIDATION.md`. D18 freezes the V1.1-C4 contract; see
 `docs/V1_1_C4_PREREQUISITE_REVIEW.md` and ADR-0064–0066.
 
-D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. V1.1-C4 remains unimplemented and is NEXT ACTIVE.
+D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. D18-R1 restricts C4 exact subtraction to directions parallel or anti-parallel to recoverable target extrusion axes; unsupported oblique cuts return `UNSUPPORTED_TARGET`, and conic topology remains deferred. V1.1-C4 implementation is in progress.

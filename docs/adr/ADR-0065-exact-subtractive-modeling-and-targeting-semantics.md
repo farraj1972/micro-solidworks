@@ -14,6 +14,20 @@ The cutter reuses D14 exact region/extrusion semantics, including concavity, hol
 
 Implement a project-owned exact regularized prismatic difference, separate from B11. It operates on supported extrusion-derived analytic solids, constructs planar arrangements of line/circular-arc boundaries at axial event slabs, classifies material by region parity, reconstructs shared Plane/Cylinder topology, finds connected components and validates every Solid. It is not a generic NURBS B-rep Boolean. Unsupported geometry returns `UNSUPPORTED_TARGET`.
 
+For the first executable C4 subset, the cutting extrusion direction must be
+parallel or anti-parallel to the recoverable extrusion axis of every affected
+target body. Classification is tolerance-aware and uses the existing angular
+policy; it must not compare the angle or dot product for exact equality.
+StartCap and EndCap Sketches of a supported single-body Extrude satisfy this
+rule by construction, including Reverse Direction.
+
+An oblique cutting direction, a Sketch plane not parallel to the supported
+target cap planes, a target without recoverable supported extrusion-axis
+provenance, or topology that would require a conic intersection boundary
+returns `UNSUPPORTED_TARGET`. A multi-body candidate fails transactionally if
+any intersected body is outside this subset. No ellipse polygonization, arc
+approximation, mesh Boolean, or tessellation-derived topology is permitted.
+
 Every body in the target result whose exact volume intersects the cutter is processed; untouched bodies remain. One body may yield zero, one or many bodies. Full removal is successful omission and all removed is successful empty. No intersection is `NO_INTERSECTION` and fails rebuild. All candidates commit atomically or D11 last-known-good data remains.
 
 Statuses include `SUCCESS`, `NO_INTERSECTION`, `INVALID_PROFILE`, `UNSUPPORTED_TARGET`, `TOPOLOGY_FAILURE` and `NUMERICAL_FAILURE`. UI diagnostics use logical features/Sketch elements, never raw topology IDs. Preview is transient and Confirm is one transaction.
@@ -21,6 +35,10 @@ Statuses include `SUCCESS`, `NO_INTERSECTION`, `INVALID_PROFILE`, `UNSUPPORTED_T
 ## Rationale
 
 The analytic algorithm teaches exact CAD subtraction and supports hole/pocket workflows without pretending B11 or render meshes are a general kernel. Explicit result targeting avoids persistent BodyId.
+
+This D18-R1 clarification narrows the first executable subtraction subset; it
+does not retract the future goal of broader exact subtraction. General oblique
+subtraction and conic topology require a future Decision Gate.
 
 ## Consequences
 
@@ -33,3 +51,6 @@ Implicit B11 expansion, mesh Boolean and visual masking are rejected. Persistent
 ## Deferred / Non-goals
 
 Generic Union/Intersection or B-rep/NURBS Boolean, Through All, other end conditions, draft, Thin Feature and selected-body scope.
+
+General oblique subtraction, `Ellipse3`, `EllipticalArc3`, generic `Conic3`,
+NURBS curves, and generic analytic-intersection topology are also deferred.

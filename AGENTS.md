@@ -1212,7 +1212,7 @@ D17: FROZEN
 ADR-0061-0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C3: FROZEN
-V1.1-C4: NOT STARTED / NEXT ACTIVE
+V1.1-C4: IN PROGRESS
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
@@ -1278,4 +1278,7 @@ ADR inventory: 66/66 ACCEPTED
 D18 freezes semantic single-body Extrude StartCap/EndCap support, exact
 project-owned prismatic Cut Extrude with 0..N transactional results, and
 persistence v2 with v1 migration. Raw topology IDs remain rebuild-local;
-B11 remains frozen. V1.1-C4 is NOT STARTED / NEXT ACTIVE.
+B11 remains frozen. D18-R1 restricts C4 exact subtraction to directions parallel
+or anti-parallel to recoverable target extrusion axes. Oblique cuts requiring
+conic boundaries return UNSUPPORTED_TARGET transactionally; conic topology is
+deferred to a future Decision Gate. V1.1-C4 is IN PROGRESS.
