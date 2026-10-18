@@ -61,3 +61,35 @@ TEST(AxialSubtraction, ReportsNoIntersectionAndSupportsReverseBlindCut)
     ASSERT_EQ(reverse.status,features::AxialSubtractionStatus::Success) << reverse.diagnostic;
     EXPECT_TRUE(reverse.solids.front().isValid());
 }
+
+TEST(AxialSubtraction, SupportsConcaveVoidAndMultipleCuttingRegions)
+{
+    sketch::Sketch cutter;
+    (void)cutter.addLine({{1,1},{8,1}});(void)cutter.addLine({{8,1},{8,3}});
+    (void)cutter.addLine({{8,3},{3,3}});(void)cutter.addLine({{3,3},{3,8}});
+    (void)cutter.addLine({{3,8},{1,8}});(void)cutter.addLine({{1,8},{1,1}});
+    auto concave=features::subtractAxialRegions(rectangle(0,0,10,10),planeAt(0),10,
+        features::extractPlanarRegions(cutter),planeAt(10),{0,0,-1},3);
+    ASSERT_EQ(concave.status,features::AxialSubtractionStatus::Success) << concave.diagnostic;
+
+    sketch::Sketch annulusSketch;(void)annulusSketch.addRectangle({2,2},{8,8});
+    (void)annulusSketch.addRectangle({4,4},{6,6});
+    auto withVoid=features::subtractAxialRegions(rectangle(0,0,10,10),planeAt(0),10,
+        features::extractPlanarRegions(annulusSketch),planeAt(10),{0,0,-1},3);
+    ASSERT_EQ(withVoid.status,features::AxialSubtractionStatus::Success) << withVoid.diagnostic;
+
+    sketch::Sketch multiple;(void)multiple.addCircle({{3,5},1});(void)multiple.addCircle({{7,5},1});
+    auto twoHoles=features::subtractAxialRegions(rectangle(0,0,10,10),planeAt(0),10,
+        features::extractPlanarRegions(multiple),planeAt(10),{0,0,-1},3);
+    ASSERT_EQ(twoHoles.status,features::AxialSubtractionStatus::Success) << twoHoles.diagnostic;
+}
+
+TEST(AxialSubtraction, ProcessesOnlyIntersectedBodiesInMultiBodyTarget)
+{
+    sketch::Sketch target;(void)target.addRectangle({0,0},{4,4});(void)target.addRectangle({10,0},{14,4});
+    const auto result=features::subtractAxialRegions(features::extractPlanarRegions(target),planeAt(0),8,
+        rectangle(1,1,3,3),planeAt(8),{0,0,-1},2);
+    ASSERT_EQ(result.status,features::AxialSubtractionStatus::Success) << result.diagnostic;
+    ASSERT_EQ(result.solids.size(),2u);
+    EXPECT_TRUE(result.solids[0].isValid());EXPECT_TRUE(result.solids[1].isValid());
+}

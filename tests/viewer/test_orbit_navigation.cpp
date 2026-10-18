@@ -84,13 +84,14 @@ TEST(OrbitNavigationTest, QuarterTurnReachesPositiveY)
     EXPECT_TRUE(almostEqual(camera.position(), microsw::math::Vector3{0, 10, 0}));
 }
 
-TEST(OrbitNavigationTest, YawRemainsUnwrapped)
+TEST(OrbitNavigationTest, WholeTurnYawPreservesOrientation)
 {
     OrbitCamera camera{{}, 10, 0, 0};
     OrbitNavigation navigation;
     navigation.begin(0, 0);
     navigation.update(10 * pi / navigation.sensitivity(), 0, camera);
-    EXPECT_TRUE(almostEqual(camera.yaw(), 10 * pi));
+    EXPECT_TRUE(almostEqual(camera.forward(), microsw::math::Vector3{-1,0,0}));
+    EXPECT_TRUE(almostEqual(camera.up(), microsw::math::Vector3{0,0,1}));
 }
 
 TEST(OrbitNavigationTest, BothPolesUseCameraClampAndKeepFiniteBasis)

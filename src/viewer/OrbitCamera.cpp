@@ -165,8 +165,11 @@ void OrbitCamera::orbit(Scalar yawDelta, Scalar pitchDelta)
     validateFinite(pitchDelta, "camera orbit pitch delta must be finite");
     auto nextForward = rotate(forward_, up_, yawDelta).normalized();
     auto nextRight = math::cross(nextForward, up_).normalized();
-    const auto nextUp = rotate(up_, nextRight, -pitchDelta).normalized();
-    nextForward = rotate(nextForward, nextRight, -pitchDelta).normalized();
+    const auto currentPitch = std::asin(std::clamp((-nextForward).z(), Scalar{-1}, Scalar{1}));
+    const auto clampedPitch = std::clamp(currentPitch + pitchDelta, -maxPitch, maxPitch);
+    const auto appliedPitch = clampedPitch - currentPitch;
+    const auto nextUp = rotate(up_, nextRight, -appliedPitch).normalized();
+    nextForward = rotate(nextForward, nextRight, -appliedPitch).normalized();
     setOrientation(nextForward, nextUp);
 }
 
