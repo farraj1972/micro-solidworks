@@ -27,7 +27,7 @@ constexpr float statusBarHeight = 26.0F;
 constexpr float commandBarHeight = 88.0F;
 
 enum class CadIcon { New, Open, Save, SaveAs, Rebuild, Sketch, ExitSketch, Select,
-    Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude };
+    Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude, Undo, Redo };
 
 void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
 {
@@ -77,6 +77,13 @@ void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
     case CadIcon::Extrude:
         draw->AddRect({x-11,y-5},{x+3,y+9},color,0,0,2); draw->AddRect({x-3,y-11},{x+11,y+3},color,0,0,2);
         line(-11,-5,-3,-11); line(3,-5,11,-11); line(3,9,11,3); break;
+    case CadIcon::Undo:
+    case CadIcon::Redo:
+        draw->PathArcTo({x,y+2},9,icon==CadIcon::Undo?-0.5F:-2.6F,icon==CadIcon::Undo?-3.8F:0.6F,18);
+        draw->PathStroke(color,0,2.5F);
+        if(icon==CadIcon::Undo)draw->AddTriangleFilled({x-10,y-7},{x-11,y+1},{x-3,y-1},color);
+        else draw->AddTriangleFilled({x+10,y-7},{x+11,y+1},{x+3,y-1},color);
+        break;
     }
 }
 
@@ -133,12 +140,16 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
     viewCommandRequest_.reset(); displayModeRequest_.reset();
     transformRequest_.reset();
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
+    undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     drawMainMenu(projectionMode);
     drawModelPanel(selected);
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
+    drawUnsavedChangesDialog();
     const auto& io = ImGui::GetIO();
+    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) && canUndo_) undoRequest_ = true;
+    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y) && canRedo_) redoRequest_ = true;
     const auto* viewport = ImGui::GetMainViewport();
     input_.x = static_cast<double>(io.MousePos.x) - viewport->Pos.x;
     input_.y = static_cast<double>(io.MousePos.y) - viewport->Pos.y;
@@ -177,6 +188,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     booleanRequest_.reset();
     featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
+    undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false;
     confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
     drawMainMenu(projectionMode);
@@ -185,7 +197,10 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     drawWorkspace(activeTool, editor);
     drawStatusBar();
     drawAboutDialog();
+    drawUnsavedChangesDialog();
     const auto& io = ImGui::GetIO();
+    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) && canUndo_) undoRequest_ = true;
+    if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y) && canRedo_) redoRequest_ = true;
     const auto* viewport = ImGui::GetMainViewport();
     input_.x = static_cast<double>(io.MousePos.x) - viewport->Pos.x;
     input_.y = static_cast<double>(io.MousePos.y) - viewport->Pos.y;
@@ -238,6 +253,8 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     commandButton("open", "Open", "Open a .microsw part", CadIcon::Open, true, false, [&]{ openDocumentRequest_ = true; });
     commandButton("save", "Save", "Save the current part", CadIcon::Save, true, false, [&]{ saveDocumentRequest_ = true; });
     commandButton("saveas", "Save As", "Save the part to a new path", CadIcon::SaveAs, true, false, [&]{ saveAsDocumentRequest_ = true; });
+    commandButton("undo", "Undo", "Undo the last committed CAD action (Ctrl+Z)", CadIcon::Undo, canUndo_, false, [&]{ undoRequest_ = true; });
+    commandButton("redo", "Redo", "Redo the next committed CAD action (Ctrl+Y)", CadIcon::Redo, canRedo_, false, [&]{ redoRequest_ = true; });
     commandButton("rebuild", "Rebuild", "Rebuild the feature history", CadIcon::Rebuild,
         featureModel != nullptr, false, [&]{ rebuildFeaturesRequest_ = true; });
     ImGui::TextDisabled("|"); ImGui::SameLine();
@@ -717,17 +734,15 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
         if (ImGui::MenuItem("Exit"))
         {
             Logger::info("Exit requested");
-            window_.requestClose();
+            exitDocumentRequest_ = true;
         }
         ImGui::EndMenu();
     }
 
     if (ImGui::BeginMenu("Edit"))
     {
-        ImGui::BeginDisabled();
-        ImGui::MenuItem("Undo");
-        ImGui::MenuItem("Redo");
-        ImGui::EndDisabled();
+        if (ImGui::MenuItem("Undo", "Ctrl+Z", false, canUndo_)) undoRequest_ = true;
+        if (ImGui::MenuItem("Redo", "Ctrl+Y", false, canRedo_)) redoRequest_ = true;
         ImGui::EndMenu();
     }
 
@@ -937,9 +952,34 @@ void ApplicationShell::drawStatusBar()
         "Status Bar",
         position,
         ImVec2{viewport->WorkSize.x, statusBarHeight});
-    ImGui::Text("%s | %s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str(),
+    const std::string documentLabel = (currentFilePath_.empty() ? "Untitled" : currentFilePath_) + (documentDirty_ ? " *" : "");
+    ImGui::Text("%s | %s", documentLabel.c_str(),
         persistenceStatus_.empty() ? "Ready" : persistenceStatus_.c_str());
     ImGui::End();
+}
+
+void ApplicationShell::setDocumentState(bool dirty, bool canUndo, bool canRedo)
+{
+    documentDirty_ = dirty; canUndo_ = canUndo; canRedo_ = canRedo;
+}
+
+void ApplicationShell::showUnsavedChangesDialog() { unsavedDialogRequested_ = true; }
+
+void ApplicationShell::drawUnsavedChangesDialog()
+{
+    if (unsavedDialogRequested_) { ImGui::OpenPopup("Unsaved changes"); unsavedDialogRequested_ = false; }
+    if (ImGui::BeginPopupModal("Unsaved changes", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextUnformatted("You have unsaved changes.");
+        ImGui::TextUnformatted("Save changes to this document?");
+        ImGui::TextDisabled("Your changes will be lost if you don't save them.");
+        if (ImGui::Button("Save")) { unsavedDecision_ = UnsavedDecision::Save; ImGui::CloseCurrentPopup(); }
+        ImGui::SameLine();
+        if (ImGui::Button("Don't Save")) { unsavedDecision_ = UnsavedDecision::DontSave; ImGui::CloseCurrentPopup(); }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) { unsavedDecision_ = UnsavedDecision::Cancel; ImGui::CloseCurrentPopup(); }
+        ImGui::EndPopup();
+    }
 }
 
 void ApplicationShell::drawAboutDialog()

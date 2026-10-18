@@ -69,6 +69,15 @@ struct PersistedFeature
     FeatureData data;
 };
 
+// Authoritative document state only. Rebuild state, diagnostics and derived
+// caches are deliberately excluded and are regenerated after restoration.
+struct FeatureModelCheckpoint
+{
+    std::vector<PersistedFeature> features;
+    FeatureId resultFeatureId;
+    FeatureId::Value nextFeatureId{};
+};
+
 class FeatureModel
 {
 public:
@@ -87,6 +96,8 @@ public:
     [[nodiscard]] const FeatureRecord& find(FeatureId id) const;
     [[nodiscard]] RebuildResult rebuild();
     [[nodiscard]] FeatureId::Value nextFeatureId() const noexcept { return nextFeatureId_; }
+    [[nodiscard]] FeatureModelCheckpoint checkpoint() const;
+    void restoreCheckpoint(const FeatureModelCheckpoint& checkpoint);
     [[nodiscard]] static FeatureModel restore(std::vector<PersistedFeature> features,
         FeatureId resultFeatureId, FeatureId::Value nextFeatureId,
         constraints::ConstraintSolver solver = constraints::ConstraintSolver{constraints::SolverPolicy{}});

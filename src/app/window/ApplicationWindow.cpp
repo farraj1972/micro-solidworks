@@ -81,6 +81,13 @@ public:
         glfwSetWindowShouldClose(window_, GLFW_TRUE);
     }
 
+    void cancelClose() { glfwSetWindowShouldClose(window_, GLFW_FALSE); }
+    void setTitle(const std::string_view title)
+    {
+        const std::string value{title};
+        glfwSetWindowTitle(window_, value.c_str());
+    }
+
     void makeContextCurrent()
     {
         glfwMakeContextCurrent(window_);
@@ -142,6 +149,9 @@ void ApplicationWindow::requestClose()
 {
     implementation_->requestClose();
 }
+
+void ApplicationWindow::cancelClose() { implementation_->cancelClose(); }
+void ApplicationWindow::setTitle(const std::string_view title) { implementation_->setTitle(title); }
 
 void ApplicationWindow::makeContextCurrent()
 {

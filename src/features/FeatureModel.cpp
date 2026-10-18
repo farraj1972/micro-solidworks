@@ -234,6 +234,24 @@ RebuildResult FeatureModel::rebuild()
     return {};
 }
 
+FeatureModelCheckpoint FeatureModel::checkpoint() const
+{
+    FeatureModelCheckpoint result;
+    result.resultFeatureId = resultFeatureId_;
+    result.nextFeatureId = nextFeatureId_;
+    result.features.reserve(records_.size());
+    for (const auto& record : records_)
+        result.features.push_back({record.id(), record.kind(), record.displayName(), record.data()});
+    return result;
+}
+
+void FeatureModel::restoreCheckpoint(const FeatureModelCheckpoint& checkpoint)
+{
+    auto restored = restore(checkpoint.features, checkpoint.resultFeatureId,
+        checkpoint.nextFeatureId, solver_);
+    *this = std::move(restored);
+}
+
 FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
                                    FeatureId resultFeatureId,
                                    FeatureId::Value nextFeatureId,

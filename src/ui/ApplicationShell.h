@@ -16,6 +16,7 @@ namespace microsw
 {
 enum class ViewCommand { Fit, Front, Back, Left, Right, Top, Bottom, Isometric };
 enum class DisplayModeRequest { ShadedWithEdges, Wireframe, Shaded };
+enum class UnsavedDecision { Save, DontSave, Cancel };
 class ApplicationWindow;
 
 class ApplicationShell
@@ -57,6 +58,12 @@ public:
     [[nodiscard]] bool openDocumentRequest() const noexcept { return openDocumentRequest_; }
     [[nodiscard]] bool saveDocumentRequest() const noexcept { return saveDocumentRequest_; }
     [[nodiscard]] bool saveAsDocumentRequest() const noexcept { return saveAsDocumentRequest_; }
+    [[nodiscard]] bool undoRequest() const noexcept { return undoRequest_; }
+    [[nodiscard]] bool redoRequest() const noexcept { return redoRequest_; }
+    [[nodiscard]] bool exitDocumentRequest() const noexcept { return exitDocumentRequest_; }
+    void setDocumentState(bool dirty, bool canUndo, bool canRedo);
+    void showUnsavedChangesDialog();
+    [[nodiscard]] const std::optional<UnsavedDecision>& unsavedDecision() const noexcept { return unsavedDecision_; }
     [[nodiscard]] std::string documentPathInput() const { return documentPathInput_.data(); }
     void reportPersistenceStatus(std::string status) { persistenceStatus_ = std::move(status); }
     void setCurrentFilePath(std::string path) { currentFilePath_ = std::move(path); }
@@ -89,6 +96,7 @@ private:
                        const interaction::EditorContext* editor = nullptr);
     void drawStatusBar();
     void drawAboutDialog();
+    void drawUnsavedChangesDialog();
 
     ApplicationWindow& window_;
     WorkspaceLayout workspace_{};
@@ -124,6 +132,14 @@ private:
     bool openDocumentRequest_{};
     bool saveDocumentRequest_{};
     bool saveAsDocumentRequest_{};
+    bool undoRequest_{};
+    bool redoRequest_{};
+    bool exitDocumentRequest_{};
+    bool documentDirty_{};
+    bool canUndo_{};
+    bool canRedo_{};
+    bool unsavedDialogRequested_{};
+    std::optional<UnsavedDecision> unsavedDecision_;
     std::optional<interaction::EditorCommand> editorCommandRequest_;
     bool enterSketchRequest_{};
     bool exitSketchRequest_{};

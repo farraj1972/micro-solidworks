@@ -26,6 +26,8 @@ public:
 
     [[nodiscard]] bool shouldClose() const;
     void requestClose();
+    void cancelClose();
+    void setTitle(std::string_view title);
     void makeContextCurrent();
     [[nodiscard]] GraphicsProcedure graphicsProcedureAddress(const char* name) const;
     [[nodiscard]] FramebufferSize framebufferSize() const;
