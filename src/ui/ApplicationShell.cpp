@@ -334,8 +334,8 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (!propertyManagerVisible_)
     {
     ImGui::TextUnformatted("Document");
-    ImGui::InputText("Path (.microsw)", documentPathInput_.data(), documentPathInput_.size());
-    ImGui::TextWrapped("Current: %s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str());
+    ImGui::TextWrapped("%s%s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str(),
+        documentDirty_ ? " *" : "");
     if (!persistenceStatus_.empty()) ImGui::TextWrapped("%s", persistenceStatus_.c_str());
     ImGui::Separator();
     if (featureModel)
@@ -971,7 +971,7 @@ void ApplicationShell::drawUnsavedChangesDialog()
     if (ImGui::BeginPopupModal("Unsaved changes", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("You have unsaved changes.");
-        ImGui::TextUnformatted("Save changes to this document?");
+        ImGui::Text("Save changes to %s?", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str());
         ImGui::TextDisabled("Your changes will be lost if you don't save them.");
         if (ImGui::Button("Save")) { unsavedDecision_ = UnsavedDecision::Save; ImGui::CloseCurrentPopup(); }
         ImGui::SameLine();

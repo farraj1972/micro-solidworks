@@ -10,7 +10,6 @@
 
 #include <optional>
 #include <string>
-#include <array>
 
 namespace microsw
 {
@@ -64,7 +63,6 @@ public:
     void setDocumentState(bool dirty, bool canUndo, bool canRedo);
     void showUnsavedChangesDialog();
     [[nodiscard]] const std::optional<UnsavedDecision>& unsavedDecision() const noexcept { return unsavedDecision_; }
-    [[nodiscard]] std::string documentPathInput() const { return documentPathInput_.data(); }
     void reportPersistenceStatus(std::string status) { persistenceStatus_ = std::move(status); }
     void setCurrentFilePath(std::string path) { currentFilePath_ = std::move(path); }
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
@@ -150,7 +148,6 @@ private:
     std::optional<ViewCommand> viewCommandRequest_;
     std::optional<DisplayModeRequest> displayModeRequest_;
     DisplayModeRequest displayMode_{DisplayModeRequest::ShadedWithEdges};
-    std::array<char, 512> documentPathInput_{};
     std::string currentFilePath_;
     std::string persistenceStatus_;
     float modelPanelWidth_{320.0F};
