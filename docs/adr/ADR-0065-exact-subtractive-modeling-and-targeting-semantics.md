@@ -1,6 +1,6 @@
 # ADR-0065 — Exact Subtractive Modeling and Targeting Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

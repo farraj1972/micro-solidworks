@@ -1,6 +1,6 @@
 # ADR-0066 — Persistence v2 and v1 Migration Semantics
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 

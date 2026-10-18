@@ -1503,8 +1503,8 @@ caches, then Application regenerates Presentation and clears invalid transient
 selection/operands. Standard Windows file dialogs remain in the GLFW/windowing
 adapter and do not enter CAD modules.
 
-## D18 — Sketch-on-Face, exact subtraction and persistence v2 proposal
+## D18 — Sketch-on-Face, exact subtraction and persistence v2
 
-D18 is PROPOSED in ADR-0064–0066. Face-supported Sketch stores a semantic single-body Extrude StartCap/EndCap reference; topology/body IDs remain derived. Rebuild resolves a deterministic SketchPlane before solving and blocks dependants on failure without reattachment.
+D18 is FROZEN in accepted ADR-0064–0066. Face-supported Sketch stores a semantic single-body Extrude StartCap/EndCap reference; topology/body IDs remain derived. Rebuild resolves a deterministic SketchPlane before solving and blocks dependants on failure without reattachment.
 
-Cut Extrude stores source Sketch and target-result FeatureIds, Blind distance and direction. Project-owned exact prismatic subtraction handles D14 analytic regions transactionally and returns 0..N Solids; B11 remains unchanged. Persistence v2 stores the new authoritative values and migrates v1 through versioned DTOs. No C4 implementation is authorized here.
+Cut Extrude stores source Sketch and target-result FeatureIds, Blind distance and direction. Project-owned exact prismatic subtraction handles D14 analytic regions transactionally and returns 0..N Solids; B11 remains unchanged. Persistence v2 stores the new authoritative values and migrates v1 through versioned DTOs. C4 remains unimplemented and is the next active campaign.

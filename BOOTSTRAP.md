@@ -110,7 +110,7 @@ Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience
 D17 — Document Safety, Undo/Redo & Session History Semantics: FROZEN
 ADR-0061–0063: ACCEPTED (63/63 total)
 V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: FROZEN
-V1.1-C4 — Subtractive Modeling & Sketch-on-Face: DECISION REQUIRED
+V1.1-C4 — Subtractive Modeling & Sketch-on-Face: NOT STARTED / NEXT ACTIVE
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -672,7 +672,7 @@ V1.1-C3 — Document Safety, Undo/Redo & Session Workflow is FROZEN. The current
 application uses authoritative FeatureModel checkpoints, 100-step session-local
 Undo/Redo, dirty-state tracking, native Windows Open/Save dialogs and shared
 Save / Don't Save / Cancel protection for New, Open and both exit paths. See
-`docs/V1_1_C3_VALIDATION.md`. The V1.1-C4 prerequisite review requires a
-Decision Gate before implementation; see `docs/V1_1_C4_PREREQUISITE_REVIEW.md`.
+`docs/V1_1_C3_VALIDATION.md`. D18 freezes the V1.1-C4 contract; see
+`docs/V1_1_C4_PREREQUISITE_REVIEW.md` and ADR-0064–0066.
 
-D18 is PROPOSED / READY FOR REVIEW in ADR-0064–0066. It proposes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. V1.1-C4 remains unimplemented pending approval and freeze.
+D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. V1.1-C4 remains unimplemented and is NEXT ACTIVE.

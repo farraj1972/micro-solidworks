@@ -782,7 +782,7 @@ initial v1.1 roadmap is:
 | V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
 | V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | FROZEN | Safe authoritative history, native document workflow and unsaved-change protection |
-| V1.1-C4 — Subtractive Modeling & Sketch-on-Face | DECISION REQUIRED | Associative Extrude-cap Sketch support and exact general Cut Extrude require a Decision Gate |
+| V1.1-C4 — Subtractive Modeling & Sketch-on-Face | NOT STARTED / NEXT ACTIVE | Frozen D18 contract: associative Extrude-cap Sketch support, exact Cut Extrude and persistence v2 |
 | V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
 V1.1-C1 is graphics-area centric, mouse-first, context-sensitive and icon/tool
@@ -980,7 +980,7 @@ ADR-0059–0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
 V1.1-C2A: FROZEN
 V1.1-C3: FROZEN
-V1.1-C4: PREREQUISITE REVIEW COMPLETE / DECISION REQUIRED
+V1.1-C4: NOT STARTED / NEXT ACTIVE
 ```
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel rather than a
@@ -1016,7 +1016,7 @@ ADR-0061–0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C2A: FROZEN
 V1.1-C3: FROZEN
-V1.1-C4: PREREQUISITE REVIEW COMPLETE / DECISION REQUIRED
+V1.1-C4: NOT STARTED / NEXT ACTIVE
 ```
 
 D17 freezes Application-owned document dirty and saved-baseline state distinct
@@ -1053,10 +1053,10 @@ and persistence evolution. V1.1-C5 remains Feature Workflow Hardening.
 ## D18 — Sketch-on-Face, Exact Subtraction & Persistence v2 Semantics
 
 ```text
-STATUS: PROPOSED / READY FOR REVIEW
-ADR-0064–0066: PROPOSED
-ADR inventory: 66 total / 63 ACCEPTED / 3 PROPOSED
-V1.1-C4: WAITING FOR D18 APPROVAL AND FREEZE
+STATUS: FROZEN
+ADR-0064–0066: ACCEPTED
+ADR inventory: 66/66 ACCEPTED
+V1.1-C4: NOT STARTED / NEXT ACTIVE
 ```
 
-D18 proposes Option B: semantic StartCap/EndCap support on single-body Extrudes, associative Sketch planes, exact Blind subtraction over all intersected bodies in an explicit target result, 0..N transactional outputs, and persistence v2 with v1 migration. Through All, general topological naming and arbitrary face support remain outside C4.
+D18 freezes Option B: semantic StartCap/EndCap support on single-body Extrudes, associative Sketch planes, exact Blind subtraction over all intersected bodies in an explicit target result, 0..N transactional outputs, and persistence v2 with v1 migration. Through All, general topological naming and arbitrary face support remain outside C4.

@@ -240,6 +240,6 @@ V1.1-C3 implements this policy without a new external dependency. Features owns
 destructive-action policy; the GLFW boundary supplies the owner HWND to standard
 Windows Open/Save dialogs. Persistence schema version 1 is unchanged.
 
-## 11. D18 Sketch-on-Face and subtractive modeling proposal
+## 11. D18 Sketch-on-Face and subtractive modeling
 
-ADR-0064–0066 propose BUILD. Support resolution belongs to Features over Sketch/Modeling; exact prismatic subtraction belongs to Modeling/Topology/Geometry; Persistence v2 remains an adapter depending on Features. No external kernel, Boolean, tessellation or migration dependency is authorized. B11 stays frozen and rendering remains derived.
+Accepted ADR-0064–0066 freeze BUILD. Support resolution belongs to Features over Sketch/Modeling; exact prismatic subtraction belongs to Modeling/Topology/Geometry; Persistence v2 remains an adapter depending on Features. No external kernel, Boolean, tessellation or migration dependency is authorized. B11 stays frozen and rendering remains derived.

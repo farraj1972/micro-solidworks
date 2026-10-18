@@ -1,6 +1,6 @@
 # ADR-0064 — Semantic Planar Face Support and Sketch-on-Face
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
