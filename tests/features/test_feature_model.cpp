@@ -243,3 +243,22 @@ TEST(FeatureModel, CutExtrudeValidatesTargetOrderAndEditsAtomically)
     EXPECT_THROW(model.setCutExtrude(cut, -1, microsw::features::CutDirection::Forward), std::invalid_argument);
     EXPECT_DOUBLE_EQ(std::get<microsw::features::CutExtrudeFeature>(model.find(cut).data()).distance, 3);
 }
+
+TEST(FeatureModel, CutExtrudeRejectsObliqueOrientationBeforeKernelEvaluation)
+{
+    microsw::features::FeatureModel model;
+    const auto target = model.addExtrude(model.addSketch(rectangle(0, 0, 4, 4)), 4);
+    microsw::sketch::Sketch oblique{{{0, 0, 1}, {1, 0, 0}, {0, 0, 1}}};
+    (void)oblique.addCircle({{2, 2}, 1});
+    const auto source = model.addSketch(std::move(oblique));
+    const auto cut = model.addCutExtrude(source, target, 1);
+
+    const auto result = model.rebuild();
+
+    EXPECT_EQ(result.status, microsw::features::RebuildStatus::Failed);
+    EXPECT_EQ(result.failedFeature, cut);
+    EXPECT_EQ(result.diagnostic,
+        "This Cut Extrude orientation is not supported yet. Create the sketch "
+        "on a supported Extrude start/end face and cut normal to that face.");
+    EXPECT_FALSE(model.find(cut).cache());
+}

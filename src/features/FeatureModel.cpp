@@ -1,6 +1,7 @@
 #include "features/FeatureModel.h"
 
 #include "core/geometry/GeometricTolerance.h"
+#include "features/AxialCut.h"
 #include "features/GeneralExtrusion.h"
 #include "features/PlanarRegion.h"
 
@@ -200,6 +201,29 @@ RebuildResult FeatureModel::rebuild()
         if (!cache) throw std::runtime_error{"Dependency has no successful output"};
         return *cache;
     };
+    std::function<std::optional<math::Vector3>(FeatureId)> targetAxis;
+    targetAxis = [&](FeatureId id) -> std::optional<math::Vector3> {
+        const auto& feature = find(id);
+        if (feature.kind() == FeatureKind::Extrude)
+        {
+            const auto& extrusion = std::get<ExtrudeFeature>(feature.data());
+            return std::get<SketchFeatureCache>(
+                output(extrusion.sourceSketchFeatureId)).solvedSketch.plane().normal();
+        }
+        if (feature.kind() == FeatureKind::CutExtrude)
+            return targetAxis(std::get<CutExtrudeFeature>(feature.data()).targetResultFeatureId);
+        if (feature.kind() == FeatureKind::Boolean)
+        {
+            const auto& boolean = std::get<BooleanFeature>(feature.data());
+            const auto first = targetAxis(boolean.inputA);
+            const auto second = targetAxis(boolean.inputB);
+            if (!first || !second
+                || classifyAxialCut(*first, *second) == AxialCutAlignment::Unsupported)
+                return std::nullopt;
+            return first;
+        }
+        return std::nullopt;
+    };
     for (auto& record : records_)
     {
         if (!affected[record.id().value()]) continue;
@@ -278,7 +302,22 @@ RebuildResult FeatureModel::rebuild()
                 else throw std::runtime_error{"Boolean rebuild failed"};
             }
             else
-                throw std::runtime_error{"Cut Extrude exact subtraction is not yet evaluated"};
+            {
+                const auto& data = std::get<CutExtrudeFeature>(record.data_);
+                const auto& sketchCache = std::get<SketchFeatureCache>(
+                    output(data.sourceSketchFeatureId));
+                auto cutDirection = sketchCache.solvedSketch.plane().normal();
+                if (data.direction == CutDirection::Reverse)
+                    cutDirection = -cutDirection;
+                const auto axis = targetAxis(data.targetResultFeatureId);
+                if (!axis || classifyAxialCut(cutDirection, *axis)
+                    == AxialCutAlignment::Unsupported)
+                    throw std::runtime_error{
+                        "This Cut Extrude orientation is not supported yet. "
+                        "Create the sketch on a supported Extrude start/end face "
+                        "and cut normal to that face."};
+                throw std::runtime_error{"Cut Extrude exact axial subtraction is not yet evaluated"};
+            }
         }
         catch (const std::exception& error)
         {
