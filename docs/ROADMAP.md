@@ -6,18 +6,21 @@
 Vision: APPROVED
 V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
 V1.1.0: FROZEN after Technical and Experience Gates
-P0 — Personal SolidWorks Product & Architecture Review: REVIEW READY
-V1.2+: NOT APPROVED; requires Product & Architecture Review
+P0 — Personal SolidWorks Product & Architecture Review: FROZEN
+R2 workflow-first / first bounded N2 printed part: APPROVED
+V1.2: APPROVED AT CAMPAIGN LEVEL; plan READY FOR REVIEW, not authorized for implementation
+V1.3+: PROPOSED / NOT APPROVED
+K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
 Dependency policy: remains in force until a specific architectural decision
 ```
 
 Product reliability and completion of bounded mechanical-engineering
 workflows take priority from V1.1-C5 onward. The earlier educational roadmap
-and frozen baselines remain historically accurate. The P0 review following
-V1.1.0 records priority part workflows, kernel limits and interoperability
-requirements in `docs/PERSONAL_SOLIDWORKS_PRODUCT_ARCHITECTURE_REVIEW.md`.
-Its separate v1.2+ roadmap is PROPOSED / NOT APPROVED and does not authorize
-implementation of later features.
+and frozen baselines remain historically accurate. P0.FREEZE records seven
+owner-approved planning decisions in `docs/PERSONAL_SOLIDWORKS_P0_DECISIONS.md`.
+The v1.2 campaign proposal is `docs/PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROPOSAL.md`;
+its detailed increments await review and approval. Later releases remain
+unapproved. No kernel migration or executable work is authorized by this state.
 
 ## Canonical MVP Roadmap
 
@@ -1170,7 +1173,8 @@ V1.1-C1/C2/C2A/C3/C4/C5: FROZEN
 ADRs: 69/69 ACCEPTED and conformant
 Final executable: C5 V3, 903/903 tests, manual Experience Gate APPROVED
 Release freeze: V0 documentary step; executable unchanged after V3
-V1.2+: NOT APPROVED
+V1.2: campaign-level planning approved; increments not authorized
+V1.3+: PROPOSED / NOT APPROVED
 ```
 
 The release includes the CAD-first workspace, guided Sketch and constraints,
@@ -1179,4 +1183,6 @@ Manager hierarchy, Undo/Redo and document safety, Sketch-on-Face, exact axial
 Cut Extrude, persistence v2 with v1 migration, feature deletion, feature
 editing and rename, and readable rebuild diagnostics. Scope and evidence are
 in `docs/V1_1_0_RELEASE.md`. The subsequent P0 Product & Architecture Review
-is REVIEW READY; its proposal does not authorize v1.2 implementation.
+is FROZEN after owner approval of P0-D01–D07; see
+`docs/PERSONAL_SOLIDWORKS_P0_DECISIONS.md`. The v1.2 campaign proposal is
+READY FOR REVIEW and does not authorize implementation.

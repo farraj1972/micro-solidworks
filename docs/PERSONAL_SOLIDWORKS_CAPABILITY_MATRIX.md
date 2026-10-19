@@ -1,6 +1,6 @@
 # Personal SolidWorks — v1.1.0 Capability Matrix
 
-Status: P0 REVIEW READY (2026-10-19). Evidence is the frozen `v1.1.0` source at `774f55c`; this is an inventory, not approval to implement. `IMPLEMENTED` means the stated bounded contract exists, not parity with a commercial CAD system. `PARTIALLY IMPLEMENTED` means a usable subset exists; `FOUNDATIONAL ONLY` means supporting types or infrastructure exist without a complete user workflow; `NOT IMPLEMENTED` means no delivered capability was found. Test-file references establish automated coverage, not a fresh test run.
+Status: P0 FROZEN (2026-10-19). Evidence is the frozen `v1.1.0` source at `774f55c`; this is an inventory, not approval to implement. `IMPLEMENTED` means the stated bounded contract exists, not parity with a commercial CAD system. `PARTIALLY IMPLEMENTED` means a usable subset exists; `FOUNDATIONAL ONLY` means supporting types or infrastructure exist without a complete user workflow; `NOT IMPLEMENTED` means no delivered capability was found. Test-file references establish automated coverage, not a fresh test run. See [approved P0 decisions](PERSONAL_SOLIDWORKS_P0_DECISIONS.md) for planning status.
 
 | Capability / state | Module and contract; usable behavior | Limit and evolution risk | Test evidence; direct dependencies |
 |---|---|---|---|
