@@ -260,8 +260,8 @@ TEST(ProjectionNavigationTest, OrbitWorksInBothModesWithoutChangingZoomStates)
         input.y -= 10;
         orbit.handle(layout, input, camera);
         panZoom.handle(layout, input, camera, state);
-        EXPECT_GT(camera.yaw(), before.yaw());
-        EXPECT_GT(camera.pitch(), before.pitch());
+        EXPECT_LT(camera.yaw(), before.yaw());
+        EXPECT_LT(camera.pitch(), before.pitch());
         EXPECT_TRUE(almostEqual(camera.target(), before.target()));
         EXPECT_DOUBLE_EQ(camera.distance(), before.distance());
         EXPECT_DOUBLE_EQ(state.visibleHeight(), 10);

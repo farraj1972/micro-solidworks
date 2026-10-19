@@ -146,8 +146,8 @@ TEST(ViewerIntegration, OrbitPreservesViewConventions)
     Navigation navigation;
     const auto before = navigation.camera;
     navigation.drag(false);
-    EXPECT_GT(navigation.camera.yaw(), before.yaw());
-    EXPECT_GT(navigation.camera.pitch(), before.pitch());
+    EXPECT_LT(navigation.camera.yaw(), before.yaw());
+    EXPECT_LT(navigation.camera.pitch(), before.pitch());
     EXPECT_TRUE(almostEqual(navigation.camera.target(), before.target()));
     EXPECT_TRUE(almostEqual(navigation.camera.distance(), before.distance()));
     expectView(navigation.camera);
