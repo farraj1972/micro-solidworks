@@ -102,8 +102,20 @@ void appendPlanar(const topology::Solid& solid, const topology::Face& face,
     const auto axisY = math::cross(plane.normal(), axisX);
     const auto project=[&](const geometry::Point3&p){return ProjectedPoint{p,math::dot(p-plane.origin(),axisX),math::dot(p-plane.origin(),axisY)};};
     std::vector<ProjectedPoint> polygon;for(const auto&p:outer)polygon.push_back(project(p));if(signedArea(polygon)<0)std::reverse(polygon.begin(),polygon.end());
+    std::vector<std::vector<ProjectedPoint>> holes;
     for(const auto holeId:face.innerWires()){
         std::vector<ProjectedPoint> hole;for(const auto&p:wirePoints(solid,holeId))hole.push_back(project(p));if(signedArea(hole)>0)std::reverse(hole.begin(),hole.end());
+        holes.push_back(std::move(hole));
+    }
+    // Merge holes in projected order rather than topology insertion order;
+    // the latter changes after a parametric edit and can make bridges cross.
+    const auto rightmost=[](const std::vector<ProjectedPoint>& hole){
+        return std::max_element(hole.begin(),hole.end(),[](const auto&a,const auto&b){return a.x<b.x;})->x;
+    };
+    std::stable_sort(holes.begin(),holes.end(),[&](const auto&a,const auto&b){
+        return rightmost(a)<rightmost(b);
+    });
+    for(const auto& hole:holes){
         const auto h=static_cast<std::size_t>(std::distance(hole.begin(),std::max_element(hole.begin(),hole.end(),[](const auto&a,const auto&b){return a.x<b.x;})));
         std::size_t o=0;double best=std::numeric_limits<double>::infinity();for(std::size_t i=0;i<polygon.size();++i){const auto dx=polygon[i].x-hole[h].x,dy=polygon[i].y-hole[h].y,d=dx*dx+dy*dy;if(d<best){best=d;o=i;}}
         std::vector<ProjectedPoint> merged;for(std::size_t i=0;i<=o;++i)merged.push_back(polygon[i]);for(std::size_t i=0;i<hole.size();++i)merged.push_back(hole[(h+i)%hole.size()]);merged.push_back(hole[h]);merged.push_back(polygon[o]);for(std::size_t i=o+1;i<polygon.size();++i)merged.push_back(polygon[i]);polygon=std::move(merged);

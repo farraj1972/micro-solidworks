@@ -55,6 +55,17 @@ geometry::Point2 first(const RegionCurve2&v){return std::visit([](const auto&c){
 geometry::Point2 last(const RegionCurve2&v){return std::visit([](const auto&c){using T=std::decay_t<decltype(c)>;if constexpr(std::is_same_v<T,geometry::Segment2>)return c.b();else if constexpr(std::is_same_v<T,geometry::Arc2>)return c.endPoint();else return c.pointAt(0);},v);}
 geometry::Point2 middle(const RegionCurve2&v){return std::visit([](const auto&c){using T=std::decay_t<decltype(c)>;if constexpr(std::is_same_v<T,geometry::Circle2>)return c.pointAt(0);else return c.pointAt(0.5);},v);}
 RegionCurve2 reversed(const RegionCurve2&v){return std::visit([](const auto&c)->RegionCurve2{using T=std::decay_t<decltype(c)>;if constexpr(std::is_same_v<T,geometry::Segment2>)return geometry::Segment2{c.b(),c.a()};else if constexpr(std::is_same_v<T,geometry::Arc2>)return geometry::Arc2{c.center(),c.radius(),c.startAngle()+c.sweepAngle(),-c.sweepAngle()};else return c;},v);}
+std::vector<RegionCurve2> directedPieces(const RegionBoundaryUse& use,
+                                          const std::vector<geometry::Point2>& splitPoints)
+{
+    auto result = splitRegionCurve(use.curve, splitPoints);
+    if (use.reversed)
+    {
+        std::reverse(result.begin(), result.end());
+        for (auto& piece : result) piece = reversed(piece);
+    }
+    return result;
+}
 bool same(const geometry::Point2&a,const geometry::Point2&b){return geometry::areCoincident(a,b);}
 
 geometry::Intersection2 intersection(const RegionCurve2&a,const RegionCurve2&b)
@@ -73,13 +84,13 @@ geometry::Intersection2 intersection(const RegionCurve2&a,const RegionCurve2&b)
 
 std::vector<Piece> flatten(const PlanarRegionSet&s)
 {
- std::vector<Piece> out;auto add=[&](const RegionBoundary&b){for(const auto&u:b.uses){auto c=u.reversed?reversed(u.curve):u.curve;if(std::holds_alternative<geometry::Circle2>(c)){for(auto&p:splitRegionCurve(c,{}))out.push_back({u.source,p});}else out.push_back({u.source,c});}};
+ std::vector<Piece> out;auto add=[&](const RegionBoundary&b){for(const auto&u:b.uses)for(auto&piece:directedPieces(u,{}))out.push_back({u.source,piece});};
  for(const auto&r:s.regions){add(r.outer);for(const auto&h:r.holes)add(h);}return out;
 }
 
 std::vector<geometry::Point2> sample(const RegionBoundary&b)
 {
- std::vector<geometry::Point2> out;for(const auto&u:b.uses){auto c=u.reversed?reversed(u.curve):u.curve;std::visit([&](const auto&v){using T=std::decay_t<decltype(v)>;if constexpr(std::is_same_v<T,geometry::Segment2>)out.push_back(v.a());else if constexpr(std::is_same_v<T,geometry::Arc2>)for(int i=0;i<32;++i)out.push_back(v.pointAt(double(i)/32));else for(int i=0;i<64;++i)out.push_back(v.pointAt(twoPi*double(i)/64));},c);}return out;
+ std::vector<geometry::Point2> out;for(const auto&u:b.uses){for(const auto&c:directedPieces(u,{}))std::visit([&](const auto&v){using T=std::decay_t<decltype(v)>;if constexpr(std::is_same_v<T,geometry::Segment2>)out.push_back(v.a());else if constexpr(std::is_same_v<T,geometry::Arc2>)for(int i=0;i<32;++i)out.push_back(v.pointAt(double(i)/32));else for(int i=0;i<64;++i)out.push_back(v.pointAt(twoPi*double(i)/64));},c);}return out;
 }
 bool insidePolygon(const geometry::Point2&p,const std::vector<geometry::Point2>&poly){bool in=false;for(size_t i=0,j=poly.size()-1;i<poly.size();j=i++){const auto&a=poly[i],&b=poly[j];if(((a.y()>p.y())!=(b.y()>p.y()))&&p.x()<(b.x()-a.x())*(p.y()-a.y())/(b.y()-a.y())+a.x())in=!in;}return in;}
 bool materialAt(const geometry::Point2&p,const PlanarRegionSet&s){bool material=false;for(const auto&r:s.regions){if(insidePolygon(p,sample(r.outer))){bool hole=false;for(const auto&h:r.holes)if(insidePolygon(p,sample(h)))hole=!hole;if(!hole)material=true;}}return material;}
@@ -142,7 +153,7 @@ RegionBooleanResult partitionPlanarRegions(const PlanarRegionSet&regions,const P
  if(!regions.valid()||!splitter.valid())return{RegionBooleanStatus::Ambiguous,{},"Invalid planar region input"};
  try{
   const auto cutters=detail::flatten(splitter);PlanarRegionSet output=regions;
-  auto partition=[&](RegionBoundary&boundary){RegionBoundary result;for(const auto&use:boundary.uses){auto curve=use.reversed?detail::reversed(use.curve):use.curve;std::vector<geometry::Point2>points;for(const auto&other:cutters){const auto hit=detail::intersection(curve,other.curve);if(hit.kind==geometry::IntersectionKind::Overlap||hit.kind==geometry::IntersectionKind::Coincident||hit.kind==geometry::IntersectionKind::Ambiguous)throw std::invalid_argument{"Ambiguous coincident planar boundaries"};points.insert(points.end(),hit.points.begin(),hit.points.end());}for(auto&piece:detail::splitRegionCurve(curve,points))result.uses.push_back({use.source,std::move(piece),false});}boundary=std::move(result);};
+  auto partition=[&](RegionBoundary&boundary){RegionBoundary result;for(const auto&use:boundary.uses){std::vector<geometry::Point2>points;for(const auto&other:cutters){const auto hit=detail::intersection(use.curve,other.curve);if(hit.kind==geometry::IntersectionKind::Overlap||hit.kind==geometry::IntersectionKind::Coincident||hit.kind==geometry::IntersectionKind::Ambiguous)throw std::invalid_argument{"Ambiguous coincident planar boundaries"};points.insert(points.end(),hit.points.begin(),hit.points.end());}for(auto&piece:detail::directedPieces(use,points))result.uses.push_back({use.source,std::move(piece),false});}boundary=std::move(result);};
   for(auto&region:output.regions){partition(region.outer);for(auto&hole:region.holes)partition(hole);}return{RegionBooleanStatus::Success,std::move(output),{}};
  }catch(const std::exception&e){return{RegionBooleanStatus::Ambiguous,{},e.what()};}
 }

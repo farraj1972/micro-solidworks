@@ -1,5 +1,7 @@
 # V1.2-PLAN-R1 — Reference Geometry Preflight
 
+**R2 corrective result (2026-10-20): PASS WITH LIMITATIONS / EXPERIENCE PENDING.** The R1 failure below is preserved as historical evidence. The exact reference CAD chain, edits, history and `.microsw` v2 roundtrip now pass permanent automated tests. A simple application smoke was confirmed by the owner; the complete interactive N2 Experience Gate remains pending. This correction does not authorize V1.2-C1–C4.
+
 **Result: FIX REQUIRED.** Evidence cut: `master` after SPEC-01.FREEZE (`fec2c9e`), 2026-10-19. The frozen `v1.1.0` executable source and 69 accepted ADRs were not changed. This is a domain/API and targeted automated preflight, **not** an interactive Experience Gate or authorization of V1.2-C1–C4.
 
 ## Objective, fixture and reference frames
@@ -48,3 +50,23 @@ Validation level: **V2 targeted integration** because the fixture crosses Sketch
 **V1.2-C1 entry is not ready for this N2 fixture.** The minimum correction is a separately authorized, regression-tested repair of blind axial subtraction's shell orientation/partition for a target with an inner circular void, preserving existing topology and ownership contracts. First reproduce with the exact coordinates above, then verify valid closed outward shell, exact hole/pocket topology, CAD volume and AABB, width/depth edit, Undo/Redo, deterministic rebuild and `.microsw` v2 Save/Open; only then seek owner review of C1–C4. An alternative is an owner-approved fixture/scope revision with equivalent N2 user value. Do not silently remove the through-hole, change the sequence to chained Cuts, claim manual success, or begin STL export/Windows packaging to bypass this failure.
 
 The final K1/K2/K3 kernel choice remains OPEN; this failure alone does not authorize a new dependency or ADR change. Export-quality tessellation, mesh watertightness, slicer scale, Windows portable distribution and human workflow remain future gates, not evidence from this preflight.
+
+## R2 — Corrective geometry closure (2026-10-20)
+
+The permanent `AxialSubtraction.PreservesThroughHoleDuringIndependentBlindPockets` reproduction failed before the repair with `Incident Faces must traverse a shared Edge oppositely`. Instrumentation localized the invalid shared edge to edge 14, from `(-18,0,6)` to `(-26,0,6)`, on the existing through-hole at the Z=6 axial slab interface. Its incident cylindrical faces 5 and 16, with outer wires 6 and 17, both recorded `Reversed` traversal. The error was not a duplicate pocket floor or a failure of the manifold validator. In `PlanarRegionBoolean`, a reversed circular inner boundary lost its direction when split because `Circle2` itself carries no orientation. The resulting lower and upper cylindrical segments then traversed their shared edge in the same direction.
+
+The correction splits exact region curves first, then reverses both the sequence and direction of pieces for a reversed boundary. `flatten`, `sample` and `partitionPlanarRegions` now use the same directed pieces. Exact CAD curves, topology validation and the CAD/render separation remain intact. A second, derived-display defect appeared after the width edit: bridging two top-cap holes in insertion order omitted much of the cap triangulation. `SolidDisplay` now bridges projected holes in deterministic increasing rightmost-X order. This affects visualization only; the CAD Solid remained valid. The permanent display regression checks cap and pocket-floor triangle areas for both widths. View tessellation has not been qualified for STL export.
+
+| R2 check | Observed automated result |
+|---|---|
+| Base Extrude and Cut | Complete `FeatureModel::rebuild` succeeds; one valid closed Solid retains the analytic through-hole and blind pocket. EndCap and PocketFloor semantic faces resolve. |
+| Topology | Every edge has exactly two incident faces with opposite traversal; cylindrical through-hole faces and planar faces with inner wires remain present. No material-material internal face at the pocket floor. Existing no-hole/pocket, circular-pocket, split and multibody regressions pass. |
+| Initial CAD volume | Independent shell integration over exact horizontal planar wire curves: `31,093.876140` mm³ observed, versus `31,093.8761403405` mm³ analytic; assertion tolerance `10⁻⁶` mm³. |
+| Initial CAD AABB | X `[-40,40]`, Y `[-25,25]`, Z `[0,8]`, matching oracle. |
+| Width 80→90, depth 2 | `35,093.876140` mm³; X `[-45,45]`, Y `[-25,25]`, Z `[0,8]`. Hole and pocket keep their fixed local centres. |
+| Width 90, depth 2→3 | `34,841.876140` mm³ observed, versus `34,841.8761403405` mm³ analytic; same edited AABB, floor Z=5. |
+| History and persistence | Width/depth edits, Undo/Redo, `.microsw` v2 Save/Open and deterministic rebuild preserve geometry, feature dependencies and semantic support. |
+
+The volume measurement uses the authoritative topology's analytic segments and circular arcs, not display triangles. The `10⁻⁶` mm³ assertion tolerance is much tighter than the proposed 1 mm³ product tolerance and accommodates floating-point integration. The permanent tests are `AxialSubtraction.PreservesThroughHoleDuringIndependentBlindPockets`, `PersistenceSessionHistory.HoledReferencePlateSurvivesEditsHistoryAndVersionTwoRoundtrip` and `SolidDisplay.MultiHoleTopCapKeepsFullAreaAfterPlateWidthEdit`.
+
+Validation used incremental Debug builds of `micro_solidworks_tests` and `micro_solidworks`. Focused V1/V2 regression across planar regions, axial subtraction, general extrusion, FeatureModel, persistence/session history and SolidDisplay passed **78/78**. Full CTest/V3, unrelated historical suites and clean configure/build were intentionally omitted under impact-based validation. The owner confirmed the directed application smoke passed and closed normally after native capture timed out twice. The complete N2 interaction/Experience Gate was **not** performed, and STL/export mesh quality, slicer and packaging remain unverified. P0, SPEC-01, `v1.1.0`, all 69 accepted ADRs and the open K1/K2/K3 kernel decision are unchanged. The technical geometry blocker to proposed C1 is corrected; owner review remains required, and V1.2-C1–C4 remain unauthorized.

@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <cmath>
+#include <map>
 
 using namespace microsw;
 
@@ -38,6 +40,57 @@ TEST(AxialSubtraction, BuildsExactCircularBlindHole)
     ASSERT_EQ(result.solids.size(),1u);
     EXPECT_TRUE(std::any_of(result.solids.front().faces().begin(),result.solids.front().faces().end(),
         [](const auto&face){return std::holds_alternative<geometry::Cylinder>(face.support());}));
+}
+
+TEST(AxialSubtraction, PreservesThroughHoleDuringIndependentBlindPockets)
+{
+    sketch::Sketch plate;
+    (void)plate.addRectangle({-40, -25}, {40, 25});
+    (void)plate.addCircle({{-22, 0}, 4});
+    sketch::Sketch rectangularPocket;
+    (void)rectangularPocket.addRectangle({7, -7}, {25, 7});
+    sketch::Sketch circularPocket;
+    (void)circularPocket.addCircle({{16, 0}, 7});
+
+    for (const auto& cutter : {rectangularPocket, circularPocket})
+    {
+        const auto result = features::subtractAxialRegions(
+            features::extractPlanarRegions(plate), planeAt(0), 8,
+            features::extractPlanarRegions(cutter), planeAt(8), {0, 0, -1}, 2);
+        ASSERT_EQ(result.status, features::AxialSubtractionStatus::Success)
+            << result.diagnostic;
+        ASSERT_EQ(result.solids.size(), 1u);
+        const auto& solid = result.solids.front();
+        ASSERT_TRUE(solid.isValid());
+        std::map<topology::EdgeId::Value,std::vector<int>> incidence;
+        std::size_t planarFacesWithHoles=0, cylindricalFaces=0, pocketFloorFaces=0;
+        for(const auto& faceUse:solid.rootShell().uses()){
+            const auto& face=solid.find(faceUse.face);
+            if(std::holds_alternative<geometry::Cylinder>(face.support()))++cylindricalFaces;
+            if(const auto* plane=std::get_if<geometry::Plane>(&face.support())){
+                if(!face.innerWires().empty())++planarFacesWithHoles;
+                if(std::abs(plane->origin().z()-6)<1e-9
+                    && std::abs(plane->normal().z())>0.9)++pocketFloorFaces;
+            }
+            const auto record=[&](topology::WireId wire){
+                for(const auto& use:solid.find(wire).uses()){
+                    const int edgeDirection=use.orientation==topology::EdgeOrientation::Forward?1:-1;
+                    const int faceDirection=faceUse.orientation==topology::FaceOrientation::Forward?1:-1;
+                    incidence[use.edge.value()].push_back(edgeDirection*faceDirection);
+                }
+            };
+            record(face.outerWire());
+            for(const auto inner:face.innerWires())record(inner);
+        }
+        EXPECT_EQ(incidence.size(),solid.edges().size());
+        for(const auto& [edge, traversals]:incidence){
+            ASSERT_EQ(traversals.size(),2u) << "edge " << edge;
+            EXPECT_EQ(traversals[0],-traversals[1]) << "edge " << edge;
+        }
+        EXPECT_GE(planarFacesWithHoles,2u);
+        EXPECT_GE(cylindricalFaces,2u);
+        EXPECT_EQ(pocketFloorFaces,1u);
+    }
 }
 
 TEST(AxialSubtraction, SupportsFullDepthSplitAndEmptyResults)

@@ -4,6 +4,7 @@
 #include "features/GeneralExtrusion.h"
 #include "features/PlanarRegion.h"
 #include "features/FeatureModel.h"
+#include "features/AxialSubtraction.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cmath>
@@ -71,5 +72,33 @@ TEST(SolidDisplay, BlindPocketDoesNotExposeCoplanarOuterFaceSeams)
  };
  EXPECT_EQ(std::count_if(display.edges.begin(),display.edges.end(),outerSeam),0);
  EXPECT_GT(std::count_if(display.edges.begin(),display.edges.end(),[](const auto&e){return e.points.size()>2;}),0);
+}
+TEST(SolidDisplay, MultiHoleTopCapKeepsFullAreaAfterPlateWidthEdit)
+{
+ const sketch::SketchPlane basePlane;
+ const sketch::SketchPlane topPlane{{0,0,8},{1,0,0},{0,1,0}};
+ sketch::Sketch pocket;(void)pocket.addRectangle({7,-7},{25,7});
+ for(const double halfWidth:{40.0,45.0}){
+  sketch::Sketch base;(void)base.addRectangle({-halfWidth,-25},{halfWidth,25});
+  (void)base.addCircle({{-22,0},4});
+  const auto cut=features::subtractAxialRegions(features::extractPlanarRegions(base),basePlane,8,
+   features::extractPlanarRegions(pocket),topPlane,{0,0,-1},2);
+  ASSERT_EQ(cut.status,features::AxialSubtractionStatus::Success)<<cut.diagnostic;
+  ASSERT_EQ(cut.solids.size(),1u);
+  const auto display=presentation::deriveSolidDisplay(cut.solids.front(),features::FeatureId{9},{0});
+  double topArea=0,bottomArea=0,floorArea=0;
+  for(const auto&triangle:display.triangles){
+   const auto&a=triangle.points[0],&b=triangle.points[1],&c=triangle.points[2];
+   if(std::abs(a.z()-b.z())>1e-9||std::abs(a.z()-c.z())>1e-9)continue;
+   const auto area=math::cross(b-a,c-a).length()/2;
+   if(std::abs(a.z()-8)<1e-9)topArea+=area;
+   else if(std::abs(a.z())<1e-9)bottomArea+=area;
+   else if(std::abs(a.z()-6)<1e-9)floorArea+=area;
+  }
+  const auto tessellatedHoleArea=24.0*16.0*std::sin(std::numbers::pi/24.0);
+  EXPECT_NEAR(bottomArea,2*halfWidth*50-tessellatedHoleArea,1e-6);
+  EXPECT_NEAR(topArea,2*halfWidth*50-tessellatedHoleArea-18*14,1e-6);
+  EXPECT_NEAR(floorArea,18*14,1e-6);
+ }
 }
 }
