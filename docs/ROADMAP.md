@@ -6,16 +6,18 @@
 Vision: APPROVED
 V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
 V1.1.0: FROZEN after Technical and Experience Gates
+P0 — Personal SolidWorks Product & Architecture Review: REVIEW READY
 V1.2+: NOT APPROVED; requires Product & Architecture Review
 Dependency policy: remains in force until a specific architectural decision
 ```
 
 Product reliability and completion of bounded mechanical-engineering
 workflows take priority from V1.1-C5 onward. The earlier educational roadmap
-and frozen baselines remain historically accurate. The next activity after
-V1.1.0 is `Personal SolidWorks — Product & Architecture Review`, to identify
-priority part workflows, kernel limits and interoperability requirements. It
-does not authorize implementation of later features.
+and frozen baselines remain historically accurate. The P0 review following
+V1.1.0 records priority part workflows, kernel limits and interoperability
+requirements in `docs/PERSONAL_SOLIDWORKS_PRODUCT_ARCHITECTURE_REVIEW.md`.
+Its separate v1.2+ roadmap is PROPOSED / NOT APPROVED and does not authorize
+implementation of later features.
 
 ## Canonical MVP Roadmap
 
@@ -1176,5 +1178,5 @@ general additive Extrude, solid shading and face/edge selection, Feature
 Manager hierarchy, Undo/Redo and document safety, Sketch-on-Face, exact axial
 Cut Extrude, persistence v2 with v1 migration, feature deletion, feature
 editing and rename, and readable rebuild diagnostics. Scope and evidence are
-in `docs/V1_1_0_RELEASE.md`. The next activity is the Personal SolidWorks
-Product & Architecture Review; it does not authorize v1.2 implementation.
+in `docs/V1_1_0_RELEASE.md`. The subsequent P0 Product & Architecture Review
+is REVIEW READY; its proposal does not authorize v1.2 implementation.

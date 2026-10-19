@@ -1,0 +1,15 @@
+# P0 — Owner Decision Package
+
+Status: **REVIEW READY — ALL CHOICES BELOW PENDING OWNER APPROVAL** (2026-10-19). The Personal SolidWorks *vision* is already APPROVED; no new product scope or architecture is approved by this P0 review. Read with the [review](PERSONAL_SOLIDWORKS_PRODUCT_ARCHITECTURE_REVIEW.md), [capability matrix](PERSONAL_SOLIDWORKS_CAPABILITY_MATRIX.md) and [roadmap proposal](PERSONAL_SOLIDWORKS_ROADMAP_PROPOSAL.md).
+
+| No. | Owner decision requested | Recommended proposal and trade-off | If deferred / evidence needed |
+|---|---|---|---|
+| 1 | **Target user and workflow** | Start with one person designing simple 3D-printable mechanical adapter/repair plates. It is narrow enough to test end-to-end. | Owner supplies actual part dimensions, printer/slicer and acceptable fit; CNC/assembly priorities would change the plan. |
+| 2 | **Product positioning and name** | Keep repository/product name **Micro SolidWorks** technically; use **Personal SolidWorks** as working vision only. Claim bounded workflow replacement, not compatibility/parity. | Conduct trademark/name review before public branding or distribution. |
+| 3 | **Kernel strategy** | Keep internal kernel for first axial-prismatic N2; authorize a separate, reversible OCCT K3 spike before broader geometry. Do not approve migration yet. | Need measured Boolean/fillet/STEP, face mapping, v1/v2 reconstruction, license and Windows package results; K1-only and K2 remain alternatives. |
+| 4 | **Interoperability order** | STL export first for print handoff; then select DXF for planar cutting *or* STEP for exact exchange based on next job. IGES and 3MF later. | Confirm whether an actual workflow requires exact CAD/drawing rather than mesh. |
+| 5 | **First N2 milestone** | Dimension/edit a prismatic adapter plate with axial through-hole and blind pocket, Save/Open, export validated watertight STL, import to slicer and make/use the part without SolidWorks. | Fixture, units, tessellation tolerance, independent slicer and acceptance dimensions need owner definition. |
+| 6 | **v1.2 scope/sequence** | Prefer R2 workflow-first practical printed part, reliability and portable Windows Release gate. Defer unrelated modeling commands, exact exchange and assemblies. | Approve only after representative fixture shows current Cut contract suffices, or authorize a separate correction gate. |
+| 7 | **Future Decision Gates** | Gate kernel/representation/dependency policy; exact CAD exchange/document identity; persistent topological naming; history suppression/reorder; and assembly ownership only when chosen workflows need them. | No ADR is created or accepted in P0; accepted ADR-0001–0069 remain binding. |
+
+**Approval does not follow from silence.** The owner may approve, modify or reject each proposal. Approval of a workflow/roadmap should name its actual bounded increments and required validation before implementation under `AGENTS.md`. A kernel, technology or dependency change additionally requires an explicit architecture decision and any superseding ADR. The frozen `v1.1.0` release, existing history and dependency policy remain intact meanwhile.
