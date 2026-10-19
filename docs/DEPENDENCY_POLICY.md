@@ -259,3 +259,7 @@ new dependency. Generated-face provenance is derived at the Features over
 Modeling/Topology boundary; persistence stores only FeatureId plus semantic role.
 No external kernel, persistent FaceId, generic naming framework or schema v3 is
 authorized by D20.
+
+V1.1-C4 is FROZEN and conformant with this BUILD strategy. The final executable
+adds no dependency and preserves Features → Modeling/Topology/Geometry/Math,
+Persistence → Features and Application/UI → Interaction/Presentation/Features.

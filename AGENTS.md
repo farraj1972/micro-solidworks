@@ -1212,7 +1212,7 @@ D17: FROZEN
 ADR-0061-0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C3: FROZEN
-V1.1-C4: IN PROGRESS
+V1.1-C4: FROZEN
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel. Modeling
 features are primary nodes; an Extrude visually absorbs its primary Sketch and
@@ -1281,7 +1281,7 @@ persistence v2 with v1 migration. Raw topology IDs remain rebuild-local;
 B11 remains frozen. D18-R1 restricts C4 exact subtraction to directions parallel
 or anti-parallel to recoverable target extrusion axes. Oblique cuts requiring
 conic boundaries return UNSUPPORTED_TARGET transactionally; conic topology is
-deferred to a future Decision Gate. V1.1-C4 is IN PROGRESS.
+deferred to a future Decision Gate. V1.1-C4 is FROZEN.
 
 D19 — Arbitrary Viewer Orientation & Normal-To Semantics
 STATUS: FROZEN
@@ -1298,7 +1298,7 @@ D20 - Feature Deletion & General Semantic Planar-Face Support
 STATUS: FROZEN
 ADR-0068-0069: ACCEPTED
 ADR inventory: 69/69 ACCEPTED
-V1.1-C4: FIX REQUIRED / NEXT ACTIVE AFTER D20 FREEZE
+V1.1-C4: FROZEN
 
 The frozen decision selects atomic recursive dependant-closure deletion with explicit
 confirmation for non-leaf closures, retired forward FeatureIds, exact checkpoint
@@ -1308,4 +1308,4 @@ and a single-region PocketFloor. Every role must resolve to exactly one planar
 Face; missing or ambiguous roles fail without reattachment. Raw topology IDs
 remain derived and .microsw v2 is extended compatibly. D20 extends semantic
 generated-face support without introducing general persistent topological naming.
-V1.1-C4 corrective implementation is now the next authorized work.
+V1.1-C4 implements the D20 correction and is FROZEN after a clean full Debug build, zero project warnings, 899/899 tests, runtime exit code 0 and an APPROVED manual Experience Gate. ADR-0064-0069 are CONFORMANT. V1.1-C5 - Feature Workflow Hardening is the next roadmap item, subject to review and explicit authorization.

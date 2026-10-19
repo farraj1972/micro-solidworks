@@ -110,7 +110,8 @@ Latest validated snapshot (V1.1-C2A): 837/837 tests PASS, runtime and Experience
 D17 — Document Safety, Undo/Redo & Session History Semantics: FROZEN
 ADR-0061–0063: ACCEPTED (63/63 total)
 V1.1-C3 — Document Safety, Undo/Redo & Session Workflow: FROZEN
-V1.1-C4 — Subtractive Modeling & Sketch-on-Face: IN PROGRESS
+V1.1-C4 — Subtractive Modeling & Sketch-on-Face: FROZEN
+Latest validated snapshot (V1.1-C4): 899/899 tests PASS, runtime and Experience Gate PASS, 0 warnings
 ```
 
 Use Vertical Slice First and the Canonical MVP Roadmap / Implementation Mapping
@@ -675,7 +676,7 @@ Save / Don't Save / Cancel protection for New, Open and both exit paths. See
 `docs/V1_1_C3_VALIDATION.md`. D18 freezes the V1.1-C4 contract; see
 `docs/V1_1_C4_PREREQUISITE_REVIEW.md` and ADR-0064–0066.
 
-D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. D18-R1 restricts C4 exact subtraction to directions parallel or anti-parallel to recoverable target extrusion axes; unsupported oblique cuts return `UNSUPPORTED_TARGET`, and conic topology remains deferred. V1.1-C4 implementation is in progress.
+D18 is FROZEN in accepted ADR-0064–0066. It freezes semantic single-body Extrude cap support, exact prismatic Cut Extrude, and persistence v2 with v1 migration. D18-R1 restricts C4 exact subtraction to directions parallel or anti-parallel to recoverable target extrusion axes; unsupported oblique cuts return `UNSUPPORTED_TARGET`, and conic topology remains deferred. V1.1-C4 is implemented and FROZEN.
 
 D19 is FROZEN in accepted ADR-0067 (67/67 accepted). Viewer orientation becomes
 one authoritative arbitrary orthonormal basis; Normal To maps SketchPlane +X/+Y
@@ -684,5 +685,6 @@ to screen right/up without adding an external Math dependency or Roll UI.
 D20 is FROZEN in accepted ADR-0068–0069. It freezes atomic
 recursive dependant-closure Feature deletion and narrow semantic generated-face
 support for unambiguous Cut caps and a single-region pocket floor. ADR inventory:
-69/69 ACCEPTED. V1.1-C4 remains FIX REQUIRED / NEXT ACTIVE AFTER D20 FREEZE;
-no D20 corrective executable work has started.
+69/69 ACCEPTED. D20 is implemented and conformant. V1.1-C4 is FROZEN after
+899/899 tests, runtime validation and an approved Experience Gate. V1.1-C5 is
+the next roadmap item, subject to review and explicit authorization.

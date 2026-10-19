@@ -782,8 +782,8 @@ initial v1.1 roadmap is:
 | V1.1-C2 — Solid Visualization & Selection | FROZEN | Derived shaded solids, topology-edge overlay, logical face/edge selection, multi-body display, Fit/views and visibility validated under ADR-0056–0058 |
 | V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | FROZEN | Safe authoritative history, native document workflow and unsaved-change protection |
-| V1.1-C4 — Subtractive Modeling & Sketch-on-Face | IN PROGRESS | Frozen D18/D18-R1 contract: associative Extrude-cap Sketch support, exact axial Cut Extrude and persistence v2 |
-| V1.1-C5 — Feature Workflow Hardening | PLANNED / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
+| V1.1-C4 — Subtractive Modeling & Sketch-on-Face | FROZEN | Semantic generated-face Sketch support, exact axial Cut Extrude, persistence v2, feature deletion and approved CAD workflow |
+| V1.1-C5 — Feature Workflow Hardening | NEXT / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
 
 V1.1-C1 is graphics-area centric, mouse-first, context-sensitive and icon/tool
 driven. Its conceptual workspace is:
@@ -980,7 +980,7 @@ ADR-0059–0060: ACCEPTED
 ADR inventory: 60/60 ACCEPTED
 V1.1-C2A: FROZEN
 V1.1-C3: FROZEN
-V1.1-C4: IN PROGRESS
+V1.1-C4: FROZEN
 ```
 
 Frozen D16 defines a CAD-first Feature Manager derived from FeatureModel rather than a
@@ -1016,7 +1016,7 @@ ADR-0061–0063: ACCEPTED
 ADR inventory: 63/63 ACCEPTED
 V1.1-C2A: FROZEN
 V1.1-C3: FROZEN
-V1.1-C4: IN PROGRESS
+V1.1-C4: FROZEN
 ```
 
 D17 freezes Application-owned document dirty and saved-baseline state distinct
@@ -1056,7 +1056,7 @@ and persistence evolution. V1.1-C5 remains Feature Workflow Hardening.
 STATUS: FROZEN
 ADR-0064–0066: ACCEPTED
 ADR inventory: 66/66 ACCEPTED
-V1.1-C4: IN PROGRESS
+V1.1-C4: FROZEN
 ```
 
 D18 freezes Option B: semantic StartCap/EndCap support on single-body Extrudes, associative Sketch planes, exact Blind subtraction over all intersected bodies in an explicit target result, 0..N transactional outputs, and persistence v2 with v1 migration. Through All, general topological naming and arbitrary face support remain outside C4.
@@ -1074,7 +1074,7 @@ topology are DEFERRED and require a future Decision Gate.
 STATUS: FROZEN
 ADR-0067: ACCEPTED
 ADR inventory: 67/67 ACCEPTED
-V1.1-C4: IN PROGRESS
+V1.1-C4: FROZEN
 ```
 
 D19 replaces authoritative yaw/pitch orientation with a Viewer-owned arbitrary
@@ -1088,7 +1088,7 @@ contract; camera Roll UI and persisted view state remain deferred.
 STATUS: FROZEN
 ADR-0068–0069: ACCEPTED
 ADR inventory: 69/69 ACCEPTED
-V1.1-C4: FIX REQUIRED / NEXT ACTIVE AFTER D20 FREEZE
+V1.1-C4: FROZEN
 ```
 
 The frozen decision defines atomic deletion of the selected feature and its transitive
@@ -1103,6 +1103,7 @@ fail without geometric reattachment. Raw FaceId and body indices remain derived;
 the additive role tokens remain compatible with `.microsw` v2. Side,
 cylindrical, Boolean, multi-region and multi-body face support remains deferred.
 
-C4 is the next active corrective implementation. It remains FIX REQUIRED until
-D20 is implemented, covered by the deletion and Sketch-on-Cut-face Experience
-scenarios, and validated by final V3.
+C4 implements the D20 correction and is FROZEN after its approved Experience
+Gate, clean full Debug build, 899/899 tests and clean runtime shutdown. Feature
+deletion, generated-face support, sketch visibility/dimension editing and
+feature-edit state are validated. V1.1-C5 is next, subject to review.

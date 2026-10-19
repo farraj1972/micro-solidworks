@@ -1507,7 +1507,7 @@ adapter and do not enter CAD modules.
 
 D18 is FROZEN in accepted ADR-0064–0066. Face-supported Sketch stores a semantic single-body Extrude StartCap/EndCap reference; topology/body IDs remain derived. Rebuild resolves a deterministic SketchPlane before solving and blocks dependants on failure without reattachment.
 
-Cut Extrude stores source Sketch and target-result FeatureIds, Blind distance and direction. Project-owned exact prismatic subtraction handles D14 analytic regions transactionally and returns 0..N Solids; B11 remains unchanged. D18-R1 restricts the C4 kernel to cutting directions parallel or anti-parallel to every affected body's recoverable extrusion axis. Unsupported oblique cuts fail transactionally with `UNSUPPORTED_TARGET`; C4 does not approximate conic boundaries or derive topology from tessellation. Persistence v2 stores the new authoritative values and migrates v1 through versioned DTOs. C4 implementation is in progress.
+Cut Extrude stores source Sketch and target-result FeatureIds, Blind distance and direction. Project-owned exact prismatic subtraction handles D14 analytic regions transactionally and returns 0..N Solids; B11 remains unchanged. D18-R1 restricts the C4 kernel to cutting directions parallel or anti-parallel to every affected body's recoverable extrusion axis. Unsupported oblique cuts fail transactionally with `UNSUPPORTED_TARGET`; C4 does not approximate conic boundaries or derive topology from tessellation. Persistence v2 stores the new authoritative values and migrates v1 through versioned DTOs. C4 is implemented and FROZEN.
 
 ## D19 — Arbitrary Viewer orientation and Normal To
 
@@ -1531,3 +1531,9 @@ decision adds unambiguous single-body Cut inherited caps and a single-region
 provenance. Missing or ambiguous roles fail without reattachment. FaceId and
 body index remain rebuild-local and absent from persistence. `.microsw` v2 gains
 compatible semantic-role tokens; generic topological naming remains deferred.
+
+V1.1-C4 implements these contracts without changing their ownership boundary.
+Presentation derives subdued visible Sketch references, while Application-owned
+editor state suppresses dependant solid display during Sketch editing and keeps
+completed Extrude/Cut parameters inactive until an explicit Edit action. The
+campaign is FROZEN after 899/899 tests and an approved Experience Gate.
