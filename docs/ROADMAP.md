@@ -1,5 +1,22 @@
 # Micro SolidWorks — Roadmap
 
+## Visão estratégica actual — Personal SolidWorks
+
+```text
+Vision: APPROVED
+V1.1-C5: approved Feature Workflow Hardening scope, unchanged
+V1.1.0: next release to freeze after Technical and Experience Gates
+V1.2+: NOT APPROVED; requires Product & Architecture Review
+Dependency policy: remains in force until a specific architectural decision
+```
+
+Product reliability and completion of bounded mechanical-engineering
+workflows take priority from V1.1-C5 onward. The earlier educational roadmap
+and frozen baselines remain historically accurate. The next activity after
+V1.1.0 is `Personal SolidWorks — Product & Architecture Review`, to identify
+priority part workflows, kernel limits and interoperability requirements. It
+does not authorize implementation of later features.
+
 ## Canonical MVP Roadmap
 
 Este é o roadmap funcional oficial até MVP. A numeração não muda com a

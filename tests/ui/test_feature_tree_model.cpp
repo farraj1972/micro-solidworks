@@ -28,11 +28,15 @@ TEST(FeatureTreeModel, ExtrudeAbsorbsSketchWithoutDuplicate)
     microsw::features::FeatureModel model;
     const auto sketch = model.addSketch(rectangle(0));
     const auto extrude = model.addExtrude(sketch, 2);
+    model.renameFeature(sketch, "Base Sketch");
+    model.renameFeature(extrude, "Base");
     const auto tree = microsw::ui::deriveFeatureTree(model);
     ASSERT_EQ(tree.roots.size(), 1u);
     EXPECT_EQ(tree.roots.front().featureId, extrude);
+    EXPECT_EQ(tree.roots.front().displayName, "Base");
     ASSERT_EQ(tree.roots.front().children.size(), 1u);
     EXPECT_EQ(tree.roots.front().children.front().featureId, sketch);
+    EXPECT_EQ(tree.roots.front().children.front().displayName, "Base Sketch");
 }
 
 TEST(FeatureTreeModel, PreservesRootHistoryAndKeepsBooleanAtRoot)
@@ -98,4 +102,22 @@ TEST(FeatureTreeModel, CutExtrudeAbsorbsItsProfileSketch)
     EXPECT_EQ(tree.roots[1].featureId,cut);
     ASSERT_EQ(tree.roots[1].children.size(),1u);
     EXPECT_EQ(tree.roots[1].children.front().featureId,profile);
+}
+
+TEST(FeatureTreeModel, BlockedDiagnosticNamesFailedUpstreamFeature)
+{
+    microsw::features::FeatureModel model;
+    const auto source = model.addSketch(rectangle(0));
+    const auto extrude = model.addExtrude(source, 2);
+    const auto second = model.addExtrude(model.addSketch(rectangle(0.5)), 2);
+    const auto dependent = model.addBoolean(extrude, second,
+        microsw::modeling::BooleanOperation::Union);
+    ASSERT_EQ(model.rebuild().status, microsw::features::RebuildStatus::Success);
+    model.editSketch(source, [](auto& sketch) { sketch = {}; });
+    const auto result = model.rebuild();
+    ASSERT_EQ(result.status, microsw::features::RebuildStatus::Failed);
+    EXPECT_EQ(model.find(dependent).state(), microsw::features::FeatureState::BlockedByDependency);
+    const auto message = microsw::ui::featureStatusDescription(model, dependent);
+    EXPECT_NE(message.find("Extrude1"), std::string::npos);
+    EXPECT_EQ(message.find("FeatureId"), std::string::npos);
 }

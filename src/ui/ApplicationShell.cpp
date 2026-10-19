@@ -3,11 +3,15 @@
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
 #include "features/PlanarRegion.h"
+#include "core/geometry/GeometricTolerance.h"
 #include "ui/FeatureTreeModel.h"
 
 #include <imgui.h>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <cstring>
+#include <cstdint>
 #include <functional>
 #include <numbers>
 #include <string_view>
@@ -27,6 +31,7 @@ constexpr float statusBarHeight = 26.0F;
 constexpr float commandBarHeight = 88.0F;
 
 enum class CadIcon { New, Open, Save, SaveAs, Rebuild, Sketch, ExitSketch, Select,
+    Boolean,
     Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude, CutExtrude, Undo, Redo };
 
 void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
@@ -81,6 +86,8 @@ void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
         draw->AddRect({x-11,y-5},{x+3,y+9},color,0,0,2); draw->AddRect({x-3,y-11},{x+11,y+3},color,0,0,2);
         line(-11,-5,-3,-11); line(3,-5,11,-11); line(3,9,11,3);
         circle(0,-1,4,2); line(-3,-4,3,2,2); break;
+    case CadIcon::Boolean:
+        circle(-4,0,8); circle(4,0,8); line(-1,-5,1,5,2); break;
     case CadIcon::Undo:
     case CadIcon::Redo:
         draw->PathArcTo({x,y+2},9,icon==CadIcon::Undo?-0.5F:-2.6F,icon==CadIcon::Undo?-3.8F:0.6F,18);
@@ -136,6 +143,41 @@ ApplicationShell::ApplicationShell(ApplicationWindow& window)
     : window_{window}
 {
     Logger::info("Application shell initialized");
+}
+
+void ApplicationShell::beginFeatureEdit(features::FeatureId id, const features::FeatureModel& model)
+{
+    const auto& feature = model.find(id);
+    selectedFeature_ = id;
+    editingFeature_.reset();
+    propertyManagerVisible_ = true;
+    if (feature.kind() == features::FeatureKind::Sketch)
+    {
+        enterSketchRequest_ = true;
+        return;
+    }
+    if (feature.kind() == features::FeatureKind::Boolean) return;
+    editingFeature_ = id;
+    featureEditorEntity_ = id;
+    if (feature.kind() == features::FeatureKind::Extrude)
+        featureDepthDraft_ = std::get<features::ExtrudeFeature>(feature.data()).distance;
+    else
+    {
+        const auto& cut = std::get<features::CutExtrudeFeature>(feature.data());
+        featureDepthDraft_ = cut.distance;
+        featureReverseDraft_ = cut.direction == features::CutDirection::Reverse;
+    }
+}
+
+void ApplicationShell::beginFeatureRename(features::FeatureId id, const features::FeatureModel& model)
+{
+    selectedFeature_ = id;
+    renamingFeature_ = id;
+    renameDraft_.fill('\0');
+    const auto& name = model.find(id).displayName();
+    std::memcpy(renameDraft_.data(), name.data(), std::min(name.size(), renameDraft_.size()-1));
+    renameError_.clear();
+    openRenamePopup_ = true;
 }
 
 void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected)
@@ -196,7 +238,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false; sketchPlaneRequest_.reset();
     confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
-    deleteFeatureRequest_.reset();
+    deleteFeatureRequest_.reset(); renameFeatureRequest_.reset();
     if(editor){
         using C=interaction::EditorCommand;
         if(editor->activeCommand()==C::Extrude)workflowState_="Extrude — set parameters, then Confirm or Cancel";
@@ -270,8 +312,10 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     commandButton("saveas", "Save As", "Save the part to a new path", CadIcon::SaveAs, true, false, [&]{ saveAsDocumentRequest_ = true; });
     commandButton("undo", "Undo", "Undo the last committed CAD action (Ctrl+Z)", CadIcon::Undo, canUndo_, false, [&]{ undoRequest_ = true; });
     commandButton("redo", "Redo", "Redo the next committed CAD action (Ctrl+Y)", CadIcon::Redo, canRedo_, false, [&]{ redoRequest_ = true; });
-    commandButton("rebuild", "Rebuild", "Rebuild the feature history", CadIcon::Rebuild,
-        featureModel != nullptr, false, [&]{ rebuildFeaturesRequest_ = true; });
+    const bool needsRebuild=featureModel&&std::any_of(featureModel->history().begin(),
+        featureModel->history().end(),[](const auto& feature){return feature.state()!=features::FeatureState::Clean;});
+    commandButton("rebuild", "Rebuild", needsRebuild?"Rebuild features needing attention":"All features are up to date",
+         CadIcon::Rebuild, needsRebuild, false, [&]{ rebuildFeaturesRequest_ = true; });
     ImGui::TextDisabled("|"); ImGui::SameLine();
     const bool editing = editor && editor->activeSketchFeatureId();
     const auto* faceSelection=editor&&editor->selection()?std::get_if<interaction::TopologyFaceTarget>(&*editor->selection()):nullptr;
@@ -374,17 +418,27 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (featureModel)
     {
         const auto tree = ui::deriveFeatureTree(*featureModel, editor);
+        if (selectedFeature_ && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+            && !ImGui::GetIO().WantTextInput && ImGui::IsKeyPressed(ImGuiKey_F2))
+            beginFeatureRename(*selectedFeature_, *featureModel);
+        if (selectedFeature_ && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+            && !ImGui::GetIO().WantTextInput && ImGui::IsKeyPressed(ImGuiKey_Delete)){
+            const auto closure=featureModel->deletionClosure(*selectedFeature_);
+            if(closure.size()==1)deleteFeatureRequest_=*selectedFeature_;
+            else{pendingDeleteFeature_=*selectedFeature_;openDeleteConfirmation_=true;}
+        }
         ImGui::TextUnformatted("Feature Manager");
         ImGui::TextDisabled("How this part was built");
         const auto statusCue=[](const ui::FeatureTreeNode& node)
             -> std::pair<const char*,const char*>{
+            switch(node.state){
+            case features::FeatureState::Failed:return {"[!]","Feature failed"};
+            case features::FeatureState::BlockedByDependency:return {"[x]","Blocked by dependency"};
+            default:break;}
             if(node.activeEditing)return {"[*]","This sketch is being edited"};
             if(node.displayState==interaction::DisplayState::Hidden)return {"[-]","Hidden in the Graphics Area"};
-            switch(node.state){
-            case features::FeatureState::Dirty:return {"[~]","Needs rebuild"};
-            case features::FeatureState::Failed:return {"[!]","This feature failed; inspect its message"};
-            case features::FeatureState::BlockedByDependency:return {"[x]","Blocked by an earlier failed feature"};
-            default:return {nullptr,nullptr};}
+            if(node.state==features::FeatureState::Dirty)return {"[~]","Needs rebuild"};
+            return {nullptr,nullptr};
         };
         std::function<void(const ui::FeatureTreeNode&)> drawNode;
         drawNode=[&](const ui::FeatureTreeNode& node){
@@ -392,28 +446,31 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             auto flags=ImGuiTreeNodeFlags_SpanAvailWidth|ImGuiTreeNodeFlags_OpenOnArrow;
             if(selectedFeature_==node.featureId)flags|=ImGuiTreeNodeFlags_Selected;
             if(node.children.empty())flags|=ImGuiTreeNodeFlags_Leaf|ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            const bool open=ImGui::TreeNodeEx(node.displayName.c_str(),flags);
+            const bool open=ImGui::TreeNodeEx(reinterpret_cast<void*>(
+                static_cast<std::uintptr_t>(node.featureId.value())+1),flags,
+                "%s",node.displayName.c_str());
+            const auto icon=node.kind==features::FeatureKind::Sketch?CadIcon::Sketch:
+                node.kind==features::FeatureKind::Extrude?CadIcon::Extrude:
+                node.kind==features::FeatureKind::CutExtrude?CadIcon::CutExtrude:CadIcon::Boolean;
+            const auto top=ImGui::GetItemRectMin();
+            const auto right=ImGui::GetItemRectMax();
+            drawCadIcon(ImGui::GetWindowDrawList(),icon,{right.x-63,(top.y+right.y)*0.5F},
+                ImGui::GetColorU32(ImGuiCol_Text));
             if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
                 if(selectedFeature_!=node.featureId)editingFeature_.reset();selectedFeature_=node.featureId;
                 if(editor)editor->select(interaction::LogicalTarget{node.featureId});
             }
             if(ImGui::IsItemHovered()&&ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)){
-                selectedFeature_=node.featureId;propertyManagerVisible_=true;
-                if(node.kind==features::FeatureKind::Sketch)enterSketchRequest_=true;
+                beginFeatureEdit(node.featureId,*featureModel);
             }
             if(ImGui::BeginPopupContextItem("Feature actions")){
-                if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Edit Sketch"))
-                    {selectedFeature_=node.featureId;enterSketchRequest_=true;propertyManagerVisible_=true;}
-                if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Extrude"))
-                    {selectedFeature_=node.featureId;editorCommandRequest_=interaction::EditorCommand::Extrude;propertyManagerVisible_=true;}
-                if(node.kind==features::FeatureKind::Sketch&&ImGui::MenuItem("Cut Extrude"))
-                    {selectedFeature_=node.featureId;editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;}
-                if(node.kind==features::FeatureKind::Extrude&&ImGui::MenuItem("Edit"))
-                    {selectedFeature_=node.featureId;editingFeature_=node.featureId;featureEditorEntity_.reset();propertyManagerVisible_=true;}
-                if(node.kind==features::FeatureKind::CutExtrude&&ImGui::MenuItem("Edit"))
-                    {selectedFeature_=node.featureId;editingFeature_=node.featureId;featureEditorEntity_.reset();propertyManagerVisible_=true;}
+                if(node.kind!=features::FeatureKind::Boolean&&ImGui::MenuItem(
+                    node.kind==features::FeatureKind::Sketch?"Edit Sketch":"Edit"))
+                    beginFeatureEdit(node.featureId,*featureModel);
                 if(node.kind==features::FeatureKind::Boolean&&ImGui::MenuItem("Inspect"))
                     {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                if(ImGui::MenuItem("Rename","F2"))
+                    beginFeatureRename(node.featureId,*featureModel);
                 if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide"))
                     visibilityToggleRequest_=node.featureId;
                 if(ImGui::MenuItem("Delete")){
@@ -424,8 +481,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::EndPopup();
             }
             if(const auto cue=statusCue(node);cue.first){
-                ImGui::SameLine();ImGui::TextDisabled("%s",cue.first);
-                if(ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::TextUnformatted(cue.second);ImGui::EndTooltip();}
+                ImGui::GetWindowDrawList()->AddText({right.x-33,top.y+2},
+                    ImGui::GetColorU32(ImGuiCol_TextDisabled),cue.first);
+                if(ImGui::IsMouseHoveringRect({right.x-38,top.y},right)){
+                    ImGui::BeginTooltip();
+                    const auto detail=ui::featureStatusDescription(*featureModel,node.featureId);
+                    ImGui::TextWrapped("%s",detail.empty()?cue.second:detail.c_str());ImGui::EndTooltip();}
             }
             if(open&&!node.children.empty()){
                 for(const auto& child:node.children)drawNode(child);
@@ -472,6 +533,33 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }else ImGui::CloseCurrentPopup();
             ImGui::EndPopup();
         }
+        if(openRenamePopup_){ImGui::OpenPopup("Rename feature");openRenamePopup_=false;}
+        if(ImGui::BeginPopupModal("Rename feature",nullptr,ImGuiWindowFlags_AlwaysAutoResize)){
+            ImGui::TextUnformatted("Feature name");
+            ImGui::SetNextItemWidth(280);
+            const bool enter=ImGui::InputText("##FeatureName",renameDraft_.data(),renameDraft_.size(),
+                ImGuiInputTextFlags_EnterReturnsTrue);
+            if(!renameError_.empty())ImGui::TextColored({1,0.35F,0.25F,1},"%s",renameError_.c_str());
+            if((enter||ImGui::Button("Confirm"))&&renamingFeature_){
+                const std::string candidate{renameDraft_.data()};
+                const auto first=candidate.find_first_not_of(" \t\r\n");
+                const auto trimmed=first==std::string::npos?std::string{}:
+                    candidate.substr(first,candidate.find_last_not_of(" \t\r\n")-first+1);
+                const auto duplicate=std::any_of(featureModel->history().begin(),featureModel->history().end(),
+                    [&](const auto& record){return record.id()!=*renamingFeature_
+                        && record.displayName().size()==trimmed.size()
+                        && std::equal(record.displayName().begin(),record.displayName().end(),
+                            trimmed.begin(),[](unsigned char a,unsigned char b){return std::tolower(a)==std::tolower(b);});});
+                if(trimmed.empty())renameError_="Enter a feature name";
+                else if(duplicate)renameError_="Another feature already has this name";
+                else{renameFeatureRequest_=std::pair{*renamingFeature_,trimmed};renamingFeature_.reset();ImGui::CloseCurrentPopup();}
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("Cancel")||ImGui::IsKeyPressed(ImGuiKey_Escape)){
+                renamingFeature_.reset();renameError_.clear();ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
         if(selectedPrincipalPlane_){
             ImGui::Separator();
             const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
@@ -481,6 +569,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         if (selectedFeature_)
         {
             const auto& feature = featureModel->find(*selectedFeature_);
+            if(editingFeature_==feature.id()&&ImGui::IsKeyPressed(ImGuiKey_Escape)){
+                editingFeature_.reset();cancelPropertyRequest_=true;
+            }
             if(featureEditorEntity_!=feature.id()){
                 featureEditorEntity_=feature.id();
                 if(feature.kind()==features::FeatureKind::Extrude)
@@ -540,12 +631,15 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
                 ImGui::TextUnformatted("Property Manager — Extrude");
+                const auto& extrusion=std::get<features::ExtrudeFeature>(feature.data());
+                ImGui::Text("Profile: %s",featureModel->find(extrusion.sourceSketchFeatureId).displayName().c_str());
                 if(editingFeature_==feature.id()){
                     ImGui::InputDouble("Distance", &featureDepthDraft_);
-                    const bool commitDistance = ImGui::IsItemDeactivatedAfterEdit();
-                    const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
+                    const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>geometry::defaultGeometricTolerance;
+                    if(!valid)ImGui::TextDisabled("Distance must be greater than the geometric tolerance.");
+                    if(!valid)ImGui::BeginDisabled();
                     const bool confirmDistance=ImGui::Button("Confirm");
-                    if (valid&&(commitDistance||confirmDistance)){featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};editingFeature_.reset();}
+                    if (valid&&confirmDistance){featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};editingFeature_.reset();}
                     if(!valid)ImGui::EndDisabled();
                     ImGui::SameLine(); if (ImGui::Button("Cancel")) {featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;editingFeature_.reset();cancelPropertyRequest_ = true;}
                 }else{
@@ -561,12 +655,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::Text("Target: %s",featureModel->find(cut.targetResultFeatureId).displayName().c_str());
                 if(editingFeature_==feature.id()){
                     ImGui::InputDouble("Depth",&featureDepthDraft_,1.0,5.0,"%.3f");
-                    const bool commitDepth=ImGui::IsItemDeactivatedAfterEdit();
                     ImGui::Checkbox("Reverse Direction",&featureReverseDraft_);
-                    const bool commitDirection=ImGui::IsItemDeactivatedAfterEdit();
-                    const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>0;if(!valid)ImGui::BeginDisabled();
+                    const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>geometry::defaultGeometricTolerance;
+                    if(!valid)ImGui::TextDisabled("Depth must be greater than the geometric tolerance.");
+                    if(!valid)ImGui::BeginDisabled();
                     const bool confirmCut=ImGui::Button("Confirm");
-                    if(valid&&(commitDepth||commitDirection||confirmCut)){featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
+                    if(valid&&confirmCut){featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
                         featureReverseDraft_?features::CutDirection::Reverse:features::CutDirection::Forward};editingFeature_.reset();}
                     if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;editingFeature_.reset();cancelPropertyRequest_=true;}
                 }else{
@@ -577,8 +671,27 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             else
             {
                 ImGui::TextUnformatted("Boolean result");
+                const auto& value=std::get<features::BooleanFeature>(feature.data());
+                ImGui::Text("Operation: %s",value.operation==modeling::BooleanOperation::Union?"Union":
+                    value.operation==modeling::BooleanOperation::Difference?"Difference":"Intersection");
+                ImGui::Text("Input A: %s",featureModel->find(value.inputA).displayName().c_str());
+                ImGui::Text("Input B: %s",featureModel->find(value.inputB).displayName().c_str());
             }
-            if (!feature.diagnostic().empty()) ImGui::TextWrapped("%s", feature.diagnostic().c_str());
+            const auto status=ui::featureStatusDescription(*featureModel,feature.id());
+            if(!status.empty())ImGui::TextWrapped("%s",status.c_str());
+            if(feature.state()==features::FeatureState::BlockedByDependency)
+                for(const auto dependency:feature.dependencies()){
+                    const auto& upstream=featureModel->find(dependency);
+                    if(upstream.state()==features::FeatureState::Failed
+                        ||upstream.state()==features::FeatureState::BlockedByDependency){
+                        const auto label="Inspect " + upstream.displayName();
+                        if(ImGui::Button(label.c_str())){
+                            selectedFeature_=upstream.id();editingFeature_.reset();
+                            if(editor)editor->select(interaction::LogicalTarget{upstream.id()});
+                        }
+                        break;
+                    }
+                }
         }
         if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
         ImGui::Separator();
@@ -889,13 +1002,14 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     ImGui::End();
 }
 
-void ApplicationShell::reportFeatureRebuild(const features::RebuildResult& result)
+void ApplicationShell::reportFeatureRebuild(const features::RebuildResult& result,
+                                           const features::FeatureModel& model)
 {
-    if (result.status == features::RebuildStatus::Success) featureRebuildStatus_ = "Rebuild PASS";
-    else if (result.status == features::RebuildStatus::SuccessEmpty) featureRebuildStatus_ = "Rebuild PASS: final result EMPTY";
-    else featureRebuildStatus_ = "Rebuild FAILED at Feature "
-        + (result.failedFeature ? std::to_string(result.failedFeature->value()) : std::string{"?"})
-        + "; blocked downstream: " + std::to_string(result.blockedCount) + "; " + result.diagnostic;
+    if (result.status == features::RebuildStatus::Success) featureRebuildStatus_ = "Rebuild complete";
+    else if (result.status == features::RebuildStatus::SuccessEmpty) featureRebuildStatus_ = "Rebuild complete: no solid result";
+    else featureRebuildStatus_ = "Rebuild failed at "
+        + (result.failedFeature ? model.find(*result.failedFeature).displayName() : std::string{"a feature"})
+        + "; " + std::to_string(result.blockedCount) + " downstream feature(s) blocked. " + result.diagnostic;
 }
 
 void ApplicationShell::reportBooleanStatus(modeling::BooleanStatus status)
@@ -1097,12 +1211,19 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
         if(faceSelected&&!supportedFace)ImGui::TextDisabled("Sketch on this face is not yet supported.");
         if (selectedFeature_)
         {
-            if (!faceSelected&&ImGui::MenuItem("Edit selected Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
-            if (ImGui::MenuItem("Show / Hide")) visibilityToggleRequest_ = selectedFeature_;
-            if (ImGui::MenuItem("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
+            const auto& selected=featureModel->find(*selectedFeature_);
+            if(!faceSelected&&selected.kind()!=features::FeatureKind::Boolean
+                &&ImGui::MenuItem(selected.kind()==features::FeatureKind::Sketch?"Edit Sketch":"Edit feature"))
+                beginFeatureEdit(selected.id(),*featureModel);
+            if(ImGui::MenuItem("Rename","F2"))beginFeatureRename(selected.id(),*featureModel);
+            if (ImGui::MenuItem(editor->displayState(selected.id())==interaction::DisplayState::Hidden?"Show":"Hide"))
+                visibilityToggleRequest_ = selected.id();
         }
         else ImGui::TextDisabled("No logical object selected");
-        if (ImGui::MenuItem("Rebuild")) rebuildFeaturesRequest_ = true;
+        if (ImGui::MenuItem("Rebuild",nullptr,false,
+            featureModel&&std::any_of(featureModel->history().begin(),featureModel->history().end(),
+                [](const auto& feature){return feature.state()!=features::FeatureState::Clean;})))
+            rebuildFeaturesRequest_ = true;
         ImGui::EndPopup();
     }
     if (editor)

@@ -1309,3 +1309,7 @@ Face; missing or ambiguous roles fail without reattachment. Raw topology IDs
 remain derived and .microsw v2 is extended compatibly. D20 extends semantic
 generated-face support without introducing general persistent topological naming.
 V1.1-C4 implements the D20 correction and is FROZEN after a clean full Debug build, zero project warnings, 899/899 tests, runtime exit code 0 and an APPROVED manual Experience Gate. ADR-0064-0069 are CONFORMANT. The V1.1-C5 - Feature Workflow Hardening prerequisite review is complete and recommends Option A - UX Hardening Only, with no Decision Gate. C5 is the next roadmap item, ready for roadmap decision and explicit implementation authorization.
+
+# Personal SolidWorks strategic addendum (APPROVED from V1.1-C5)
+
+For work from V1.1-C5 onward, Product over Education and Workflow over Feature govern priorities: reliable completion of bounded personal mechanical-engineering workflows takes precedence over educational completeness or isolated capabilities. Learning remains valuable. Build or Integrate Pragmatically may be evaluated for future work, but the dependency policy and accepted ADRs remain binding until a specific architectural decision changes them. Progressive Replacement starts with complete bounded workflows. V1.1-C5 retains its approved Feature Workflow Hardening scope. V1.1.0 is the next release gate; V1.2+ requires Personal SolidWorks - Product & Architecture Review and has no approved implementation roadmap. Earlier baseline purposes and decisions remain historically unchanged.

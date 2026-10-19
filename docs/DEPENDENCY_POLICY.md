@@ -1,5 +1,11 @@
 # Micro SolidWorks — Dependency Policy
 
+The Personal SolidWorks product vision is APPROVED from V1.1-C5 onward.
+Build or integrate decisions may be evaluated pragmatically for future
+workflows, but this policy and accepted ADRs remain in force until a specific
+architectural decision changes them. V1.1-C5 introduces no dependency or
+kernel migration.
+
 ## 1. Objectivo
 
 Cada dependência deve preservar o valor educacional, as fronteiras

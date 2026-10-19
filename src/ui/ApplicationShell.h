@@ -65,7 +65,8 @@ public:
     [[nodiscard]] const std::optional<std::pair<features::FeatureId, math::Scalar>>& featureDistanceRequest() const noexcept { return featureDistanceRequest_; }
     [[nodiscard]] const std::optional<std::pair<features::FeatureId, modeling::BooleanOperation>>& featureBooleanRequest() const noexcept { return featureBooleanRequest_; }
     [[nodiscard]] bool rebuildFeaturesRequest() const noexcept { return rebuildFeaturesRequest_; }
-    void reportFeatureRebuild(const features::RebuildResult& result);
+    void reportFeatureRebuild(const features::RebuildResult& result,
+                              const features::FeatureModel& model);
     [[nodiscard]] bool newDocumentRequest() const noexcept { return newDocumentRequest_; }
     [[nodiscard]] bool openDocumentRequest() const noexcept { return openDocumentRequest_; }
     [[nodiscard]] bool saveDocumentRequest() const noexcept { return saveDocumentRequest_; }
@@ -82,7 +83,7 @@ public:
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
     [[nodiscard]] const std::optional<interaction::EditorCommand>& editorCommandRequest() const noexcept { return editorCommandRequest_; }
     [[nodiscard]] const std::optional<features::FeatureId>& selectedFeature() const noexcept { return selectedFeature_; }
-    void setSelectedFeature(std::optional<features::FeatureId> feature) { if(feature!=selectedFeature_)editingFeature_.reset();selectedFeature_ = feature; if (feature) selectedPrincipalPlane_.reset(); }
+    void setSelectedFeature(std::optional<features::FeatureId> feature) { if(feature!=selectedFeature_){editingFeature_.reset();renamingFeature_.reset();}selectedFeature_ = feature; if (feature) selectedPrincipalPlane_.reset(); }
     [[nodiscard]] bool enterSketchRequest() const noexcept { return enterSketchRequest_; }
     [[nodiscard]] const std::optional<PrincipalPlane>& sketchPlaneRequest() const noexcept { return sketchPlaneRequest_; }
     [[nodiscard]] bool exitSketchRequest() const noexcept { return exitSketchRequest_; }
@@ -91,6 +92,7 @@ public:
     [[nodiscard]] bool gridSnapEnabled() const noexcept { return gridSnapEnabled_; }
     [[nodiscard]] const std::optional<features::FeatureId>& visibilityToggleRequest() const noexcept { return visibilityToggleRequest_; }
     [[nodiscard]] const std::optional<features::FeatureId>& deleteFeatureRequest() const noexcept { return deleteFeatureRequest_; }
+    [[nodiscard]] const std::optional<std::pair<features::FeatureId, std::string>>& renameFeatureRequest() const noexcept { return renameFeatureRequest_; }
     [[nodiscard]] const std::optional<ViewCommand>& viewCommandRequest() const noexcept { return viewCommandRequest_; }
     [[nodiscard]] const std::optional<DisplayModeRequest>& displayModeRequest() const noexcept { return displayModeRequest_; }
 
@@ -111,6 +113,8 @@ private:
     void drawStatusBar();
     void drawAboutDialog();
     void drawUnsavedChangesDialog();
+    void beginFeatureEdit(features::FeatureId id, const features::FeatureModel& model);
+    void beginFeatureRename(features::FeatureId id, const features::FeatureModel& model);
 
     ApplicationWindow& window_;
     WorkspaceLayout workspace_{};
@@ -174,6 +178,11 @@ private:
     bool gridSnapEnabled_{true};
     std::optional<features::FeatureId> visibilityToggleRequest_;
     std::optional<features::FeatureId> deleteFeatureRequest_;
+    std::optional<std::pair<features::FeatureId, std::string>> renameFeatureRequest_;
+    std::optional<features::FeatureId> renamingFeature_;
+    std::array<char, 128> renameDraft_{};
+    std::string renameError_;
+    bool openRenamePopup_{};
     std::optional<features::FeatureId> pendingDeleteFeature_;
     bool openDeleteConfirmation_{};
     std::optional<ViewCommand> viewCommandRequest_;

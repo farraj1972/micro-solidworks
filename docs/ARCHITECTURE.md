@@ -1,5 +1,12 @@
 # Micro SolidWorks — Architecture
 
+The Personal SolidWorks product vision is APPROVED from V1.1-C5 onward.
+It prioritizes reliable, complete personal mechanical-engineering workflows.
+The V1.1-C5 implementation hardens the existing feature editing UI while
+preserving FeatureModel ownership, explicit rebuild, authoritative checkpoints,
+persistence v2 and all accepted ADRs. Future technology choices remain subject
+to a specific Product & Architecture Review and the current dependency policy.
+
 ## 1. Objectivo
 
 Definir as fronteiras arquitecturais iniciais do Micro SolidWorks sem antecipar complexidade desnecessária.

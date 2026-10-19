@@ -691,3 +691,10 @@ V1.1-C5 prerequisite review is complete and recommends Option A — UX Hardening
 Only, with no Decision Gate. C5 is the next roadmap item, ready for roadmap
 decision and explicit implementation authorization; see
 `docs/V1_1_C5_PREREQUISITE_REVIEW.md`.
+
+Personal SolidWorks is the APPROVED product vision from V1.1-C5 onward.
+Product reliability and complete bounded engineering workflows guide new
+priorities. The approved C5 scope is unchanged; V1.1.0 is the next release
+freeze candidate. V1.2+ has no approved roadmap and awaits the Personal
+SolidWorks Product & Architecture Review. Existing dependency policy and ADRs
+remain in force.

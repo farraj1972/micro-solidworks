@@ -124,6 +124,7 @@ public:
     void setExtrudeDistance(FeatureId id, math::Scalar distance);
     void setCutExtrude(FeatureId id, math::Scalar distance, CutDirection direction);
     void setBooleanOperation(FeatureId id, modeling::BooleanOperation operation);
+    void renameFeature(FeatureId id, std::string name);
     [[nodiscard]] std::vector<FeatureId> deletionClosure(FeatureId id) const;
     [[nodiscard]] std::vector<FeatureId> deleteFeature(FeatureId id);
     void setResultFeatureId(FeatureId id);

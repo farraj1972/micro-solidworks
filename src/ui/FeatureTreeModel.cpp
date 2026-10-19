@@ -49,4 +49,31 @@ FeatureTreeModel deriveFeatureTree(const features::FeatureModel& model,
     }
     return tree;
 }
+
+std::string featureStatusDescription(const features::FeatureModel& model,
+                                     features::FeatureId id)
+{
+    const auto& feature = model.find(id);
+    switch (feature.state())
+    {
+    case features::FeatureState::Clean: return {};
+    case features::FeatureState::Dirty: return "Needs rebuild";
+    case features::FeatureState::Failed:
+        return "Failed: " + (feature.diagnostic().empty()
+            ? std::string{"Review this feature and rebuild."} : feature.diagnostic());
+    case features::FeatureState::BlockedByDependency:
+        for (const auto dependency : feature.dependencies())
+        {
+            const auto& upstream = model.find(dependency);
+            if (upstream.state() == features::FeatureState::Failed)
+                return "Blocked because " + upstream.displayName() + " failed. "
+                    + featureStatusDescription(model, dependency);
+            if (upstream.state() == features::FeatureState::BlockedByDependency)
+                return "Blocked because " + upstream.displayName() + " is blocked. "
+                    + featureStatusDescription(model, dependency);
+        }
+        return "Blocked by an earlier feature. Review upstream dependencies.";
+    }
+    return {};
+}
 }

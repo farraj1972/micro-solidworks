@@ -318,6 +318,36 @@ TEST(FeatureModel, DeletesLeafAndRetiresItsFeatureId)
     EXPECT_EQ(model.find(first).id(), first);
 }
 
+TEST(FeatureModel, RenamePreservesIdentityAndAvoidsCaseInsensitiveCollisions)
+{
+    microsw::features::FeatureModel model;
+    const auto first = model.addSketch({});
+    const auto second = model.addSketch({});
+    model.renameFeature(first, "  Base Sketch  ");
+    EXPECT_EQ(model.find(first).displayName(), "Base Sketch");
+    EXPECT_EQ(model.find(first).id(), first);
+    EXPECT_THROW(model.renameFeature(second, "base sketch"), std::invalid_argument);
+    EXPECT_THROW(model.renameFeature(second, " \t "), std::invalid_argument);
+    EXPECT_EQ(model.find(second).displayName(), "Sketch2");
+    model.renameFeature(second, "sketch3");
+    const auto third = model.addSketch({});
+    EXPECT_EQ(model.find(third).displayName(), "Sketch1");
+    model.renameFeature(first, "Extrude1");
+    const auto extrude = model.addExtrude(third, 2);
+    EXPECT_EQ(model.find(extrude).displayName(), "Extrude2");
+}
+
+TEST(FeatureModel, RestoreRejectsDuplicateLiveNames)
+{
+    using namespace microsw::features;
+    std::vector<PersistedFeature> records{
+        {FeatureId{0}, FeatureKind::Sketch, "Base", SketchFeature{}},
+        {FeatureId{1}, FeatureKind::Sketch, "base", SketchFeature{}}
+    };
+    EXPECT_THROW((void)FeatureModel::restore(std::move(records), FeatureId{}, 2),
+        std::invalid_argument);
+}
+
 TEST(FeatureModel, DeletesCompleteTransitiveDependantClosureAndReassignsResult)
 {
     microsw::features::FeatureModel model;

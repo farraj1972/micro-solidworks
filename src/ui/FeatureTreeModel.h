@@ -28,4 +28,6 @@ struct FeatureTreeModel
 [[nodiscard]] FeatureTreeModel deriveFeatureTree(
     const features::FeatureModel& model,
     const interaction::EditorContext* editor = nullptr);
+[[nodiscard]] std::string featureStatusDescription(
+    const features::FeatureModel& model, features::FeatureId id);
 }

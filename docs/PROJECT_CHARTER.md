@@ -1,5 +1,27 @@
 # Micro SolidWorks — Project Charter
 
+## Adenda de produto — Personal SolidWorks (APPROVED desde V1.1-C5)
+
+A visão actual é desenvolver uma aplicação CAD 3D paramétrica para uso pessoal
+que possa substituir progressivamente workflows delimitados de engenharia e
+construção mecânica, reduzindo dependência de licenças profissionais. A partir
+de V1.1-C5, a prioridade é produto fiável e utilizável, avaliado por trabalhos
+reais completos. A aprendizagem continua valiosa. Tecnologias open-source
+podem ser avaliadas pragmaticamente, sempre através da governação e da política
+de dependências vigentes; nenhuma migração ou substituição de decisões
+arquitecturais está aprovada por esta adenda.
+
+As secções históricas abaixo descrevem a finalidade das baselines anteriores
+na altura em que foram planeadas. Esta adenda não as altera retroactivamente.
+
+V1.1-C5 mantém o scope aprovado de Feature Workflow Hardening. V1.1.0 é o
+próximo release a congelar após os seus gates. V1.2 e versões posteriores
+dependem de `Personal SolidWorks — Product & Architecture Review` e não têm
+roadmap aprovado. Essa revisão identificará workflows prioritários de peças
+mecânicas, limitações do kernel e requisitos de interoperabilidade.
+
+---
+
 ## 1. Visão
 
 Micro SolidWorks é um projecto educacional de desenvolvimento de um sistema CAD 3D simplificado em C++.

@@ -7,6 +7,7 @@
 #include "features/PlanarRegion.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <stdexcept>
 #include <type_traits>
@@ -96,14 +97,19 @@ FeatureModel::FeatureModel(constraints::ConstraintSolver solver) : solver_{std::
 std::string FeatureModel::nextName(FeatureKind kind) const
 {
     const char* prefix = kind == FeatureKind::Sketch ? "Sketch" : kind == FeatureKind::Extrude ? "Extrude" : kind == FeatureKind::CutExtrude ? "CutExtrude" : "Boolean";
-    std::size_t largest{};
     const std::string prefixText{prefix};
-    for (const auto& record : records_)
-        if (record.kind() == kind && record.displayName().starts_with(prefixText))
-            try { largest = std::max(largest, static_cast<std::size_t>(
-                std::stoul(record.displayName().substr(prefixText.size())))); }
-            catch (const std::exception&) {}
-    return prefixText + std::to_string(largest + 1);
+    for (std::size_t number = 1;; ++number)
+    {
+        const auto candidate = prefixText + std::to_string(number);
+        const auto equalIgnoringCase = [](unsigned char a, unsigned char b) {
+            return std::tolower(a) == std::tolower(b);
+        };
+        if (std::none_of(records_.begin(), records_.end(), [&](const FeatureRecord& record) {
+            const auto& existing = record.displayName();
+            return existing.size() == candidate.size()
+                && std::equal(existing.begin(), existing.end(), candidate.begin(), equalIgnoringCase);
+        })) return candidate;
+    }
 }
 
 FeatureId FeatureModel::addSketch(sketch::Sketch sketch)
@@ -265,6 +271,24 @@ void FeatureModel::setBooleanOperation(FeatureId id, modeling::BooleanOperation 
     std::get<BooleanFeature>(record.data_).operation = operation;
     markDirtyClosure(id);
 }
+void FeatureModel::renameFeature(FeatureId id, std::string name)
+{
+    auto& record = mutableFind(id);
+    const auto first = name.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos)
+        throw std::invalid_argument{"Feature name cannot be empty"};
+    const auto last = name.find_last_not_of(" \t\r\n");
+    name = name.substr(first, last - first + 1);
+    const auto equalIgnoringCase = [](unsigned char a, unsigned char b) {
+        return std::tolower(a) == std::tolower(b);
+    };
+    for (const auto& other : records_)
+        if (other.id() != id && other.displayName().size() == name.size()
+            && std::equal(other.displayName().begin(), other.displayName().end(),
+                name.begin(), equalIgnoringCase))
+            throw std::invalid_argument{"Another feature already has this name"};
+    record.displayName_ = std::move(name);
+}
 void FeatureModel::setResultFeatureId(FeatureId id)
 {
     if (!isSolidProducer(id)) throw std::invalid_argument{"Result feature must produce a Solid or EMPTY"};
@@ -417,7 +441,11 @@ RebuildResult FeatureModel::rebuild()
                     candidates[record.id().value()] = SolidFeatureCache{{*result.solid()}, {}};
                 else if (result.status() == modeling::BooleanStatus::EMPTY)
                     candidates[record.id().value()] = EmptyFeatureCache{};
-                else throw std::runtime_error{"Boolean rebuild failed"};
+                else if (result.status() == modeling::BooleanStatus::UNSUPPORTED_CASE)
+                    throw std::runtime_error{"This Boolean combination is not supported for these solids."};
+                else if (result.status() == modeling::BooleanStatus::INVALID_INPUT)
+                    throw std::runtime_error{"Boolean inputs must be valid solids."};
+                else throw std::runtime_error{"Boolean computation failed; review the inputs."};
             }
             else
             {
@@ -538,8 +566,17 @@ FeatureModel FeatureModel::restore(std::vector<PersistedFeature> features,
     {
         auto& feature = features[index];
         if (!feature.id.isValid() || feature.id.value() >= nextFeatureId
-            || (index && feature.id <= features[index - 1].id) || feature.displayName.empty())
+            || (index && feature.id <= features[index - 1].id)
+            || feature.displayName.find_first_not_of(" \t\r\n") == std::string::npos)
             throw std::invalid_argument{"Invalid persisted feature identity or name"};
+        const auto equalIgnoringCase = [](unsigned char a, unsigned char b) {
+            return std::tolower(a) == std::tolower(b);
+        };
+        if (std::any_of(result.records_.begin(), result.records_.end(), [&](const FeatureRecord& prior) {
+            return prior.displayName().size() == feature.displayName.size()
+                && std::equal(prior.displayName().begin(), prior.displayName().end(),
+                    feature.displayName.begin(), equalIgnoringCase);
+        })) throw std::invalid_argument{"Duplicate persisted feature name"};
         const auto dataKind = std::visit([](const auto& value) {
             using T = std::decay_t<decltype(value)>;
             if constexpr (std::is_same_v<T, SketchFeature>) return FeatureKind::Sketch;

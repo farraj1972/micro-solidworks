@@ -206,4 +206,22 @@ TEST(DocumentHistory, DeletionUndoRedoRestoresExactClosureAndRetiredCounter)
     EXPECT_THROW((void)model.find(supported), std::out_of_range);
     EXPECT_EQ(model.resultFeatureId(), baseId);
 }
+
+TEST(PersistenceSessionHistory, RenameIsOneUndoStepAndSurvivesSaveOpen)
+{
+    const auto path = std::filesystem::temp_directory_path() / "microsw-c5-rename.microsw";
+    PersistenceSession session{modelWithSketch()};
+    const auto id = session.model().history().front().id();
+    session.model().renameFeature(id, "Base Sketch");
+    session.recordEdit();
+    ASSERT_TRUE(session.undo());
+    EXPECT_EQ(session.model().find(id).displayName(), "Sketch1");
+    ASSERT_TRUE(session.redo());
+    EXPECT_EQ(session.model().find(id).displayName(), "Base Sketch");
+    ASSERT_EQ(session.saveAs(path).status, persistence::SaveStatus::Success);
+    session.newDocument();
+    ASSERT_EQ(session.open(path), persistence::OpenStatus::SuccessRebuilt);
+    EXPECT_EQ(session.model().find(id).displayName(), "Base Sketch");
+    std::filesystem::remove(path);
+}
 }

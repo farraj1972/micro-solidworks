@@ -1,9 +1,11 @@
 # Micro SolidWorks
 
-Micro SolidWorks is an educational project for progressively learning and
-implementing the foundations of a small 3D parametric CAD application in C++.
-It is not intended to provide compatibility with the commercial SolidWorks
-product.
+Micro SolidWorks is a C++ 3D parametric CAD application. From V1.1-C5 onward,
+its approved product vision is **Personal SolidWorks**: progressively replace
+well-defined personal mechanical-engineering workflows that otherwise require
+a commercial CAD licence. Product reliability and complete workflows guide
+future prioritization; the educational foundations remain part of the project.
+This vision does not claim file or API compatibility with commercial SolidWorks.
 
 ## Stable technical baselines
 
