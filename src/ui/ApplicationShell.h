@@ -10,8 +10,10 @@
 
 #include <optional>
 #include <array>
+#include <cstdint>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 
 namespace microsw
 {
@@ -129,6 +131,9 @@ private:
     std::optional<sketch::SketchEntityId> sketchEditorEntity_;
     std::array<double, 5> sketchGeometryDraft_{};
     bool sketchGeometryDraftDirty_{};
+    struct DimensionDraft { math::Scalar value{}, committedValue{}; };
+    std::optional<features::FeatureId> sketchDimensionDraftFeature_;
+    std::unordered_map<std::uint64_t, DimensionDraft> sketchDimensionDrafts_;
     std::string sketchError_;
     std::optional<sketch::SketchConstraintValue> addConstraintRequest_;
     std::optional<sketch::SketchConstraintId> removeConstraintRequest_;

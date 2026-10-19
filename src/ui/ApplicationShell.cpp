@@ -835,15 +835,26 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGui::End();return;
     }
 
+    const auto activeSketch = editor ? editor->activeSketchFeatureId() : std::nullopt;
+    if (activeSketch != sketchDimensionDraftFeature_) {
+        sketchDimensionDraftFeature_ = activeSketch;
+        sketchDimensionDrafts_.clear();
+    }
+    const auto dimensionDraft = [&](sketch::SketchConstraintId id, math::Scalar committed) -> math::Scalar& {
+        auto& draft = sketchDimensionDrafts_[id.value()];
+        if (draft.committedValue != committed) draft = {committed, committed};
+        return draft.value;
+    };
     const auto selectedId = selected ? std::optional{selected->id()} : std::nullopt;
     if (selectedId != sketchEditorEntity_) {
         sketchEditorEntity_ = selectedId; sketchError_.clear();sketchGeometryDraftDirty_=false;
-        if(selected)std::visit([&](const auto&typed){using Entity=std::decay_t<decltype(typed)>;
+    }
+    if (selected && !sketchGeometryDraftDirty_)
+        std::visit([&](const auto&typed){using Entity=std::decay_t<decltype(typed)>;
             if constexpr(std::is_same_v<Entity,sketch::SketchLine>)sketchGeometryDraft_={typed.geometry.a().x(),typed.geometry.a().y(),typed.geometry.b().x(),typed.geometry.b().y(),0};
             else if constexpr(std::is_same_v<Entity,sketch::SketchCircle>)sketchGeometryDraft_={typed.geometry.center().x(),typed.geometry.center().y(),typed.geometry.radius(),0,0};
             else{constexpr double d=180.0/std::numbers::pi;sketchGeometryDraft_={typed.geometry.center().x(),typed.geometry.center().y(),typed.geometry.radius(),typed.geometry.startAngle()*d,typed.geometry.sweepAngle()*d};}
         },selected->geometry());
-    }
     const auto dimensionFor = [&](sketch::SketchEntityId entityId, bool radius) {
         std::optional<sketch::SketchConstraintId> result;
         for (const auto constraintId : model.constraintIds())
@@ -925,8 +936,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             const auto& line = std::get<sketch::SketchLine>(selected->geometry()).geometry;
             if (const auto constraintId = primaryDimension)
             {
-                double length = std::get<sketch::LineLength>(model.findConstraint(*constraintId).value()).value;
-                if (ImGui::InputDouble("Line length constraint", &length))
+                const auto committed = std::get<sketch::LineLength>(model.findConstraint(*constraintId).value()).value;
+                auto& length = dimensionDraft(*constraintId, committed);
+                ImGui::InputDouble("Line length constraint", &length);
+                if (ImGui::IsItemDeactivatedAfterEdit())
                     drivingValueRequest_ = std::pair{*constraintId, length};
             }
             else
@@ -942,8 +955,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             const auto& circle = std::get<sketch::SketchCircle>(selected->geometry()).geometry;
             if (const auto constraintId = primaryDimension)
             {
-                double radius = std::get<sketch::CircleRadius>(model.findConstraint(*constraintId).value()).value;
-                if (ImGui::InputDouble("Radius constraint", &radius))
+                const auto committed = std::get<sketch::CircleRadius>(model.findConstraint(*constraintId).value()).value;
+                auto& radius = dimensionDraft(*constraintId, committed);
+                ImGui::InputDouble("Radius constraint", &radius);
+                if (ImGui::IsItemDeactivatedAfterEdit())
                     drivingValueRequest_ = std::pair{*constraintId, radius};
             }
             else
@@ -976,7 +991,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGui::Text("%s %s", glyph, name);
         if (sketch::isDrivingDimension(value))
         {
-            double driving = std::visit([](const auto& c) -> double {
+            const double committed = std::visit([](const auto& c) -> double {
                 using T = std::decay_t<decltype(c)>;
                 if constexpr (std::is_same_v<T, sketch::HorizontalDistance>
                     || std::is_same_v<T, sketch::VerticalDistance>
@@ -988,6 +1003,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::TextDisabled("Value is edited in the selected entity properties above.");
             else
             {
+                auto& driving = dimensionDraft(id, committed);
                 ImGui::InputDouble("Value", &driving);
                 if (ImGui::Button("Apply dimension")) drivingValueRequest_ = std::pair{id, driving};
             }
@@ -996,6 +1012,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         ImGui::PopID();
     }
     if (ImGui::Button("Solve / Rebuild Sketch")) solveSketchRequest_ = true;
+    if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
     ImGui::Separator();
     if (hasActiveSolid) ImGui::TextUnformatted("Modeled result available");
     if (!extrusionStatus_.empty()) ImGui::TextWrapped("%s", extrusionStatus_.c_str());
