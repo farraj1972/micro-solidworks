@@ -687,10 +687,10 @@ recursive dependant-closure Feature deletion and narrow semantic generated-face
 support for unambiguous Cut caps and a single-region pocket floor. ADR inventory:
 69/69 ACCEPTED. D20 is implemented and conformant. V1.1-C4 is FROZEN after
 899/899 tests, runtime validation and an approved Experience Gate. The
-V1.1-C5 prerequisite review is complete and recommends Option A — UX Hardening
-Only, with no Decision Gate. C5 is the next roadmap item, ready for roadmap
-decision and explicit implementation authorization; see
-`docs/V1_1_C5_PREREQUISITE_REVIEW.md`.
+V1.1-C5 adopted Option A — UX Hardening Only, with no Decision Gate. It is
+FROZEN after fresh configure, full Debug build, zero project warnings,
+903/903 tests and an approved manual Experience Gate; see
+`docs/V1_1_C5_VALIDATION.md`.
 
 Personal SolidWorks is the APPROVED product vision from V1.1-C5 onward.
 Product reliability and complete bounded engineering workflows guide new

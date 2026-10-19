@@ -1544,3 +1544,14 @@ Presentation derives subdued visible Sketch references, while Application-owned
 editor state suppresses dependant solid display during Sketch editing and keeps
 completed Extrude/Cut parameters inactive until an explicit Edit action. The
 campaign is FROZEN after 899/899 tests and an approved Experience Gate.
+
+## V1.1-C5 — Feature workflow hardening
+
+C5 is FROZEN without a new Decision Gate. FeatureModel still owns feature
+identity, names, dependencies and derived rebuild state. Application-owned
+editor drafts commit Extrude/Cut changes only on Confirm; Cancel preserves the
+authoritative model. Rename changes the existing persisted displayName and is
+one Undo/Redo transaction. Feature Manager hierarchy, expansion and status
+feedback remain derived/session-local. No dependency direction, persistence
+schema, accepted ADR or explicit rebuild policy changed. Suppression and
+reorder remain deferred to a future architectural decision.

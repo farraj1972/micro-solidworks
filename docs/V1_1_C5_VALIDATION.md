@@ -1,5 +1,7 @@
 # V1.1-C5 — Feature Workflow Hardening Validation
 
+Status: FROZEN. Technical V3 and Experience Gate APPROVED; no blocking finding.
+
 ## Scope
 
 V1.1-C5 hardens the existing Feature Manager workflow under approved Option A.

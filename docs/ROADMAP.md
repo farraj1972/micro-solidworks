@@ -4,7 +4,7 @@
 
 ```text
 Vision: APPROVED
-V1.1-C5: approved Feature Workflow Hardening scope, unchanged
+V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
 V1.1.0: next release to freeze after Technical and Experience Gates
 V1.2+: NOT APPROVED; requires Product & Architecture Review
 Dependency policy: remains in force until a specific architectural decision
@@ -1128,15 +1128,15 @@ feature-edit state are validated.
 ## V1.1-C5 — Feature Workflow Hardening
 
 ```text
-STATUS: NEXT ACTIVE / READY FOR ROADMAP DECISION
+STATUS: FROZEN
 PREREQUISITE REVIEW: COMPLETE
-RECOMMENDED OPTION: A — UX HARDENING ONLY
+APPROVED OPTION: A — UX HARDENING ONLY
 DECISION GATE: NONE
 ```
 
-The prerequisite review finds that the feature domain already provides stable
+The prerequisite review found that the feature domain already provides stable
 identity, explicit transactional rebuild, typed failure state, deletion,
-Undo/Redo and persistence. C5 should close v1.1 by making this capability a
+Undo/Redo and persistence. C5 closes v1.1 by making this capability a
 coherent Feature Manager workflow: direct and consistent Sketch/Extrude/Cut
 Extrude editing, atomic Confirm/Cancel, feature rename, relevant context actions,
 human-readable diagnostics and provenance, clear state/icons, rebuild feedback,
@@ -1151,10 +1151,11 @@ workflow, new modeling features and persistence v3 are excluded. Suppression
 and reorder remain future Decision Gate topics because they change frozen D11
 history/dependency semantics and authoritative persisted state.
 
-C5 is proposed as the final v1.1 functional campaign. Its close requires one
-final V3 and an approved Experience Gate. If executable HEAD then remains
-unchanged, the v1.1 release freeze is V0 and the recommended annotated release
-tag is `v1.1.0` with message `Micro SolidWorks — v1.1.0`.
+C5 is the final v1.1 functional campaign. It passed fresh configure, a full
+Debug build with zero project warnings, 903/903 CTest tests and an approved
+manual Experience Gate. The executable implementation is validated by V3;
+release freeze is a separate V0 documentary step if executable HEAD remains
+unchanged. See `docs/V1_1_C5_VALIDATION.md`.
 
 The detailed evidence, options and acceptance criteria are recorded in
 `docs/V1_1_C5_PREREQUISITE_REVIEW.md`.
