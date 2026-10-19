@@ -14,9 +14,10 @@ arquitecturais está aprovada por esta adenda.
 As secções históricas abaixo descrevem a finalidade das baselines anteriores
 na altura em que foram planeadas. Esta adenda não as altera retroactivamente.
 
-V1.1-C5 mantém o scope aprovado de Feature Workflow Hardening. V1.1.0 é o
-próximo release a congelar após os seus gates. V1.2 e versões posteriores
-dependem de `Personal SolidWorks — Product & Architecture Review` e não têm
+V1.1-C5 manteve o scope aprovado de Feature Workflow Hardening e está FROZEN.
+Micro SolidWorks v1.1.0 está FROZEN após as gates técnica e de experiência.
+V1.2 e versões posteriores dependem de
+`Personal SolidWorks — Product & Architecture Review` e não têm
 roadmap aprovado. Essa revisão identificará workflows prioritários de peças
 mecânicas, limitações do kernel e requisitos de interoperabilidade.
 

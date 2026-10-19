@@ -7,6 +7,19 @@ a commercial CAD licence. Product reliability and complete workflows guide
 future prioritization; the educational foundations remain part of the project.
 This vision does not claim file or API compatibility with commercial SolidWorks.
 
+## Current release
+
+**Micro SolidWorks v1.1.0 — FROZEN.** The release combines a CAD-first
+workspace, guided sketching with constraints and dimensions, general additive
+Extrude, solid shading and face/edge selection, Feature Manager hierarchy,
+Undo/Redo and document safety, Sketch-on-Face, exact axial Cut Extrude,
+persistence v2 with v1 migration, feature deletion, editing, rename and rebuild
+diagnostics. Its C5 gate passed 903/903 tests and an approved manual workflow
+assessment. See [release validation](docs/V1_1_0_RELEASE.md).
+
+V1.2+ has no approved implementation roadmap; the next activity is the
+Personal SolidWorks Product & Architecture Review.
+
 ## Stable technical baselines
 
 | Baseline | Status | Tag |

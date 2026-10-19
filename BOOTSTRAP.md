@@ -694,7 +694,8 @@ FROZEN after fresh configure, full Debug build, zero project warnings,
 
 Personal SolidWorks is the APPROVED product vision from V1.1-C5 onward.
 Product reliability and complete bounded engineering workflows guide new
-priorities. The approved C5 scope is unchanged; V1.1.0 is the next release
-freeze candidate. V1.2+ has no approved roadmap and awaits the Personal
-SolidWorks Product & Architecture Review. Existing dependency policy and ADRs
-remain in force.
+priorities. The approved C5 scope is unchanged; Micro SolidWorks v1.1.0 is
+FROZEN after C5 V3 and an approved Experience Gate. V1.2+ has no approved
+roadmap and awaits the Personal SolidWorks Product & Architecture Review.
+Existing dependency policy and ADRs remain in force. See
+`docs/V1_1_0_RELEASE.md`.

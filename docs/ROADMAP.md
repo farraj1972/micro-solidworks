@@ -5,7 +5,7 @@
 ```text
 Vision: APPROVED
 V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
-V1.1.0: next release to freeze after Technical and Experience Gates
+V1.1.0: FROZEN after Technical and Experience Gates
 V1.2+: NOT APPROVED; requires Product & Architecture Review
 Dependency policy: remains in force until a specific architectural decision
 ```
@@ -800,7 +800,7 @@ initial v1.1 roadmap is:
 | V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | FROZEN | Safe authoritative history, native document workflow and unsaved-change protection |
 | V1.1-C4 — Subtractive Modeling & Sketch-on-Face | FROZEN | Semantic generated-face Sketch support, exact axial Cut Extrude, persistence v2, feature deletion and approved CAD workflow |
-| V1.1-C5 — Feature Workflow Hardening | NEXT / READY FOR ROADMAP DECISION | Feature-history editing, rename, diagnostics and rebuild usability under Option A |
+| V1.1-C5 — Feature Workflow Hardening | FROZEN | Feature-history editing, rename, diagnostics and rebuild usability under Option A |
 
 V1.1-C1 is graphics-area centric, mouse-first, context-sensitive and icon/tool
 driven. Its conceptual workspace is:
@@ -1158,4 +1158,23 @@ release freeze is a separate V0 documentary step if executable HEAD remains
 unchanged. See `docs/V1_1_C5_VALIDATION.md`.
 
 The detailed evidence, options and acceptance criteria are recorded in
-`docs/V1_1_C5_PREREQUISITE_REVIEW.md`.
+`docs/V1_1_C5_PREREQUISITE_REVIEW.md` and `docs/V1_1_C5_VALIDATION.md`.
+
+## Micro SolidWorks v1.1.0 — Release Freeze
+
+```text
+STATUS: FROZEN
+V1.1-C1/C2/C2A/C3/C4/C5: FROZEN
+ADRs: 69/69 ACCEPTED and conformant
+Final executable: C5 V3, 903/903 tests, manual Experience Gate APPROVED
+Release freeze: V0 documentary step; executable unchanged after V3
+V1.2+: NOT APPROVED
+```
+
+The release includes the CAD-first workspace, guided Sketch and constraints,
+general additive Extrude, solid shading and face/edge selection, Feature
+Manager hierarchy, Undo/Redo and document safety, Sketch-on-Face, exact axial
+Cut Extrude, persistence v2 with v1 migration, feature deletion, feature
+editing and rename, and readable rebuild diagnostics. Scope and evidence are
+in `docs/V1_1_0_RELEASE.md`. The next activity is the Personal SolidWorks
+Product & Architecture Review; it does not authorize v1.2 implementation.
