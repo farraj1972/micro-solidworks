@@ -7,6 +7,8 @@
 
 The copies under `sources/` have the same hashes as the user-provided files. They retain all original wording, including instruction-like text and third-party product claims, solely for traceability. This consolidation applies the actual authority recorded in [`AGENTS.md`](../../AGENTS.md), [P0-D01–D07](../PERSONAL_SOLIDWORKS_P0_DECISIONS.md), accepted ADRs and the [v1.1.0 release](../V1_1_0_RELEASE.md). A source's `P0/P1/P2` priority is **Original Priority**, not the project's approved implementation priority.
 
+SPEC-01 is APPROVED / FROZEN as a documentary baseline. Both archived sources remain immutable; future product-requirement changes require a new versioned revision. The source specification remains DRAFT and the handoff informative. This freeze makes no architectural decision and does not approve implementation of the 29 source requirements.
+
 ## Divergences resolved for consolidation
 
 | Source proposal | Repository/P0 contract | Disposition |

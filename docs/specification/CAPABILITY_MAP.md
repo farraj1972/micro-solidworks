@@ -1,6 +1,6 @@
 # Capability Map — v1.1.0 Evidence Cut
 
-This classifies **implementation**, not approval of the [DRAFT requirements](REQUIREMENTS_REGISTER.md). Evidence is frozen `v1.1.0` at `774f55c`, the [P0 code audit](../PERSONAL_SOLIDWORKS_CAPABILITY_MATRIX.md) and [v1.1.0 gate](../V1_1_0_RELEASE.md), not a new SPEC-01 build. Status vocabulary: `IMPLEMENTED_AND_VALIDATED` (bounded code and relevant tests/gate), `IMPLEMENTED_NOT_VALIDATED`, `PARTIALLY_IMPLEMENTED`, `FOUNDATIONAL_ONLY`, `NOT_IMPLEMENTED`, `UNKNOWN`. “Validated” never implies complete commercial-CAD parity or fulfillment of every clause of a broader draft requirement.
+This APPROVED / FROZEN SPEC-01 map classifies **implementation**, not approval of the [DRAFT requirements](REQUIREMENTS_REGISTER.md). Evidence is frozen `v1.1.0` at `774f55c`, the [P0 code audit](../PERSONAL_SOLIDWORKS_CAPABILITY_MATRIX.md) and [v1.1.0 gate](../V1_1_0_RELEASE.md), not a new SPEC-01 build. Status vocabulary: `IMPLEMENTED_AND_VALIDATED` (bounded code and relevant tests/gate), `IMPLEMENTED_NOT_VALIDATED`, `PARTIALLY_IMPLEMENTED`, `FOUNDATIONAL_ONLY`, `NOT_IMPLEMENTED`, `UNKNOWN`. “Validated” never implies complete commercial-CAD parity or fulfillment of every clause of a broader draft requirement.
 
 | Status | Parent IDs (29 total, each exactly once) | Evidence and limit |
 |---|---|---|
