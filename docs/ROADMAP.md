@@ -12,6 +12,7 @@ V1.2: APPROVED AT CAMPAIGN LEVEL; plan READY FOR REVIEW, not authorized for impl
 V1.3+: PROPOSED / NOT APPROVED
 K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
 Dependency policy: remains in force until a specific architectural decision
+SPEC-01 CAD/CAM consolidation: COMPLETE / READY FOR REVIEW; requirements DRAFT / PROPOSED
 ```
 
 Product reliability and completion of bounded mechanical-engineering
@@ -21,6 +22,10 @@ owner-approved planning decisions in `docs/PERSONAL_SOLIDWORKS_P0_DECISIONS.md`.
 The v1.2 campaign proposal is `docs/PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROPOSAL.md`;
 its detailed increments await review and approval. Later releases remain
 unapproved. No kernel migration or executable work is authorized by this state.
+`docs/specification/README.md` indexes the separate SPEC-01 CAD/CAM reference
+horizon (R0–R9) and requirement traceability. That horizon is conceptual and
+does not replace this canonical implementation roadmap or authorize v1.2, CAM
+or scripting.
 
 ## Canonical MVP Roadmap
 

@@ -1,0 +1,16 @@
+# Functional Reference Model — DRAFT
+
+Source: [specification v0.1 §§1–3, 8–9](sources/MICRO_CADCAM_PRODUCT_SPEC_V0_1.md), interpreted through [P0-D01–D07](../PERSONAL_SOLIDWORKS_P0_DECISIONS.md) and [current capability evidence](../PERSONAL_SOLIDWORKS_CAPABILITY_MATRIX.md). This is a **target taxonomy**, not a claim that every domain is implemented or approved.
+
+| Domain | Reference capabilities | v1.1.0 bounded state | Planning boundary |
+|---|---|---|---|
+| CAD design | Native documents; sketches; geometric constraints; dimensions/parameters; features and dependency/rebuild; bodies/topology; selection/editing; assemblies; drawings. | `.microsw` v2, Sketch, solver, typed FeatureModel, Extrude and supported axial Cut, derived multi-Solid results, UI/editor/viewer are present. Named expressions, Revolve, general persistent topological naming, assemblies and drawings are absent. | P0 first N2 is one prismatic printed part; broader design is DRAFT/deferred. |
+| Interoperability | Native `.microsw`; STL; STEP; DXF; 3MF; OBJ; glTF/GLB; IGES. | Native format only. Rendering mesh is derived, not a current STL export contract. | Validated STL export is approved priority; detailed v1.2 increments remain unapproved. Other formats are future requirements. |
+| Manufacturing | ManufacturingPlan; revision link; Setup/WCS; stock/fixtures/tools; strategies; toolpath; simulation; postprocessing; NC artifacts. | No CAM aggregate, machine toolpath, simulation or NC output found in current modules. | Conceptual initial target: offline 3-axis 2.5D milling, subject to separate owner and safety decisions. |
+| Extensibility | Versioned command API, script runtime, declarative feature schemas, transactions/Undo/Redo, persistence/rebuild, permissions/cancellation. | Internal editor commands and FeatureModel operations exist, but no public extension API/script host. | Python/Lua and package policy remain open; scripting is not v1.2 scope. |
+
+## Conceptual capability horizon versus implementation roadmap
+
+The source's **R0–R9** are proposed product-capability epochs, not approved baselines, dates or a replacement for [docs/ROADMAP.md](../ROADMAP.md): R0 alignment; R1 CAD foundation; R2 parametric CAD; R3 UX/interoperability; R4 extensibility; R5 broader mechanical CAD; R6 2.5D CAM; R7 industrial exchange; R8 advanced CAM; R9 specialization. Historical B0–B14/v1.1 delivered *parts* of R1–R3, while P0 froze the bounded product direction. The relationships are partial and many-to-many: existing CAD features do not make an entire R epoch complete. v1.2 is only a campaign-level approved printed-part target and remains unapproved for implementation. The [requirements traceability](REQUIREMENTS_TRACEABILITY.md) maps specific IDs to code and roadmap without claiming equivalence of numbering.
+
+For any future workflow, Definition of Done requires functional operation, authoritative CAD correctness, document lifecycle, user-facing UX, automated evidence and an Experience Gate. Include independent interoperability/manufacturing output validation where that workflow needs it. The N0/N1/N2/N3 scale and bounded current N1 conclusion remain in [P0 decisions](../PERSONAL_SOLIDWORKS_P0_DECISIONS.md).

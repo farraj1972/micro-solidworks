@@ -1,0 +1,13 @@
+# UX Reference Model — DRAFT
+
+Source: [specification v0.1 §4](sources/MICRO_CADCAM_PRODUCT_SPEC_V0_1.md), [P0-D01/D02](../PERSONAL_SOLIDWORKS_P0_DECISIONS.md) and frozen D13/ADR-0049–0052. Preserve an **original** design system; do not copy commercial icons, assets, source code, branding or a pixel-identical interface.
+
+| Principle / contract | Existing evidence | Gap / future acceptance intent |
+|---|---|---|
+| Desktop-, canvas- and mouse-first; direct selection and context commands | [`ApplicationShell`](../../src/ui/ApplicationShell.h), [`EditorContext`](../../src/interaction/EditorContext.h), [`FeatureTreeModel`](../../src/ui/FeatureTreeModel.h) and C5 [Experience Gate](../V1_1_C5_VALIDATION.md). | Product-wide discoverability is unproved; context menus/search/onboarding are only bounded or absent. Normal tasks must not require internal IDs. |
+| Hover/preselection, tree↔canvas logical selection, view/navigation | EditorContext logical targets, viewer pickers and C5 feature editing. | Topological sub-selection is transient on rebuild; ambiguity handling and universal target types are incomplete. |
+| Preview → Confirm/Cancel; Undo/Redo and error recovery | Tool steps/editor drafts and [`DocumentHistory`](../../src/app/DocumentHistory.h); C5 validated bounded edit/cancel behavior. | Continuous manipulators and uniform preview across all future commands are aspirational. Cancel must leave authoritative state/dirty/history unchanged. |
+| Property/Feature Manager and accessible diagnostics | Human-readable feature names/states, rebuild failures and blocked dependencies in C5. | More comprehensive guidance, measurement, keyboard navigation and accessible feedback need workflow-specific tests. |
+| High-DPI and responsive layouts | Prior viewer/UI gates record bounded HiDPI evidence; current UI is desktop-focused. | No claim of complete accessibility or mobile design. Test relevant Windows scaling, keyboard and multiple desktop sizes per future Experience Gate. |
+
+The conceptual surface is a document/status header, contextual command groups, dominant Graphics Area, synchronized Feature Manager, property guidance and clear mode/status. Workspace switches for Assembly/Drawing/Manufacture appear only when their workflows exist. Search/pie menus, drag handles, persistent layouts, light theme and reduced motion are DRAFT ideas, not v1.2 commitments. Future visual capabilities require their own Experience Gate, even with green unit/CTest results. Record task success, errors, recovery and user comprehension; set numerical UX thresholds only after an empirical baseline.

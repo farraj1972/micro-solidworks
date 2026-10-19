@@ -17,8 +17,13 @@ persistence v2 with v1 migration, feature deletion, editing, rename and rebuild
 diagnostics. Its C5 gate passed 903/903 tests and an approved manual workflow
 assessment. See [release validation](docs/V1_1_0_RELEASE.md).
 
-V1.2+ has no approved implementation roadmap; the next activity is the
-Personal SolidWorks Product & Architecture Review.
+P0 Product & Architecture Review is FROZEN. V1.2 is approved at campaign level,
+but its detailed plan is READY FOR REVIEW and implementation is not authorized.
+See the [P0 decisions](docs/PERSONAL_SOLIDWORKS_P0_DECISIONS.md),
+[v1.2 campaign proposal](docs/PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROPOSAL.md)
+and [SPEC-01 CAD/CAM specification](docs/specification/README.md). SPEC-01 is a
+DRAFT/PROPOSED reference for future capabilities, not a change to frozen ADRs
+or the current implementation roadmap.
 
 ## Stable technical baselines
 
