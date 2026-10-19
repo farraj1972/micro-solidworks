@@ -686,5 +686,8 @@ D20 is FROZEN in accepted ADR-0068–0069. It freezes atomic
 recursive dependant-closure Feature deletion and narrow semantic generated-face
 support for unambiguous Cut caps and a single-region pocket floor. ADR inventory:
 69/69 ACCEPTED. D20 is implemented and conformant. V1.1-C4 is FROZEN after
-899/899 tests, runtime validation and an approved Experience Gate. V1.1-C5 is
-the next roadmap item, subject to review and explicit authorization.
+899/899 tests, runtime validation and an approved Experience Gate. The
+V1.1-C5 prerequisite review is complete and recommends Option A — UX Hardening
+Only, with no Decision Gate. C5 is the next roadmap item, ready for roadmap
+decision and explicit implementation authorization; see
+`docs/V1_1_C5_PREREQUISITE_REVIEW.md`.

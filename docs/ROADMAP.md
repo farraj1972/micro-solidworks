@@ -783,7 +783,7 @@ initial v1.1 roadmap is:
 | V1.1-C2A — Feature Manager & Display Mode UX Alignment | FROZEN | CAD-first tree hierarchy and immediately distinct Shaded, Shaded With Edges and Wireframe modes |
 | V1.1-C3 — Document Safety, Undo/Redo & Session Workflow | FROZEN | Safe authoritative history, native document workflow and unsaved-change protection |
 | V1.1-C4 — Subtractive Modeling & Sketch-on-Face | FROZEN | Semantic generated-face Sketch support, exact axial Cut Extrude, persistence v2, feature deletion and approved CAD workflow |
-| V1.1-C5 — Feature Workflow Hardening | NEXT / SUBJECT TO REVIEW | Feature interaction and rebuild usability |
+| V1.1-C5 — Feature Workflow Hardening | NEXT / READY FOR ROADMAP DECISION | Feature-history editing, rename, diagnostics and rebuild usability under Option A |
 
 V1.1-C1 is graphics-area centric, mouse-first, context-sensitive and icon/tool
 driven. Its conceptual workspace is:
@@ -1106,4 +1106,38 @@ cylindrical, Boolean, multi-region and multi-body face support remains deferred.
 C4 implements the D20 correction and is FROZEN after its approved Experience
 Gate, clean full Debug build, 899/899 tests and clean runtime shutdown. Feature
 deletion, generated-face support, sketch visibility/dimension editing and
-feature-edit state are validated. V1.1-C5 is next, subject to review.
+feature-edit state are validated.
+
+## V1.1-C5 — Feature Workflow Hardening
+
+```text
+STATUS: NEXT ACTIVE / READY FOR ROADMAP DECISION
+PREREQUISITE REVIEW: COMPLETE
+RECOMMENDED OPTION: A — UX HARDENING ONLY
+DECISION GATE: NONE
+```
+
+The prerequisite review finds that the feature domain already provides stable
+identity, explicit transactional rebuild, typed failure state, deletion,
+Undo/Redo and persistence. C5 should close v1.1 by making this capability a
+coherent Feature Manager workflow: direct and consistent Sketch/Extrude/Cut
+Extrude editing, atomic Confirm/Cancel, feature rename, relevant context actions,
+human-readable diagnostics and provenance, clear state/icons, rebuild feedback,
+and deterministic selection after edit/delete/Undo/Redo.
+
+Rename preserves FeatureId and dependencies, is one Undo step and uses the
+existing persisted displayName field. Live feature names are non-empty and
+case-insensitively unique. Explicit rebuild remains authoritative.
+
+Suppression, reorder, automatic rebuild, full solid preview, new Boolean
+workflow, new modeling features and persistence v3 are excluded. Suppression
+and reorder remain future Decision Gate topics because they change frozen D11
+history/dependency semantics and authoritative persisted state.
+
+C5 is proposed as the final v1.1 functional campaign. Its close requires one
+final V3 and an approved Experience Gate. If executable HEAD then remains
+unchanged, the v1.1 release freeze is V0 and the recommended annotated release
+tag is `v1.1.0` with message `Micro SolidWorks — v1.1.0`.
+
+The detailed evidence, options and acceptance criteria are recorded in
+`docs/V1_1_C5_PREREQUISITE_REVIEW.md`.
