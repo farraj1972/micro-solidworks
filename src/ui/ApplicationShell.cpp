@@ -374,11 +374,16 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     const auto* faceSelection=editor&&editor->selection()?std::get_if<interaction::TopologyFaceTarget>(&*editor->selection()):nullptr;
     const bool supportedSelectedFace=!faceSelection||(featureModel&&featureModel->semanticFaceRole(
         faceSelection->feature,faceSelection->body.index,faceSelection->face).has_value());
-    const char* sketchTip=editing?"Finish editing the active Sketch":supportedSelectedFace?
-        "Create a Sketch on the selected plane or supported Extrude cap":
-        "Sketch on this face is not yet supported";
+    const bool selectedSketch=featureModel&&selectedFeature_
+        &&featureModel->find(*selectedFeature_).kind()==features::FeatureKind::Sketch;
+    const bool canStartSketch=selectedPrincipalPlane_.has_value() || selectedSketch
+        || (faceSelection && supportedSelectedFace);
+    const char* sketchTip=editing?"Finish editing the active Sketch":!supportedSelectedFace?
+        "Sketch on this face is not yet supported":canStartSketch?
+        "Open the selected Sketch or create one on the selected plane or face":
+        "Select a principal plane, supported planar face, or existing Sketch first";
     commandButton("sketch", editing ? "Exit" : "Sketch", sketchTip,
-        editing ? CadIcon::ExitSketch : CadIcon::Sketch, editing||supportedSelectedFace, editing,
+        editing ? CadIcon::ExitSketch : CadIcon::Sketch, editing||canStartSketch, editing,
         [&]{ if (editing) exitSketchRequest_ = true; else if(selectedPrincipalPlane_){sketchPlaneRequest_=selectedPrincipalPlane_;}else if(faceSelection||selectedFeature_){enterSketchRequest_=true;}else{sketchError_="Select Front, Top or Right Plane, or a supported planar face, before starting Sketch.";} });
     if (editing)
     {
