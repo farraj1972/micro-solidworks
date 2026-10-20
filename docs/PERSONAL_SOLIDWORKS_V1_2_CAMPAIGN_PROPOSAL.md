@@ -1,6 +1,6 @@
 # v1.2 — First Functional Replacement: Printable Mechanical Part
 
-Status: **C1–C4 IMPLEMENTATION AUTHORIZED BY OWNER; C1 PASS**. This detailed plan under frozen [P0 decisions](PERSONAL_SOLIDWORKS_P0_DECISIONS.md) was reconciled by the [V1.2-READY review](PERSONAL_SOLIDWORKS_V1_2_READINESS_REVIEW.md) and subsequently authorized for sequential execution. `v1.1.0` and SET-01 stay FROZEN. Authorization does not approve a pending Experience/N2 Gate, a new dependency, kernel spike or ADR change.
+Status: **V1.2.0 FROZEN UNDER REVISED OWNER ACCEPTANCE**. This detailed plan under frozen [P0 decisions](PERSONAL_SOLIDWORKS_P0_DECISIONS.md) was reconciled by the [V1.2-READY review](PERSONAL_SOLIDWORKS_V1_2_READINESS_REVIEW.md) and subsequently authorized for sequential execution. The original plan and interim updates below remain historical; the owner-approved exceptions and final result are recorded in [v1.2.0 release evidence](V1_2_0_RELEASE.md). `v1.1.0` and SET-01 stay FROZEN. No new dependency, kernel spike or ADR change was authorized.
 
 **V1.2-PLAN-R2 corrective update (2026-10-20): technical geometry and CAD Experience Gate PASS.** R1 failed on the holed-base one-Cut reconstruction; the [preflight and R2 addendum](PERSONAL_SOLIDWORKS_V1_2_GEOMETRY_PREFLIGHT.md) preserve that evidence and record the corrected CAD fixture, exact volume/bounds, edits, history, persistence and owner-validated CAD workflow after a sketch-dimension display fix. This was the CAD entry evidence for the subsequently authorized C1–C4 campaign; it did not establish STL, slicer, package or N2 results.
 
@@ -11,6 +11,23 @@ Status: **C1–C4 IMPLEMENTATION AUTHORIZED BY OWNER; C1 PASS**. This detailed p
 **V1.2-C3 candidate update (2026-10-20):** [distribution evidence](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) covers the Release build, portable ZIP inventory and out-of-tree startup. Save/Open/Export, normal shutdown and isolated Windows 10 evidence are PENDING. C4 and N2 cannot be approved from this technical package evidence alone.
 
 **Owner follow-up (2026-10-20):** the first report of STL rejection was retracted as a false positive. Bounded C2 export and reading a non-N2 STL passed on the extracted portable build on the usual Windows 10 PC, together with owner-reported Save/Open/preferences/Cancel/close. C3 still lacks clean-environment dependency and recorded exit-code evidence. The N2 part was not the exported part; the owner identified dimensions/constraints usability as the first obstacle to completing N2 and is retrying with clarified dimensions. C4 Experience Gate is REWORK REQUIRED unless the repeat demonstrates the full workflow; N2 and freeze remain unapproved.
+
+**Owner-approved acceptance revision (2026-10-20):** after inspecting the
+later [as-built STL and pocket mismatch](PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md),
+the owner accepted that identified STL as the bounded N2 adapter-plate artifact.
+For this release only, the owner waived exact pocket placement, complete
+model/sketch UX, independent slicer preparation and testing the portable ZIP
+on a developer-free Windows machine. The original fixture and strict gate
+below remain historical engineering criteria, not results falsely claimed for
+the accepted artifact. Final executable V3 is still required before freeze;
+general printability and clean-machine portability remain unverified.
+
+**Final v1.2.0 freeze (2026-10-20):** the revised bounded owner gate was
+followed by fresh configure, complete Debug build, 927/927 CTest PASS and
+normal Debug and extracted Release ZIP shutdown with code 0. The release ZIP
+and explicit exceptions are recorded in [release evidence](V1_2_0_RELEASE.md).
+The original strict fixture/slicer conditions below were not silently recast
+as completed tests.
 
 ## Objective and bounded scope
 

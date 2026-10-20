@@ -9,7 +9,15 @@ This vision does not claim file or API compatibility with commercial SolidWorks.
 
 ## Current release
 
-**Micro SolidWorks v1.1.0 — FROZEN.** The release combines a CAD-first
+**Personal SolidWorks v1.2.0 — FROZEN under revised bounded N2 acceptance.**
+The release adds validated CAD-derived binary STL export and a Windows
+portable ZIP. The owner accepted one as-built adapter-plate STL with explicit
+exceptions: its pocket differs from the original reference; slicer preparation,
+full model/sketch UX and execution on a developer-free Windows machine were
+waived, not demonstrated. The final technical V3 passed 927/927 tests and
+normal startup/shutdown. See [v1.2 release evidence](docs/V1_2_0_RELEASE.md).
+
+**Micro SolidWorks v1.1.0 — FROZEN.** That earlier release combines a CAD-first
 workspace, guided sketching with constraints and dimensions, general additive
 Extrude, solid shading and face/edge selection, Feature Manager hierarchy,
 Undo/Redo and document safety, Sketch-on-Face, exact axial Cut Extrude,
@@ -17,8 +25,8 @@ persistence v2 with v1 migration, feature deletion, editing, rename and rebuild
 diagnostics. Its C5 gate passed 903/903 tests and an approved manual workflow
 assessment. See [release validation](docs/V1_1_0_RELEASE.md).
 
-P0 Product & Architecture Review is FROZEN. V1.2 is approved at campaign level,
-but its detailed plan is READY FOR REVIEW and implementation is not authorized.
+P0 Product & Architecture Review is FROZEN. The v1.2 C1–C4 campaign was
+authorized and completed under the revised owner acceptance recorded above.
 See the [P0 decisions](docs/PERSONAL_SOLIDWORKS_P0_DECISIONS.md),
 [v1.2 campaign proposal](docs/PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROPOSAL.md)
 and [SPEC-01 CAD/CAM specification](docs/specification/README.md). SPEC-01 is a

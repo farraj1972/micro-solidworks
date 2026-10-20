@@ -1,18 +1,51 @@
 # V1.2-C4 — N2 printable adapter plate acceptance
 
-Status: **REWORK REQUIRED — OWNER EXPERIENCE GATE NOT APPROVED**. This is an
-executable owner checklist and failure record, not N2 approval. C1 export-mesh
-tests and C2 binary-STL parser tests pass. The owner subsequently verified the
-bounded STL export flow and same-PC portable operations, but stated that the
-current interface is not robust or intuitive enough to create the N2 part
-easily. The STL read in another application was a different part. The N2
-workflow and independent N2 slicer acceptance remain unverified. Do not use
-this document to infer a release freeze.
+Status: **FROZEN UNDER REVISED N2 OWNER ACCEPTANCE WITH EXCEPTIONS**.
+On 2026-10-20 the owner explicitly revised this acceptance gate to accept the
+validated `F:\downloads\export.stl` as the bounded adapter-plate artifact.
+The owner accepted its actual pocket placement and expressly waived the
+independent slicer/print-preparation and developer-free Windows environment
+checks for this release. Broader model/sketch UI/UX maturation is deferred.
+These are acceptance exceptions, not test results: the original exact N2
+fixture remains the reproducible engineering oracle below, and no general
+printability or clean-machine portability claim follows from this decision.
+Final V3 on the executable state passed 927/927 tests, and both the clean
+Debug executable and the extracted Release ZIP exited normally with code 0.
 
-## Candidate and fixture
+## Owner-approved acceptance revision (2026-10-20)
 
-Use the [candidate portable ZIP](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md)
-from `out/packages/PersonalSolidWorks-v1.2.0-candidate-win64.zip`. Record the
+The accepted artifact has SHA-256
+`7BDAAA163B88C1D28A97525E39744E3C34C710543FE264C53FB5CCD45B27644E`,
+39,884 bytes and 796 triangles. Independent inspection of the binary STL
+found finite, nondegenerate triangles, matching file length, closed edge
+incidence, consistent winding and positive signed mesh volume (about
+`30,910.119 mm³`). Its AABB is X `[-40,40]`, Y `[-25,25]`, Z `[0,8]` mm. The
+through-hole and a blind rectangular pocket are present. The pocket floor is
+at Z=6 mm and the measured pocket bounds are X `[-0.952690,20.102491]`, Y
+`[-2.098002,14.238203]` mm. These mesh measurements do not establish exact
+CAD dimensions. The owner previously confirmed that an exported STL could be
+read in another application and retracted an initial invalid-file report.
+This file predates the later exact-rectangle UI correction in commit
+`401a415`; that correction did not change the STL writer/export mesh contract.
+The revised owner acceptance is based on the identified file and existing
+export contract, not an observed run of the corrected rectangle UI.
+
+For this one revised N2 decision, acceptance uses the actual bounded plate,
+through-hole and blind pocket plus the validated CAD-derived STL, prior R2
+CAD/edit/persistence contract evidence and same-PC portable Export/Save/Open
+evidence. The owner's approval overrides the original requirement that the
+pocket exactly match the canonical 18 × 14 mm pocket centered at `(16,0)`.
+The owner also dispenses with completing this exact part interactively without
+UX assistance, slicer Slice/Prepare evidence, and a developer-free Windows
+machine. Those unperformed checks remain explicit product limitations.
+No physical print was made or claimed. This is **N2 for this accepted bounded
+artifact only**, not a certification of the original exact fixture or the
+whole CAD application.
+
+## Release package and reference fixture
+
+Use the [release portable ZIP](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md)
+from `out/packages/PersonalSolidWorks-v1.2.0-win64.zip`. Record the
 archive SHA-256, Windows version/build, graphics/OpenGL capability and whether
 the environment has development tools. Extract outside the repository and
 start `micro_solidworks.exe` from the extracted directory. Record startup and
@@ -73,26 +106,29 @@ measured volume if it did not.
 
 | Gate | Required observation | Current evidence |
 | --- | --- | --- |
-| CAD workflow and edits | All steps 1–4, including rebuild and Undo/Redo | R2 automated and owner CAD evidence; integrated portable run pending |
-| Native persistence | Save, close, reopen, rebuild final part | R2 automated; integrated portable run pending |
-| Export mesh and file | Validation result, STL bytes, AABB/volume, no mutation | C1/C2 automated PASS; bounded UI/portable export owner-reported PASS for a non-N2 part |
-| Independent slicer | Name/version, OS, STL file/hash, dimensions, hole, pocket, orientation, print preparation, warnings | **N2 NOT TESTED**; the readable export was not the reference part |
-| Windows portable | OS build, no developer runtime dependency, startup, Save/Open/Export, preferences location, diagnostics, exit code | Same Windows 10 PC workflow owner-reported PASS; clean environment and exit code unverified |
-| Experience Gate | Owner decision: APPROVED / APPROVED WITH CHANGES / REWORK REQUIRED, with findings | **REWORK REQUIRED**: N2 part cannot be created easily with current interface |
+| CAD workflow and edits | All steps 1–4, including rebuild and Undo/Redo | R2 automated and owner CAD evidence PASS; full interactive run for the accepted as-built part waived by owner |
+| Native persistence | Save, close, reopen, rebuild final part | R2 automated and same-PC portable Save/Open owner report PASS; exact exported part reopen unverified |
+| Export mesh and file | Validation result, STL bytes, AABB/volume, no mutation | Accepted artifact independently inspected as closed/wound/finite with correct plate AABB; C1/C2 tests and bounded UI Export PASS |
+| Independent slicer | Name/version, OS, STL file/hash, dimensions, hole, pocket, orientation, print preparation, warnings | **WAIVED BY OWNER** for this release; not run for the accepted artifact |
+| Windows portable | OS build, no developer runtime dependency, startup, Save/Open/Export, preferences location, diagnostics, exit code | Same Windows 10 PC workflow owner-reported PASS; final ZIP startup/exit code 0 technical smoke PASS; developer-free environment **waived**, not verified |
+| Experience Gate | Owner decision: APPROVED / APPROVED WITH CHANGES / REWORK REQUIRED, with findings | **APPROVED WITH CHANGES BY OWNER** for this bounded artifact; model/sketch UX maturation deferred |
 
-N2 decision: **NOT APPROVED / REWORK REQUIRED**. Only the bounded printable adapter-plate
-workflow can qualify; a passing STL parser alone does not establish slicer
-acceptance, package portability or general CAD capability. C4 PASS and v1.2
-freeze require the owner evidence above plus the final V3 on the final
-executable state. No physical print is required.
+Revised N2 owner decision: **APPROVED WITH EXCEPTIONS** for the identified STL
+artifact. The former strict N2 gate would remain unproven; the owner explicitly
+changed its acceptance criteria for this release. Final V3 passed and v1.2 is
+frozen under that revised decision. Do not infer slicer acceptance, clean
+package portability, exact canonical pocket dimensions or general CAD
+capability from this approval.
 
 ## Experience finding and smallest next correction
 
 The owner could export and read a simpler part but could not complete the
 specified N2 plate easily, citing insufficient UI robustness and intuition,
 and identified **dimensions and constraints** as the first blocking stage,
-without a specific crash or error message. The exact N2 dimensions were
-restated for a further owner attempt; that attempt has no result yet.
+without a specific crash or error message. The owner now treats the validated
+STL as sufficient for the bounded export gate, while leaving this N2 workflow
+limitation as future UX work. The exact N2 dimensions were restated for a
+further attempt; the resulting pocket still differed from the fixture.
 Code inspection shows that the
 reference-plane choice, sketch drawing, dimension editing, face-supported
 sketch, Cut direction and export live in separate contextual controls; the
@@ -124,6 +160,8 @@ independent `SketchLine` entities via `Sketch::addRectangle`; invalid inputs
 are rejected. No new geometry type, constraint, solver or persistence contract
 was added. The N2 pocket inputs are Center `(16,0)`, Width `18`, Height `14`.
 The targeted Debug build and 7 Sketch Tools/vertical-slice tests passed;
-Release build and updated candidate ZIP generation passed. Manual runtime
-validation of the updated candidate is pending. The new ZIP SHA-256 is in
+Release build and ZIP generation passed. The final ZIP started and closed with
+exit code 0 after extraction. The owner waived the separate interactive
+Experience retest of this exact-rectangle UI; it is not recorded as tested.
+The release ZIP SHA-256 is in
 [C3 validation](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md).

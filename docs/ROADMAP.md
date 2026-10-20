@@ -7,8 +7,8 @@ Vision: APPROVED
 V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
 V1.1.0: FROZEN after Technical and Experience Gates
 P0 — Personal SolidWorks Product & Architecture Review: FROZEN
-R2 workflow-first / first bounded N2 target: APPROVED; N2 result NOT YET ESTABLISHED
-V1.2: C1–C4 IMPLEMENTATION AUTHORIZED; C1 PASS; C2 PASS; C3 SAME-PC PORTABLE PASS / CLEAN-ENVIRONMENT PENDING; C4 EXPERIENCE REWORK REQUIRED
+R2 workflow-first / first bounded N2 target: APPROVED; revised as-built N2 artifact OWNER-APPROVED WITH EXCEPTIONS
+V1.2: FROZEN after C1/C2 technical PASS, C3 same-PC owner acceptance, revised C4/N2 owner acceptance and final V3 927/927 PASS
 V1.2-READY: COMPLETE / owner approved subsequent C1–C4 execution
 V1.3+: PROPOSED / NOT APPROVED
 K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
@@ -18,7 +18,7 @@ UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; pack
 SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
 UX-01/UX-02: PROPOSED / SEPARATE / NOT AUTHORIZED
-V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: PORTABLE CANDIDATE / CLEAN-ENVIRONMENT PENDING; C4: REWORK REQUIRED / N2 NOT APPROVED
+V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: FROZEN WITH CLEAN-ENVIRONMENT WAIVER; C4: FROZEN UNDER REVISED BOUNDED N2 ACCEPTANCE
 ```
 
 Product reliability and completion of bounded mechanical-engineering
@@ -33,15 +33,20 @@ is PASS. Later releases remain unapproved; no kernel migration is authorized.
 The [C2 export flow](PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md) has targeted
 technical and owner-reported bounded UI PASS; the initially reported STL
 rejection was retracted as a false positive.
-The [C3 portable candidate](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) has a
-Release ZIP, out-of-tree startup and owner-reported Save/Open/Export/preferences
-on the usual Windows 10 PC; clean-environment runtime and exit-code evidence
-remain pending.
-The [C4 N2 acceptance checklist](PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
-records the exact owner workflow and the dimensions/constraints usability
-finding. A bounded exact-rectangle numeric entry candidate addresses the
-measured pocket-position mismatch; owner retest and independent N2 slicer
-evidence are still missing. N2 and v1.2 freeze remain pending.
+The [C3 portable release](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) has a
+Release ZIP, out-of-tree startup/clean shutdown and owner-reported
+Save/Open/Export/preferences on the usual Windows 10 PC. The owner waived
+clean-environment evidence; that capability is unverified.
+The [C4 N2 acceptance record](PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
+preserves the original exact fixture and records the owner's revised acceptance
+of the as-built `export.stl` as a bounded adapter-plate artifact. Its pocket
+differs from the canonical coordinates. The owner explicitly waived the exact
+pocket, full model/sketch UX, independent slicer and clean Windows checks for
+this N2 decision. None of those waived checks is represented as tested; the
+exact-rectangle correction has no owner interactive retest. Final V3 passed
+fresh configure, full Debug build, 927/927 CTest and normal runtime exit 0;
+the extracted Release ZIP also started and exited 0. [v1.2.0 is frozen](V1_2_0_RELEASE.md)
+under the revised bounded N2 decision.
 `docs/specification/README.md` indexes the separate SPEC-01 CAD/CAM reference
 horizon (R0–R9) and its frozen requirement traceability baseline. Its original
 sources are immutable; future requirements need versioned revisions. That

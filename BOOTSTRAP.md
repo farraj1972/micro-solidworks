@@ -695,8 +695,8 @@ FROZEN after fresh configure, full Debug build, zero project warnings,
 Personal SolidWorks is the APPROVED product vision from V1.1-C5 onward.
 Product reliability and complete bounded engineering workflows guide new
 priorities. The approved C5 scope is unchanged; Micro SolidWorks v1.1.0 is
-FROZEN after C5 V3 and an approved Experience Gate. V1.2+ has no approved
-roadmap and awaits the Personal SolidWorks Product & Architecture Review.
+FROZEN after C5 V3 and an approved Experience Gate. The subsequent P0 review
+and authorized v1.2 C1–C4 campaign are recorded in `docs/ROADMAP.md`.
 Existing dependency policy and ADRs remain in force. See
 `docs/V1_1_0_RELEASE.md`.
 
@@ -704,4 +704,7 @@ SET-D01 is FROZEN in ADR-0070/0071 (71/71 ACCEPTED). SET-01 implements
 per-user typed navigation and selection preferences, independent of CAD
 documents. Its owner Experience Gate and final V3 (918/918 tests) passed;
 SET-01 is FROZEN. See `docs/PERSONAL_SOLIDWORKS_SET_01_VALIDATION.md`. UI/UX
-v0.3 remains PROPOSED; V1.2-C1–C4 remain NOT AUTHORIZED.
+v0.3 remains PROPOSED. V1.2-C1–C4 are complete; v1.2.0 is FROZEN under
+the owner's revised acceptance of one as-built STL with explicit pocket,
+model/sketch UX, slicer and clean-Windows waivers. Final V3 passed 927/927
+tests; see `docs/V1_2_0_RELEASE.md`. V1.3+ remains unapproved.

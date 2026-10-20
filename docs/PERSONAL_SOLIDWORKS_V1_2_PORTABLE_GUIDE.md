@@ -1,7 +1,7 @@
-# Personal SolidWorks v1.2 candidate — Windows portable use
+# Personal SolidWorks v1.2 — Windows portable use
 
-This is a candidate package for the bounded adapter-plate workflow, not a
-frozen v1.2 release or a general 3D-printing certification. Extract the archive
+This is the bounded v1.2 package, not a general 3D-printing certification.
+Extract the archive
 to a writable user folder, then run `micro_solidworks.exe`. Windows 10 x64,
 OpenGL 3.3-compatible graphics and a supported MSVC/UCRT environment are
 required. The archive includes the MSVC redistributable DLLs found by CMake;
@@ -23,15 +23,19 @@ orientation, through-hole and pocket, and inspect any slicer warnings before
 preparing a print. A green mesh result means the supported manifold checks
 passed; it is not proof of material/process printability.
 
-The canonical candidate plate has an 80 × 50 × 8 mm base, Ø8 through-hole at
+The canonical engineering reference plate has an 80 × 50 × 8 mm base, Ø8 through-hole at
 (-22, 0) mm and 18 × 14 × 2 mm pocket centred at (16, 0) mm. The supported
 edit sequence changes width 80 → 90 mm and pocket depth 2 → 3 mm, then rebuilds
 and exports again. Save/Open and Undo/Redo are CAD document operations;
 export does not alter the document or create an Undo step. Cancel in the
 Export dialog leaves the document and any previous STL unchanged.
+The owner's accepted v1.2 STL had a differently positioned pocket. Slicer
+preparation and testing on a developer-free Windows machine were waived for
+this release, not demonstrated. Verify any part in the intended slicer before
+printing it.
 
 Known scope limits: Cut Extrude targeting another Cut Extrude, general STL
 import, STEP/3MF/DXF, CAM, unsupported disconnected/overlapping mesh
 components and general self-intersection verification are outside this
-candidate. A validation or write failure reports a diagnostic and does not
+release. A validation or write failure reports a diagnostic and does not
 claim an STL success.

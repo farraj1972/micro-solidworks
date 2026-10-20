@@ -44,8 +44,12 @@ and the File → Export STL UI in [`ApplicationShell`](../../src/ui/ApplicationS
 The [C1 mesh tests](../../tests/export/test_export_mesh.cpp) and
 [C2 independent STL parse tests](../../tests/export/test_stl_writer.cpp)
 pass in targeted validation. The bounded export UI has owner-reported PASS
-for a non-N2 part; the
-[portable package](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) and
-[independent slicer/N2 gate](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
-are unapproved. `INT-001-IMP` is still absent. These later implementation
+for a non-N2 part. The
+[portable package](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) passed
+same-PC Save/Open/Export; a clean Windows environment was not tested. The
+owner [accepted an as-built N2 STL with explicit exceptions](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md),
+waiving the original pocket position and independent slicer check for this
+release. Final V3 passed 927/927 tests and normal startup/shutdown;
+v1.2.0 is frozen under that revised bounded gate. `INT-001-IMP` is still
+absent. These later implementation
 facts do not retroactively alter the frozen v1.1.0 evidence cut above.
