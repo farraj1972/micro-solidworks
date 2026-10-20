@@ -190,6 +190,12 @@ set_target_properties(microsw_persistence PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_persistence PUBLIC src)
 target_link_libraries(microsw_persistence PUBLIC microsw_features PRIVATE microsw_nlohmann_json)
 
+add_library(microsw_preferences STATIC src/app/preferences/ApplicationPreferences.cpp)
+target_compile_features(microsw_preferences PUBLIC cxx_std_20)
+set_target_properties(microsw_preferences PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_preferences PUBLIC src)
+target_link_libraries(microsw_preferences PRIVATE microsw_nlohmann_json)
+
 add_library(microsw_interaction STATIC
     src/interaction/EditorContext.cpp
 )
@@ -325,6 +331,7 @@ set_target_properties(micro_solidworks PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_link_libraries(micro_solidworks PRIVATE
+    microsw_preferences
     microsw_constraints
     microsw_interaction
     microsw_features
@@ -355,6 +362,7 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(googletest)
 
     add_executable(micro_solidworks_tests
+        tests/app/test_application_preferences.cpp
         src/app/demo/GeometryDemoScene.cpp
         src/app/DocumentHistory.cpp
         src/app/PersistenceSession.cpp
@@ -451,6 +459,7 @@ if(BUILD_TESTING)
         CXX_EXTENSIONS OFF
     )
     target_link_libraries(micro_solidworks_tests PRIVATE
+        microsw_preferences
         GTest::gtest_main
         microsw_constraints
         microsw_ui
