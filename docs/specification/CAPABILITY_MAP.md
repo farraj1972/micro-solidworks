@@ -27,3 +27,14 @@ This APPROVED / FROZEN SPEC-01 map classifies **implementation**, not approval o
 | `UX-005-CONTEXT`, `UX-005-SEARCH`, `UX-005-ONBOARD` | Bounded contextual UI exists; command search and onboarding are unverified/absent. | Context partial; search/onboarding deferred. |
 
 The classification is tied to the parent ID. A compound parent may be `PARTIALLY_IMPLEMENTED` even when one child is validated and another is absent. The [traceability ledger](REQUIREMENTS_TRACEABILITY.md) gives concrete modules, ADRs, tests and roadmap mapping; unverified links are marked `NOT VERIFIED`.
+
+## Current v1.2 candidate addendum (does not revise the frozen v1.1.0 cut)
+
+`INT-001-EXP` now has a validated CAD-derived export mesh and a binary STL
+writer with independent parser tests in [C1](../PERSONAL_SOLIDWORKS_V1_2_C1_VALIDATION.md)
+and [C2](../PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md). The export UI is built,
+but owner Experience evidence remains pending. The [C3 portable candidate](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md)
+has not passed the isolated Windows workflow, and [C4/N2](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
+awaits independent slicer evidence. `INT-001-IMP` remains not implemented.
+Thus the compound `INT-001` is at most **partially implemented** in the
+current candidate; the historical table above continues to describe v1.1.0.

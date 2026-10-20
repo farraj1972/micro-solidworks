@@ -35,3 +35,16 @@ Join by stable ID with the [register](REQUIREMENTS_REGISTER.md) and [capability 
 | `UX-005` → discoverability/search/onboarding | CAD-first contextual UI under ADR-0049–0052, 0059 | [`ApplicationShell`](../../src/ui/ApplicationShell.h), [`FeatureTreeModel`](../../src/ui/FeatureTreeModel.h) | [C5 gate](../V1_1_C5_VALIDATION.md) bounded; command search/onboarding NOT VERIFIED | R3 conceptual; deferred unless future fixture demonstrates need. |
 
 **Architecture/capability distinction:** accepted ADRs constrain existing code; they do not automatically approve new aggregate types, dependencies or file formats. The release's 903/903 test result validates its bounded executable state, not DRAFT CAM/scripting/interop requirements. The `INT-001-EXP` handoff is an approved product priority only; C1–C4 are not yet implementation-authorized. The child IDs in the [register](REQUIREMENTS_REGISTER.md#stable-child-ids-for-compound-requirements) inherit parent source/approval but retain their own scope distinction.
+
+## Current v1.2 candidate addendum (historical SPEC-01 ledger preserved)
+
+The owner subsequently authorized C1–C4. `INT-001-EXP` now maps to
+[`ExportMesh`](../../src/export/ExportMesh.h), [`StlWriter`](../../src/export/StlWriter.h)
+and the File → Export STL UI in [`ApplicationShell`](../../src/ui/ApplicationShell.cpp).
+The [C1 mesh tests](../../tests/export/test_export_mesh.cpp) and
+[C2 independent STL parse tests](../../tests/export/test_stl_writer.cpp)
+pass in targeted validation. Owner UI Experience evidence is pending; the
+[portable package](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) and
+[independent slicer/N2 gate](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
+are unapproved. `INT-001-IMP` is still absent. These later implementation
+facts do not retroactively alter the frozen v1.1.0 evidence cut above.

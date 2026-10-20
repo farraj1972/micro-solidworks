@@ -35,6 +35,9 @@ technical PASS; its owner UI Experience Gate remains pending.
 The [C3 portable candidate](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) has a
 Release ZIP and out-of-tree startup evidence; isolated Windows workflow and
 clean shutdown evidence remain pending.
+The [C4 N2 acceptance checklist](PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
+records the exact owner workflow and missing independent slicer/portable
+evidence. N2 and v1.2 freeze remain pending.
 `docs/specification/README.md` indexes the separate SPEC-01 CAD/CAM reference
 horizon (R0–R9) and its frozen requirement traceability baseline. Its original
 sources are immutable; future requirements need versioned revisions. That
