@@ -19,23 +19,23 @@ The mockups display a `.mcad` filename, but the current native document is `.mic
 
 ## Current executable versus v0.3 components
 
-Classification means `EXISTS` for a usable present capability, `PARTIAL` for a present but materially different or incomplete one, `MISSING` for a target absent in current CAD UI, and `DEFERRED` for a future capability outside the current authorization. Evidence is source-level and from existing validation; no new visual runtime acceptance is claimed here.
+Classification means `EXISTS` for a usable present capability, `PARTIAL` for a present but materially different or incomplete one, `MISSING` for a target absent in current CAD UI, and `DEFERRED` for a future capability outside the current authorization. UX-01 code and targeted-test evidence is reflected below; executable visual acceptance is pending in [UX-01 validation](UX_01_CAD_WORKSPACE_VALIDATION.md).
 
 | Component | State | Current evidence and gap |
 | --- | --- | --- |
-| AppChrome / title / menus / search | **PARTIAL** | Native title reflects document and dirty state in [`main.cpp`](../src/app/main.cpp); [`ApplicationShell.cpp`](../src/ui/ApplicationShell.cpp) has File/Edit/View/Help menus. No integrated command search or the v0.3 menu/workspace organization. |
-| WorkspaceRibbon and command discovery | **PARTIAL** | The existing icon/tooltip CAD Command Bar in `ApplicationShell::drawCommandBar` exposes core Sketch, Extrude and Cut actions. It is a flat bar with 62-pixel command buttons, not Model/Sketch/Export workspace tabs and grouped ribbon controls. |
-| ModelBrowser / Feature Manager | **PARTIAL** | `drawSketchPanel` and [`FeatureTreeModel`](../src/ui/FeatureTreeModel.cpp) provide a left feature tree, principal planes, selection, context actions and editing. Search, the reference's spatial hierarchy and a permanently separate right inspector are absent. |
+| AppChrome / title / menus / search | **PARTIAL** | Native title and in-app document header reflect file/dirty state; [`ApplicationShell.cpp`](../src/ui/ApplicationShell.cpp) retains File/Edit/View/Help menus. Command search is deferred. |
+| WorkspaceRibbon and command discovery | **PARTIAL** | `ApplicationShell::drawCommandBar` distinguishes Model and Sketch, groups existing commands by mode, provides icons/tooltips and disables unavailable actions. Full multi-workspace tabs remain deferred. |
+| ModelBrowser / Feature Manager | **PARTIAL** | `drawSketchPanel` and [`FeatureTreeModel`](../src/ui/FeatureTreeModel.cpp) retain left feature history, principal planes, selection, context actions and editing while the right Inspector is visible. Browser search and mockup body folders are absent. |
 | ViewportCanvas | **EXISTS** | [`WorkspaceViewport.cpp`](../src/viewer/WorkspaceViewport.cpp) renders CAD-derived solids/sketch context and supports picking, hover, navigation and standard views; `drawWorkspace` reserves the central graphics area. Visual styling and layout need comparison during any authorized implementation. |
 | ViewportHUD / view cube | **PARTIAL** | `drawWorkspace` provides X/Y/Z cues and Fit/ISO/Views controls; View menu offers standard views, projection and display modes. No interactive view cube or comparable orientation widget. |
-| ContextInspector / Property Manager | **PARTIAL** | `drawSketchPanel` presents feature and Sketch parameters, Confirm/Cancel and diagnostics. It shares the **left** panel with FeatureManager via tabs; UX-REF-01/02 place a selection-driven inspector on the **right**, leaving the browser continuously visible. |
-| StatusGuidanceBar | **PARTIAL** | `drawStatusBar` and `workflowState_` show document state and tool guidance. The current messaging is useful but does not yet meet the reference's consistent selection prompts, units and validation-state hierarchy. |
-| Sketch-specific workspace | **PARTIAL** | Sketch mode has Line/Rectangle/Circle, constraints, previews, grid snap, plane-normal view and Exit Sketch. Tools remain in the shared bar; properties/constraints are in the left panel. The reference's sketch ribbon, in-canvas dimensions and contextual edit controls are absent. |
+| ContextInspector / Property Manager | **PARTIAL** | Feature/face/edge selection, source/target, Sketch parameters, Confirm/Cancel and diagnostics now appear in a simultaneous right Inspector; its full reference tab family is absent. |
+| StatusGuidanceBar | **PARTIAL** | Mode, next step, feedback and failure cues are explicit. Units and richer validation hierarchy remain for later work. |
+| Sketch-specific workspace | **PARTIAL** | Sketch mode has Line/Rectangle/Circle, constraints, previews, grid snap, plane-normal view, distinct ribbon and Exit Sketch, with the browser visible. In-canvas dimensions and direct manipulation remain UX-02 gaps. |
 | DimensionCallout / direct editing | **MISSING** | Dimensions are edited numerically in `drawSketchPanel`; the 2026-10-20 R2 correction synchronizes the solved Sketch view after application. No editable dimension labels or handles are drawn in the canvas. |
 | FloatingMicroToolbar | **MISSING** | Existing right-click/context actions and inspector buttons do not provide a toolbar near selected geometry. |
 | Export workflow / DataExchangeNavigator / ValidationChecklist | **PARTIAL** | Frozen v1.2.0 includes File → Export STL, body/quality/path selection and validator-driven status. The complete UX-REF-04 workspace, split preview and other formats remain deferred to later work. |
 | Manufacture OperationsTree / SimulationTimeline | **DEFERRED** | No CAM workspace or operation model exists. UX-REF-03 is a long-term consistency reference only. |
-| Visual theme and custom icon system | **PARTIAL** | The application has a dark ImGui shell and project-drawn CAD command icons in `ApplicationShell.cpp`. The graphite/blue hierarchy, typography, responsive density and full icon family of the references need an authorized visual pass; do not copy the PNG artwork into product assets. |
+| Visual theme and custom icon system | **PARTIAL** | The application uses a graphite/blue ImGui palette and project-drawn CAD icons for supported commands. Runtime screenshot comparison and owner visual acceptance remain pending; the full illustrated icon family is intentionally absent. |
 
 ## Sequenced adoption proposal
 

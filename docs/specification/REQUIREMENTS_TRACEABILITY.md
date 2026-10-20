@@ -53,3 +53,20 @@ release. Final V3 passed 927/927 tests and normal startup/shutdown;
 v1.2.0 is frozen under that revised bounded gate. `INT-001-IMP` is still
 absent. These later implementation
 facts do not retroactively alter the frozen v1.1.0 evidence cut above.
+
+## UX-01 current trace (historical ledger unchanged)
+
+The owner authorized UX-01 after frozen v1.2.0. The bounded `CAD-005` and
+`UX-001`–`UX-005` interaction work maps to
+[`ApplicationShell`](../../src/ui/ApplicationShell.cpp),
+[`FeatureTreeModel`](../../src/ui/FeatureTreeModel.cpp),
+[`EditorContext`](../../src/interaction/EditorContext.cpp), and
+[`WorkspaceViewport`](../../src/viewer/WorkspaceViewport.cpp) under existing
+ADR-0049–0052 and frozen SET-01 preferences. No new authoritative CAD state or
+dependency direction was introduced. The left browser/right inspector, Model/
+Sketch ribbon and guidance are recorded in
+[`UX-01 validation`](../UX_01_CAD_WORKSPACE_VALIDATION.md), with targeted
+layout, tree, editor, viewport, history and preference tests. Final V3 and
+owner Experience evidence are pending and must be added before any UX-01
+freeze. The full DRAFT requirements, UX-02/UX-03 and CAM horizon remain
+unchanged; this addendum does not approve them.

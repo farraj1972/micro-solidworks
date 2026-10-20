@@ -27,7 +27,7 @@ microsw::features::PlanarRegionSet extrusionRegions(const microsw::sketch::Sketc
 }
 
 constexpr float minimumModelPanelWidth = 260.0F;
-constexpr float statusBarHeight = 44.0F;
+constexpr float statusBarHeight = 52.0F;
 constexpr float documentHeaderHeight = 34.0F;
 constexpr float commandBarHeight = 106.0F;
 constexpr float shellTopHeight = documentHeaderHeight + commandBarHeight;
