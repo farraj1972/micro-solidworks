@@ -8,10 +8,12 @@
 #include "features/FeatureModel.h"
 #include "interaction/EditorContext.h"
 #include "app/preferences/ApplicationPreferences.h"
+#include "export/ExportMesh.h"
 
 #include <optional>
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -80,6 +82,17 @@ public:
     [[nodiscard]] bool openDocumentRequest() const noexcept { return openDocumentRequest_; }
     [[nodiscard]] bool saveDocumentRequest() const noexcept { return saveDocumentRequest_; }
     [[nodiscard]] bool saveAsDocumentRequest() const noexcept { return saveAsDocumentRequest_; }
+    [[nodiscard]] bool exportBrowseRequest() const noexcept { return exportBrowseRequest_; }
+    [[nodiscard]] bool exportValidateRequest() const noexcept { return exportValidateRequest_; }
+    [[nodiscard]] bool exportWriteRequest() const noexcept { return exportWriteRequest_; }
+    [[nodiscard]] std::size_t exportBodyIndex() const noexcept { return exportBodyIndex_; }
+    [[nodiscard]] exporting::MeshQuality exportQuality() const noexcept;
+    [[nodiscard]] const std::filesystem::path& exportPath() const noexcept { return exportPath_; }
+    void setExportPath(std::filesystem::path path) { exportPath_ = std::move(path); exportValidated_ = false; }
+    void reportExportValidation(bool success, std::string diagnostic)
+    { exportValidated_ = success; exportStatus_ = std::move(diagnostic); }
+    void reportExportWrite(bool success, std::string diagnostic)
+    { exportStatus_ = std::move(diagnostic); if (!success) exportValidated_ = false; }
     [[nodiscard]] bool undoRequest() const noexcept { return undoRequest_; }
     [[nodiscard]] bool redoRequest() const noexcept { return redoRequest_; }
     [[nodiscard]] bool exitDocumentRequest() const noexcept { return exitDocumentRequest_; }
@@ -128,6 +141,7 @@ private:
     void drawAboutDialog();
     void drawUnsavedChangesDialog();
     void drawPreferencesDialog();
+    void drawExportDialog(const features::FeatureModel* model);
     void beginFeatureEdit(features::FeatureId id, const features::FeatureModel& model);
     void beginFeatureRename(features::FeatureId id, const features::FeatureModel& model);
 
@@ -190,6 +204,15 @@ private:
     bool openDocumentRequest_{};
     bool saveDocumentRequest_{};
     bool saveAsDocumentRequest_{};
+    bool exportDialogRequested_{};
+    bool exportBrowseRequest_{};
+    bool exportValidateRequest_{};
+    bool exportWriteRequest_{};
+    std::size_t exportBodyIndex_{};
+    bool exportFineQuality_{};
+    bool exportValidated_{};
+    std::filesystem::path exportPath_;
+    std::string exportStatus_;
     bool undoRequest_{};
     bool redoRequest_{};
     bool exitDocumentRequest_{};

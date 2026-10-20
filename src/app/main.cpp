@@ -6,6 +6,7 @@
 #include "app/window/NativeFileDialog.h"
 #include "constraints/ConstraintSolver.h"
 #include "core/geometry/GeometricTolerance.h"
+#include "export/StlWriter.h"
 #include "interaction/EditorContext.h"
 #include "presentation/FeaturePresentation.h"
 #include "presentation/SketchPresentation.h"
@@ -78,6 +79,36 @@ int main(){
    window.pollEvents();if(window.shouldClose()){if(closeApproved||!session.isDirty())break;window.cancelClose();pendingAction=PendingDocumentAction::Exit;shell.showUnsavedChangesDialog();}gl.clear();ui.beginFrame();
    const auto selectedVisual=workspace.selectedEntity(); const auto selectedSketchId=editor.activeSketchFeatureId()&&selectedVisual?sketchView.sketchId(*selectedVisual):std::nullopt; const auto* selected=selectedSketchId&&workingSketch.contains(*selectedSketchId)?&workingSketch.find(*selectedSketchId):nullptr;
    shell.setCurrentFilePath(session.currentFilePath()?session.currentFilePath()->string():std::string{});shell.setDocumentState(session.isDirty(),session.canUndo(),session.canRedo());window.setTitle(std::string{"Micro SolidWorks — "}+(session.currentFilePath()?session.currentFilePath()->filename().string():"Untitled")+(session.isDirty()?" *":"")); shell.drawSketch(workspace.projectionMode(),tools.tool(),workingSketch,selected,hasSolid(session.model()),&session.model(),&editor);
+   try {
+   if (shell.exportBrowseRequest())
+   {
+    if (const auto path = microsw::chooseStlFileToExport(window)) shell.setExportPath(*path);
+   }
+   if (shell.exportValidateRequest())
+   {
+    const auto result = microsw::exporting::buildExportMesh(session.model(),
+        shell.exportBodyIndex(), shell.exportQuality());
+    shell.reportExportValidation(result.succeeded(), result.succeeded()
+        ? "Mesh valid: " + std::to_string(result.mesh->triangles.size())
+            + " triangles; volume " + std::to_string(result.mesh->volumeMm3)
+            + " mm^3. Verify scale in your slicer."
+        : result.diagnostic);
+   }
+   if (shell.exportWriteRequest())
+   {
+    const auto mesh = microsw::exporting::buildExportMesh(session.model(),
+        shell.exportBodyIndex(), shell.exportQuality());
+    if (!mesh.succeeded()) shell.reportExportWrite(false,mesh.diagnostic);
+    else
+    {
+     const auto write = microsw::exporting::writeBinaryStl(*mesh.mesh,
+         shell.exportPath(),shell.exportQuality());
+     shell.reportExportWrite(write.succeeded(),write.succeeded()
+         ? "STL exported. Open it in a slicer and confirm millimetres, orientation and features."
+         : write.diagnostic);
+    }
+   }
+   } catch (const std::exception& error) { shell.reportExportWrite(false,error.what()); }
    if (shell.preferencesApplyRequest())
    {
     const auto& request = *shell.preferencesApplyRequest();

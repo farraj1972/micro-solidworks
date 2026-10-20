@@ -188,6 +188,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
     viewCommandRequest_.reset(); displayModeRequest_.reset();
     transformRequest_.reset();
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
+    exportBrowseRequest_ = exportValidateRequest_ = exportWriteRequest_ = false;
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     drawMainMenu(projectionMode);
     drawModelPanel(selected);
@@ -195,6 +196,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
     drawStatusBar();
     drawAboutDialog();
     drawPreferencesDialog();
+    drawExportDialog(nullptr);
     drawUnsavedChangesDialog();
     const auto& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) && canUndo_) undoRequest_ = true;
@@ -239,6 +241,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     booleanRequest_.reset();
     featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
+    exportBrowseRequest_ = exportValidateRequest_ = exportWriteRequest_ = false;
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     editorCommandRequest_.reset(); enterSketchRequest_ = exitSketchRequest_ = false; sketchPlaneRequest_.reset();
     confirmPropertyRequest_ = cancelPropertyRequest_ = false; visibilityToggleRequest_.reset();
@@ -259,6 +262,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     drawStatusBar();
     drawAboutDialog();
     drawPreferencesDialog();
+    drawExportDialog(featureModel);
     drawUnsavedChangesDialog();
     const auto& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) && canUndo_) undoRequest_ = true;
@@ -1069,6 +1073,12 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
         if (ImGui::MenuItem("Open...")) openDocumentRequest_ = true;
         if (ImGui::MenuItem("Save")) saveDocumentRequest_ = true;
         if (ImGui::MenuItem("Save As...")) saveAsDocumentRequest_ = true;
+        if (ImGui::MenuItem("Export STL..."))
+        {
+            exportDialogRequested_ = true;
+            exportValidated_ = false;
+            exportStatus_.clear();
+        }
         ImGui::Separator();
         if (ImGui::MenuItem("Exit"))
         {
@@ -1435,6 +1445,84 @@ void ApplicationShell::drawPreferencesDialog()
     {
         preferencesDraft_ = preferencesActive_;
         preferencesDialogVisible_ = false;
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+}
+
+exporting::MeshQuality ApplicationShell::exportQuality() const noexcept
+{
+    exporting::MeshQuality quality;
+    if (exportFineQuality_)
+    {
+        quality.chordalDeviationMm = 0.01;
+        quality.angularDeviationRadians = 0.05;
+    }
+    return quality;
+}
+
+void ApplicationShell::drawExportDialog(const features::FeatureModel* model)
+{
+    if (exportDialogRequested_)
+    {
+        ImGui::OpenPopup("Export STL");
+        exportDialogRequested_ = false;
+    }
+    if (!ImGui::BeginPopupModal("Export STL", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) return;
+    ImGui::TextUnformatted("Export a validated mesh of the current CAD result");
+    ImGui::Text("Document: %s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str());
+
+    const features::FeatureRecord* result = nullptr;
+    const features::SolidFeatureCache* cache = nullptr;
+    if (model && model->resultFeatureId().isValid())
+    {
+        result = &model->find(model->resultFeatureId());
+        if (result->state() == features::FeatureState::Clean && result->cache())
+            cache = std::get_if<features::SolidFeatureCache>(&*result->cache());
+    }
+    ImGui::Text("Current result: %s", result ? result->displayName().c_str() : "None");
+    const auto bodyCount = cache ? cache->solids.size() : 0;
+    if (bodyCount == 0) ImGui::TextDisabled("Rebuild a valid solid before exporting.");
+    if (exportBodyIndex_ >= bodyCount) { exportBodyIndex_ = 0; exportValidated_ = false; }
+    const auto bodyLabel = "Body " + std::to_string(exportBodyIndex_ + 1);
+    ImGui::BeginDisabled(bodyCount == 0);
+    if (ImGui::BeginCombo("Body", bodyLabel.c_str()))
+    {
+        for (std::size_t i = 0; i < bodyCount; ++i)
+        {
+            const auto label = "Body " + std::to_string(i + 1);
+            if (ImGui::Selectable(label.c_str(), i == exportBodyIndex_))
+            { exportBodyIndex_ = i; exportValidated_ = false; }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::EndDisabled();
+    ImGui::TextUnformatted("Format: Binary STL");
+    ImGui::TextUnformatted("Coordinate convention: millimetres (STL has no units)");
+    const char* qualityLabels[] = {"Standard (0.02 mm / 0.1 rad)","Fine (0.01 mm / 0.05 rad)"};
+    int qualityIndex = exportFineQuality_ ? 1 : 0;
+    if (ImGui::Combo("Mesh quality", &qualityIndex, qualityLabels, 2))
+    { exportFineQuality_ = qualityIndex == 1; exportValidated_ = false; }
+    const auto utf8Path = exportPath_.u8string();
+    const std::string exportPathLabel{reinterpret_cast<const char*>(utf8Path.data()), utf8Path.size()};
+    ImGui::TextWrapped("Destination: %s", exportPath_.empty() ? "Choose a file" : exportPathLabel.c_str());
+    if (ImGui::Button("Browse...")) exportBrowseRequest_ = true;
+    ImGui::SameLine();
+    ImGui::BeginDisabled(bodyCount == 0);
+    if (ImGui::Button("Validate mesh")) exportValidateRequest_ = true;
+    ImGui::EndDisabled();
+    if (!exportStatus_.empty())
+    {
+        if (exportValidated_) ImGui::TextColored(ImVec4{0.35F,0.85F,0.5F,1},"%s",exportStatus_.c_str());
+        else ImGui::TextWrapped("%s",exportStatus_.c_str());
+    }
+    ImGui::BeginDisabled(!exportValidated_ || exportPath_.empty());
+    if (ImGui::Button("Export")) exportWriteRequest_ = true;
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel"))
+    {
+        exportValidated_ = false;
         ImGui::CloseCurrentPopup();
     }
     ImGui::EndPopup();

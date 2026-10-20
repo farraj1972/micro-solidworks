@@ -17,9 +17,11 @@ namespace microsw
 namespace
 {
 constexpr wchar_t fileFilter[] = L"Micro SolidWorks Parts (*.microsw)\0*.microsw\0All Files (*.*)\0*.*\0\0";
+constexpr wchar_t stlFilter[] = L"STL Mesh (*.stl)\0*.stl\0All Files (*.*)\0*.*\0\0";
 
 std::optional<std::filesystem::path> choose(const ApplicationWindow& owner,
-    bool save, const std::optional<std::filesystem::path>& currentPath)
+    bool save, const std::optional<std::filesystem::path>& currentPath,
+    const wchar_t* filter = fileFilter, const wchar_t* extension = L"microsw")
 {
     std::array<wchar_t, 32768> fileName{};
     if (currentPath)
@@ -30,10 +32,10 @@ std::optional<std::filesystem::path> choose(const ApplicationWindow& owner,
     OPENFILENAMEW dialog{};
     dialog.lStructSize = sizeof(dialog);
     dialog.hwndOwner = glfwGetWin32Window(static_cast<GLFWwindow*>(owner.nativeHandle()));
-    dialog.lpstrFilter = fileFilter;
+    dialog.lpstrFilter = filter;
     dialog.lpstrFile = fileName.data();
     dialog.nMaxFile = static_cast<DWORD>(fileName.size());
-    dialog.lpstrDefExt = L"microsw";
+    dialog.lpstrDefExt = extension;
     dialog.Flags = OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR
         | (save ? OFN_OVERWRITEPROMPT : OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
     const BOOL accepted = save ? GetSaveFileNameW(&dialog) : GetOpenFileNameW(&dialog);
@@ -54,5 +56,10 @@ std::optional<std::filesystem::path> chooseMicroswFileToSave(const ApplicationWi
     const std::optional<std::filesystem::path>& currentPath)
 {
     return choose(owner, true, currentPath);
+}
+
+std::optional<std::filesystem::path> chooseStlFileToExport(const ApplicationWindow& owner)
+{
+    return choose(owner, true, std::nullopt, stlFilter, L"stl");
 }
 }

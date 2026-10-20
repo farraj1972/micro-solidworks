@@ -125,5 +125,8 @@ TEST(ExportMesh, CurrentResultAndSingleConnectedBodyPolicy)
         exporting::MeshStatus::Unsupported);
     model.setResultFeatureId(extrude);
     EXPECT_TRUE(exporting::buildExportMesh(model,0).succeeded());
+    model.setExtrudeDistance(extrude,5);
+    EXPECT_EQ(exporting::buildExportMesh(model,0).status,
+        exporting::MeshStatus::InvalidInput);
 }
 }

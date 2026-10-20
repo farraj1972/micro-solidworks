@@ -233,7 +233,7 @@ set_target_properties(microsw_presentation PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_presentation PUBLIC src)
 target_link_libraries(microsw_presentation PUBLIC microsw_features microsw_geometry microsw_sketch microsw_topology)
 
-add_library(microsw_export STATIC src/export/ExportMesh.cpp)
+add_library(microsw_export STATIC src/export/ExportMesh.cpp src/export/StlWriter.cpp)
 target_compile_features(microsw_export PUBLIC cxx_std_20)
 set_target_properties(microsw_export PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_export PUBLIC src)
@@ -315,6 +315,7 @@ set_target_properties(microsw_ui PROPERTIES
 )
 target_include_directories(microsw_ui PUBLIC src)
 target_link_libraries(microsw_ui PRIVATE
+    microsw_export
     microsw_interaction
     microsw_presentation
     glfw
@@ -337,6 +338,7 @@ set_target_properties(micro_solidworks PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_link_libraries(micro_solidworks PRIVATE
+    microsw_export
     microsw_preferences
     microsw_constraints
     microsw_interaction
@@ -455,6 +457,7 @@ if(BUILD_TESTING)
         tests/presentation/test_solid_presentation.cpp
         tests/presentation/test_solid_display.cpp
         tests/export/test_export_mesh.cpp
+        tests/export/test_stl_writer.cpp
         tests/presentation/test_visual_entity.cpp
         tests/viewer/test_presented_lines.cpp
         tests/viewer/test_presented_points.cpp

@@ -11,4 +11,6 @@ class ApplicationWindow;
     const ApplicationWindow& owner);
 [[nodiscard]] std::optional<std::filesystem::path> chooseMicroswFileToSave(
     const ApplicationWindow& owner, const std::optional<std::filesystem::path>& currentPath);
+[[nodiscard]] std::optional<std::filesystem::path> chooseStlFileToExport(
+    const ApplicationWindow& owner);
 }

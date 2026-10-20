@@ -6,6 +6,8 @@ Status: **C1–C4 IMPLEMENTATION AUTHORIZED BY OWNER; C1 PASS**. This detailed p
 
 **V1.2-C1 update (2026-10-20):** [targeted validation](PERSONAL_SOLIDWORKS_V1_2_C1_VALIDATION.md) PASS. The selected current CAD body now yields a closed, consistently oriented, bounded indexed export mesh under an export-specific quality profile. STL file writing, UI, slicer, Windows package and N2 remain pending in C2–C4.
 
+**V1.2-C2 candidate update (2026-10-20):** [technical validation](PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md) PASS for binary STL writing, independent parse and the built Export dialog; owner Experience Gate is PENDING because automated window capture timed out. C3/C4 acceptance and N2 remain pending.
+
 ## Objective and bounded scope
 
 Deliver **N2 for one class of personally fabricated prismatic adapter plates**, not for the whole CAD product. The complete job is New Part → planar Sketch with rectangular outer loop **and circular inner loop** → driving dimensions/constraints → general additive Extrude (forming the axial through-hole) → Sketch on Face → one axial Cut Extrude (forming the blind pocket) → edit/rebuild → Undo/Redo → native Save/Close/Open → validated STL export → independent slicer inspection at the intended scale → prepare the print, using a Windows package without developer tools. Physical printing can strengthen evidence but is not required for N2.
