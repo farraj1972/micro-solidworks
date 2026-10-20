@@ -14,8 +14,8 @@ K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
 Dependency policy: remains in force until a specific architectural decision
 SPEC-01 CAD/CAM traceability baseline: APPROVED / FROZEN; source and 29 requirements DRAFT / PROPOSED
 UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; package specification PROPOSED; gap analysis COMPLETE; implementation increments NOT AUTHORIZED
-SET-D01 Application Settings & Preferences: PROPOSED / READY FOR REVIEW; ADR-0070–0071 PROPOSED
-SET-01 Application Preferences First Slice: PROPOSED / NOT AUTHORIZED FOR IMPLEMENTATION
+SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
+SET-01 Application Preferences First Slice: AUTHORIZED / IN PROGRESS
 UX-01: PROPOSED / NOT AUTHORIZED
 V1.2-C1–C4: NOT AUTHORIZED
 ```
@@ -53,7 +53,7 @@ records `EXISTS`, `PARTIAL`, `MISSING` and `DEFERRED` against the current UI.
 | UX-03 — Export UX | STL-specific units, destination, body selection, CAD/mesh preview and validation feedback. | Depends on authorization and technical contract for proposed v1.2-C1/C2; broader interchange remains unapproved. |
 | UX-04 — Future workspaces | Preserve Manufacture, simulation, operations and later interoperability as design references. | Vision only; no CAM implementation authorization. |
 
-**SET-D01 — Application Settings & Preferences Architecture** is [proposed and ready for owner review](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md), with [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) and [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) both **PROPOSED**. The [SET-01 first-slice campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) is **PROPOSED / NOT AUTHORIZED**. It would offer typed per-user Profile A/B navigation and Orange/Blue selected geometry, preserving existing Profile A/Orange defaults. This is a candidate solution to the two still-open v0.3 compatibility gaps, not a change to accepted Viewer/selection contracts. UX-01 may later consume the service but is separately proposed. SET-01 is cross-cutting and does not automatically block the first proposed v1.2 N2 workflow or STL export; V1.2-C1–C4 remain unauthorized. ADR-0001–0069 remain accepted and unchanged, and v1.1.0 remains frozen.
+**SET-D01 — Application Settings & Preferences Architecture** is [FROZEN](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md), with [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) and [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) **ACCEPTED** (71/71 ADRs accepted). The bounded [SET-01 first-slice campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) is **AUTHORIZED / IN PROGRESS**. It will offer typed per-user Profile A/B navigation and Orange/Blue selected geometry, preserving existing Profile A/Orange defaults. The two v0.3 compatibility gaps remain open until executable validation. UX-01 remains separately proposed. SET-01 is cross-cutting and does not automatically block the first proposed v1.2 N2 workflow or STL export; V1.2-C1–C4 remain unauthorized. v1.1.0 remains frozen.
 
 The visual references show Hole, Fillet, STEP and other future commands, and a
 `.mcad` example filename. These do not alter current feature scope or the

@@ -1,12 +1,12 @@
 # ADR-0070 — Application Preferences Ownership and Persistence
 
-Status: PROPOSED
+Status: ACCEPTED
 
 ## Context
 
 Personal settings are needed for the UI/UX v0.3 navigation and selection alternatives, while accepted ADR-0045–0047/0066 reserve `.microsw` for authoritative CAD state and ADR-0049/0061–0063 separate session, dirty state and history. A user preference must survive launches without contaminating a document or its Undo/Redo.
 
-## Decision proposed
+## Decision
 
 Application owns one project-owned typed preferences service and its validated immutable current snapshot. It supplies defaults, loads/saves a per-user file, validates candidates and explicitly propagates a successfully applied snapshot to Viewer/Interaction/UI consumers. Consumers do not access files or JSON directly; CAD core has no dependency on the service. Initial fields are typed navigation-profile and selection-accent enums, not public string-key storage.
 
@@ -36,4 +36,4 @@ Typed, Application-owned state prevents settings from becoming document data, ke
 
 ## Deferred / non-goals
 
-Document Settings, account/cloud sync, roaming configuration, arbitrary keybindings, complex migrations, plugins, telemetry, export/CAM preferences and persistent session layouts are outside SET-01. This ADR requires owner approval before acceptance or implementation.
+Document Settings, account/cloud sync, roaming configuration, arbitrary keybindings, complex migrations, plugins, telemetry, export/CAM preferences and persistent session layouts are outside SET-01.

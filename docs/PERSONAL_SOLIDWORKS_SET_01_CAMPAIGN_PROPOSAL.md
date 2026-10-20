@@ -1,6 +1,6 @@
 # SET-01 — Application Preferences First Slice
 
-Status: **PROPOSED — READY FOR REVIEW; NOT AUTHORIZED FOR IMPLEMENTATION**. The [SET-D01 proposal](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md) and proposed [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) / [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) must be reviewed and frozen before this campaign can be authorized. This plan changes neither v1.1.0 nor the proposed v1.2-C1–C4 state.
+Status: **AUTHORIZED — IN PROGRESS** (2026-10-20). The [SET-D01 decision](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md) is FROZEN and [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) / [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) are ACCEPTED. The owner authorized this bounded campaign. This plan changes neither v1.1.0 nor the proposed v1.2-C1–C4 state.
 
 ## Goal and bounded workflow
 
@@ -21,6 +21,6 @@ With an existing mechanical part open, the user can find Preferences without int
 
 ## Dependencies and exclusions
 
-SET-01 depends on owner approval/freeze of SET-D01 and explicit campaign authorization. UX-01 may later consume this preference snapshot but need not wait for an unrelated full UI restructuring. SET-01 is cross-cutting and is **not an automatic blocker** for the proposed v1.2 first-N2 workflow or STL export; only a demonstrated workflow dependency can change that order. V1.2-C1–C4 and UX-01 remain separately unauthorized. Kernel K1/K2/K3 remains open.
+SET-D01 approval/freeze and bounded SET-01 authorization are satisfied. UX-01 may later consume this preference snapshot but need not wait for an unrelated full UI restructuring. SET-01 is cross-cutting and is **not an automatic blocker** for the proposed v1.2 first-N2 workflow or STL export; only a demonstrated workflow dependency can change that order. V1.2-C1–C4 and UX-01 remain separately unauthorized. Kernel K1/K2/K3 remains open.
 
 Excluded: arbitrary bindings, macros, complex themes, advanced font scaling, per-workspace profiles, cloud/accounts/telemetry, export preferences, CAM configuration, Document Settings, session persistence, CAD schema edits and new geometry/modeling features. No new external dependency, architecture substitution or accepted ADR change is implied by this proposal.

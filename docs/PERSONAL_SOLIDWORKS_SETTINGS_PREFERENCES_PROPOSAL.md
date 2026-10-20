@@ -1,6 +1,6 @@
 # SET-D01 — Application Settings & Preferences Architecture
 
-Status: **PROPOSED — READY FOR OWNER REVIEW** (2026-10-20). This is a decision proposal, not authorization to implement SET-01 or change the frozen v1.1.0 executable. See [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md), [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) and the [SET-01 campaign proposal](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md).
+Status: **FROZEN — OWNER APPROVED** (2026-10-20). The approved decision authorizes only the bounded SET-01 campaign; it does not change the frozen v1.1.0 executable. See [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md), [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) and the [SET-01 campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md).
 
 ## Objectives and boundary
 
@@ -75,8 +75,8 @@ The main risks are a profile switch during drag, inconsistent selection palette 
 
 Future Viewer, Sketch, UI, Export or CAD/CAM preferences may be added as new typed fields only when a real workflow needs them. Settings that change model interpretation or rebuild are Document Settings and require their own architecture/schema decision. SET-01 does not include arbitrary binding maps, macros, complex themes, font scaling, workspace profiles, cloud sync, accounts, telemetry, STL export preferences or CAM configuration.
 
-## Decisions requested from the owner
+## Owner decisions
 
-1. Approve or revise the Application-owned typed service, Windows per-user file/recovery policy and strict separation from document/session state (ADR-0070).
-2. Approve or revise Profile B and Blue as opt-in alternatives while preserving Profile A and Orange defaults, including cancellation of an active drag on profile change (ADR-0071).
-3. Decide whether to authorize the bounded [SET-01 implementation campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) after this gate is frozen. Until then it remains proposed, and UX-01 plus V1.2-C1–C4 remain separately unauthorized.
+1. ADR-0070 is ACCEPTED: Application-owned typed preferences, Windows per-user file/recovery and separation from document/session state.
+2. ADR-0071 is ACCEPTED: Profile B and Blue are opt-in alternatives; Profile A and Orange remain defaults; an active drag is canceled on profile change.
+3. The bounded [SET-01 implementation campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) is authorized by the owner's SET-D01.FREEZE + SET-01 instruction. UX-01 and V1.2-C1–C4 remain separately unauthorized.
