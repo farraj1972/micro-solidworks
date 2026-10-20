@@ -117,7 +117,17 @@ public:
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
     [[nodiscard]] const std::optional<interaction::EditorCommand>& editorCommandRequest() const noexcept { return editorCommandRequest_; }
     [[nodiscard]] const std::optional<features::FeatureId>& selectedFeature() const noexcept { return selectedFeature_; }
-    void setSelectedFeature(std::optional<features::FeatureId> feature) { if(feature!=selectedFeature_){editingFeature_.reset();renamingFeature_.reset();}selectedFeature_ = feature; if (feature) selectedPrincipalPlane_.reset(); }
+    void setSelectedFeature(std::optional<features::FeatureId> feature)
+    {
+        if (feature != selectedFeature_)
+        {
+            editingFeature_.reset();
+            renamingFeature_.reset();
+            featureEditorEntity_.reset();
+        }
+        selectedFeature_ = feature;
+        if (feature) selectedPrincipalPlane_.reset();
+    }
     [[nodiscard]] bool enterSketchRequest() const noexcept { return enterSketchRequest_; }
     [[nodiscard]] const std::optional<PrincipalPlane>& sketchPlaneRequest() const noexcept { return sketchPlaneRequest_; }
     [[nodiscard]] bool exitSketchRequest() const noexcept { return exitSketchRequest_; }

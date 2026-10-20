@@ -487,11 +487,6 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         {modelPanelWidth_, contentSize.y});
     ImGui::TextUnformatted("Model Browser");
     ImGui::Separator();
-    ImGui::TextUnformatted("Document");
-    ImGui::TextWrapped("%s%s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str(),
-        documentDirty_ ? " *" : "");
-    if (!persistenceStatus_.empty()) ImGui::TextWrapped("%s", persistenceStatus_.c_str());
-    ImGui::Separator();
     if (featureModel)
     {
         const auto tree = ui::deriveFeatureTree(*featureModel, editor);
@@ -659,9 +654,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (featureModel)
     {
         if(selectedPrincipalPlane_){
-            ImGui::Separator();
             const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
-            ImGui::Text("Selected: %s",name);
+            ImGui::TextUnformatted("REFERENCE PLANE");
+            ImGui::Text("%s",name);
+            ImGui::TextWrapped("Create a sketch on this plane, then choose Line, Rectangle or Circle.");
             if(ImGui::Button("Sketch on Plane")){sketchPlaneRequest_=selectedPrincipalPlane_;}
         }
         if (selectedFeature_)
@@ -679,7 +675,13 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;
                 }
             }
-            ImGui::Separator(); ImGui::Text("Selected: %s", feature.displayName().c_str());
+            ImGui::TextUnformatted("SELECTION");
+            ImGui::Text("%s", feature.displayName().c_str());
+            const auto* kind = feature.kind() == features::FeatureKind::Sketch ? "Sketch"
+                : feature.kind() == features::FeatureKind::Extrude ? "Extrude"
+                : feature.kind() == features::FeatureKind::CutExtrude ? "Cut Extrude" : "Boolean";
+            ImGui::TextDisabled("%s", kind);
+            ImGui::Separator();
             if(editor&&editor->selection()){
                 if(const auto*t=std::get_if<interaction::TopologyFaceTarget>(&*editor->selection())){
                     const auto& owner=featureModel->find(t->feature);
