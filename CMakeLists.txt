@@ -352,6 +352,32 @@ target_link_libraries(micro_solidworks PRIVATE
     microsw_windowing
 )
 
+if(WIN32)
+    # The portable archive contains the Release executable and the MSVC
+    # redistributable runtime discovered by the same approved toolchain.
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_NO_WARNINGS TRUE)
+    include(InstallRequiredSystemLibraries)
+    install(TARGETS micro_solidworks RUNTIME DESTINATION . COMPONENT Runtime)
+    if(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+        install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION . COMPONENT Runtime)
+    endif()
+    install(FILES README.md docs/PERSONAL_SOLIDWORKS_V1_2_PORTABLE_GUIDE.md
+        docs/THIRD_PARTY_NOTICES.md DESTINATION docs COMPONENT Runtime)
+    install(FILES ${spdlog_SOURCE_DIR}/LICENSE DESTINATION licenses RENAME spdlog-LICENSE.txt COMPONENT Runtime)
+    install(FILES ${glfw_SOURCE_DIR}/LICENSE.md DESTINATION licenses RENAME glfw-LICENSE.md COMPONENT Runtime)
+    install(FILES ${glad_SOURCE_DIR}/LICENSE DESTINATION licenses RENAME glad-LICENSE.txt COMPONENT Runtime)
+    install(FILES ${imgui_SOURCE_DIR}/LICENSE.txt DESTINATION licenses RENAME imgui-LICENSE.txt COMPONENT Runtime)
+    install(FILES third_party/nlohmann/LICENSE.MIT DESTINATION licenses
+        RENAME nlohmann-json-LICENSE.MIT COMPONENT Runtime)
+    set(CPACK_GENERATOR ZIP)
+    set(CPACK_PACKAGE_NAME PersonalSolidWorks)
+    set(CPACK_PACKAGE_VERSION 1.2.0)
+    set(CPACK_PACKAGE_FILE_NAME PersonalSolidWorks-v1.2.0-candidate-win64)
+    set(CPACK_COMPONENTS_ALL Runtime)
+    set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};MicroSolidWorks;Runtime;/")
+    include(CPack)
+endif()
+
 if(BUILD_TESTING)
     if(POLICY CMP0135)
         cmake_policy(SET CMP0135 NEW)

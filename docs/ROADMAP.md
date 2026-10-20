@@ -8,7 +8,7 @@ V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
 V1.1.0: FROZEN after Technical and Experience Gates
 P0 — Personal SolidWorks Product & Architecture Review: FROZEN
 R2 workflow-first / first bounded N2 target: APPROVED; N2 result NOT YET ESTABLISHED
-V1.2: C1–C4 IMPLEMENTATION AUTHORIZED; C1 PASS; C2 TECHNICAL PASS / EXPERIENCE PENDING
+V1.2: C1–C4 IMPLEMENTATION AUTHORIZED; C1 PASS; C2 TECHNICAL PASS / EXPERIENCE PENDING; C3 CANDIDATE / EVIDENCE PENDING
 V1.2-READY: COMPLETE / owner approved subsequent C1–C4 execution
 V1.3+: PROPOSED / NOT APPROVED
 K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
@@ -18,7 +18,7 @@ UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; pack
 SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
 UX-01/UX-02: PROPOSED / SEPARATE / NOT AUTHORIZED
-V1.2-C1: PASS — validated export mesh; C2: TECHNICAL PASS / EXPERIENCE PENDING; C3–C4: AUTHORIZED / PENDING
+V1.2-C1: PASS — validated export mesh; C2: TECHNICAL PASS / EXPERIENCE PENDING; C3: PORTABLE CANDIDATE / EVIDENCE PENDING; C4: AUTHORIZED / PENDING
 ```
 
 Product reliability and completion of bounded mechanical-engineering
@@ -32,6 +32,9 @@ for owner approval; the owner subsequently authorized sequential C1–C4.
 is PASS. Later releases remain unapproved; no kernel migration is authorized.
 The [C2 export candidate](PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md) has targeted
 technical PASS; its owner UI Experience Gate remains pending.
+The [C3 portable candidate](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) has a
+Release ZIP and out-of-tree startup evidence; isolated Windows workflow and
+clean shutdown evidence remain pending.
 `docs/specification/README.md` indexes the separate SPEC-01 CAD/CAM reference
 horizon (R0–R9) and its frozen requirement traceability baseline. Its original
 sources are immutable; future requirements need versioned revisions. That
@@ -63,7 +66,8 @@ records `EXISTS`, `PARTIAL`, `MISSING` and `DEFERRED` against the current UI.
 The visual references show Hole, Fillet, STEP and other future commands, and a
 `.mcad` example filename. These do not alter current feature scope or the
 accepted `.microsw` persistence contract. V1.2-C1 is PASS; C2 has technical
-PASS with Experience pending; C3–C4 are authorized but pending, and K1/K2/K3
+PASS with Experience pending; C3 has a portable candidate awaiting isolated
+workflow evidence; C4 is authorized but pending, and K1/K2/K3
 remains OPEN.
 
 ## Canonical MVP Roadmap
