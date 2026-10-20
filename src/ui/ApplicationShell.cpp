@@ -283,8 +283,14 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
                     : "Click in the Graphics Area to start drawing; Esc returns to Select.";
         }else{
             workflowState_="MODEL";
+            const bool faceSelected=editor->selection()
+                && std::holds_alternative<interaction::TopologyFaceTarget>(*editor->selection());
+            const bool edgeSelected=editor->selection()
+                && std::holds_alternative<interaction::TopologyEdgeTarget>(*editor->selection());
             workflowGuidance_=selectedPrincipalPlane_ ? "Choose Sketch to draw on the selected plane."
-                : selectedFeature_ ? "Inspect the selection, or use its context menu to edit, rename or delete."
+                : faceSelected ? "Inspect the face and choose Sketch on this face if supported."
+                : edgeSelected ? "Inspect the selected edge or choose another face or feature."
+                : selectedFeature_ ? "Inspect the feature, or use its context menu to edit, rename or delete."
                 : "Select a reference plane, face or feature to begin.";
         }
     }
@@ -544,7 +550,8 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             drawCadIcon(ImGui::GetWindowDrawList(),icon,{right.x-63,(top.y+right.y)*0.5F},
                 ImGui::GetColorU32(ImGuiCol_Text));
             if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
-                if(selectedFeature_!=node.featureId)editingFeature_.reset();selectedFeature_=node.featureId;
+                if(selectedFeature_!=node.featureId){editingFeature_.reset();workflowFeedback_.clear();}
+                selectedFeature_=node.featureId;
                 if(editor)editor->select(interaction::LogicalTarget{node.featureId});
             }
             if(ImGui::IsItemHovered()&&ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)){
@@ -686,6 +693,15 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 : feature.kind() == features::FeatureKind::Extrude ? "Extrude"
                 : feature.kind() == features::FeatureKind::CutExtrude ? "Cut Extrude" : "Boolean";
             ImGui::TextDisabled("%s", kind);
+            if (feature.state() == features::FeatureState::Failed)
+                ImGui::TextColored({1.0F, 0.38F, 0.34F, 1.0F}, "FAILED — inspect the diagnostic below");
+            else if (feature.state() == features::FeatureState::BlockedByDependency)
+                ImGui::TextColored({1.0F, 0.57F, 0.30F, 1.0F}, "BLOCKED — inspect the upstream feature");
+            else if (feature.state() == features::FeatureState::Dirty)
+                ImGui::TextColored({1.0F, 0.78F, 0.35F, 1.0F}, "Needs rebuild");
+            if (editingFeature_ == feature.id())
+                ImGui::TextColored({0.42F, 0.73F, 1.0F, 1.0F},
+                    "Editing parameters — Confirm applies; Cancel discards");
             ImGui::Separator();
             if(editor&&editor->selection()){
                 if(const auto*t=std::get_if<interaction::TopologyFaceTarget>(&*editor->selection())){

@@ -124,6 +124,7 @@ public:
             editingFeature_.reset();
             renamingFeature_.reset();
             featureEditorEntity_.reset();
+            workflowFeedback_.clear();
         }
         selectedFeature_ = feature;
         if (feature) selectedPrincipalPlane_.reset();
