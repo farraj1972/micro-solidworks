@@ -1,6 +1,6 @@
 # SET-01 — Application Preferences First Slice
 
-Status: **AUTHORIZED — IN PROGRESS** (2026-10-20). The [SET-D01 decision](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md) is FROZEN and [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) / [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) are ACCEPTED. The owner authorized this bounded campaign. This plan changes neither v1.1.0 nor the proposed v1.2-C1–C4 state.
+Status: **IMPLEMENTED — OWNER EXPERIENCE GATE APPROVED; FINAL V3 PENDING** (2026-10-20). The [SET-D01 decision](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md) is FROZEN and [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) / [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) are ACCEPTED. The owner authorized this bounded campaign. This plan changes neither v1.1.0 nor the proposed v1.2-C1–C4 state.
 
 ## Goal and bounded workflow
 
@@ -11,7 +11,7 @@ A user opens Edit → Preferences, selects either existing or alternative CAD na
 | **SET-01.1 — Typed Preferences and User Storage** | Application-owned schema/defaults/validation, LocalAppData file, atomic write/backup/recovery, explicit immutable snapshot. No UI/Viewer behavior yet. | Unit/contract tests for absent, partial, unknown, invalid, corrupt and future-version files; rollback; no `.microsw`/CAD-history mutation. V1 affected Application/storage closure. |
 | **SET-01.2 — Navigation and Selection Integration** | Route Profile A/B through existing Orbit/Pan/Zoom; apply semantic Orange/Blue selected palette consistently in Viewer/Presentation-facing UI. Avoid camera-algorithm duplication and new CAD identity. | Viewer/Interaction and presentation integration tests, both projections, drag switch, picking, Normal To/views, sketch/solid/face/edge and display modes. V2 affected closure and runtime smoke. |
 | **SET-01.3 — Preferences UI and Experience Gate** | Edit → Preferences with draft, local accent preview, Apply/OK/Cancel/Restore Defaults, validation and persistence error feedback. Show only implemented Navigation/Appearance options. | UI/application tests for transactional semantics, persistence/restart, dirty/Undo invariants, accessibility cues; owner Experience Gate on a real edited part. V2 targeted integration plus runtime. |
-| **SET-01.FREEZE** | Review evidence, accepted ADR conformity, documentation/roadmap and release decision. | V3 only if designated as a baseline freeze or concrete integration risk warrants it; otherwise use the required gate evidence and V0 documentary closure under `AGENTS.md`. |
+| **SET-01.FREEZE** | Review evidence, accepted ADR conformity, documentation/roadmap and release decision. | The owner explicitly requires final V3 on executable HEAD, followed by V0 for documentary freeze. |
 
 The split keeps storage, routed behavior and user workflow reviewable without creating a micro-increment for each enum or color. Before each increment, derive the changed dependency closure and run affected tests/builds only. UI/Viewer changes require runtime and Experience Gate evidence; full regression is reserved for a justified baseline/integration gate. Do not automatically rebuild independent Geometry/Topology/Modeling suites.
 

@@ -1,4 +1,5 @@
 #include "ui/ApplicationShell.h"
+#include "viewer/HighlightColors.h"
 
 #include "app/logging/Logger.h"
 #include "app/window/ApplicationWindow.h"
@@ -183,6 +184,7 @@ void ApplicationShell::beginFeatureRename(features::FeatureId id, const features
 void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected)
 {
     input_ = {};
+    preferencesApplyRequest_.reset();
     viewCommandRequest_.reset(); displayModeRequest_.reset();
     transformRequest_.reset();
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
@@ -192,6 +194,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
     drawWorkspace();
     drawStatusBar();
     drawAboutDialog();
+    drawPreferencesDialog();
     drawUnsavedChangesDialog();
     const auto& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) && canUndo_) undoRequest_ = true;
@@ -221,6 +224,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
                                   interaction::EditorContext* editor)
 {
     input_ = {};
+    preferencesApplyRequest_.reset();
     viewCommandRequest_.reset(); displayModeRequest_.reset();
     sketchToolRequest_.reset();
     sketchGeometryRequest_.reset();
@@ -254,6 +258,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     drawWorkspace(activeTool, editor, featureModel);
     drawStatusBar();
     drawAboutDialog();
+    drawPreferencesDialog();
     drawUnsavedChangesDialog();
     const auto& io = ImGui::GetIO();
     if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z) && canUndo_) undoRequest_ = true;
@@ -446,9 +451,19 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             auto flags=ImGuiTreeNodeFlags_SpanAvailWidth|ImGuiTreeNodeFlags_OpenOnArrow;
             if(selectedFeature_==node.featureId)flags|=ImGuiTreeNodeFlags_Selected;
             if(node.children.empty())flags|=ImGuiTreeNodeFlags_Leaf|ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            if (selectedFeature_ == node.featureId)
+            {
+                const auto& color = viewer::selectedColor(preferencesActive_.selectionAccent);
+                const auto selectedTint = ImVec4{static_cast<float>(color.x()),
+                    static_cast<float>(color.y()), static_cast<float>(color.z()), 0.38F};
+                ImGui::PushStyleColor(ImGuiCol_Header, selectedTint);
+                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, selectedTint);
+                ImGui::PushStyleColor(ImGuiCol_HeaderActive, selectedTint);
+            }
             const bool open=ImGui::TreeNodeEx(reinterpret_cast<void*>(
                 static_cast<std::uintptr_t>(node.featureId.value())+1),flags,
                 "%s",node.displayName.c_str());
+            if (selectedFeature_ == node.featureId) ImGui::PopStyleColor(3);
             const auto icon=node.kind==features::FeatureKind::Sketch?CadIcon::Sketch:
                 node.kind==features::FeatureKind::Extrude?CadIcon::Extrude:
                 node.kind==features::FeatureKind::CutExtrude?CadIcon::CutExtrude:CadIcon::Boolean;
@@ -1067,6 +1082,8 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
     {
         if (ImGui::MenuItem("Undo", "Ctrl+Z", false, canUndo_)) undoRequest_ = true;
         if (ImGui::MenuItem("Redo", "Ctrl+Y", false, canRedo_)) redoRequest_ = true;
+        ImGui::Separator();
+        if (ImGui::MenuItem("Preferences...")) preferencesDialogRequested_ = true;
         ImGui::EndMenu();
     }
 
@@ -1309,6 +1326,119 @@ void ApplicationShell::setDocumentState(bool dirty, bool canUndo, bool canRedo)
 }
 
 void ApplicationShell::showUnsavedChangesDialog() { unsavedDialogRequested_ = true; }
+
+void ApplicationShell::setPreferences(preferences::ApplicationPreferences current,
+                                      bool futureVersionNeedsReset)
+{
+    preferencesActive_ = current;
+    preferencesFutureVersion_ = futureVersionNeedsReset;
+    if (preferencesDialogVisible_ && !preferencesApplyRequest_)
+        preferencesDraft_ = current;
+}
+
+void ApplicationShell::reportPreferencesResult(bool success, std::string diagnostic)
+{
+    preferencesDiagnostic_ = success ? "Preferences saved" : std::move(diagnostic);
+    if (success)
+    {
+        preferencesDraft_ = preferencesActive_;
+        preferencesFutureVersion_ = false;
+        preferencesFutureResetConfirmed_ = false;
+        if (preferencesPendingClose_) preferencesCloseRequested_ = true;
+    }
+    preferencesPendingClose_ = false;
+}
+
+void ApplicationShell::drawPreferencesDialog()
+{
+    if (preferencesDialogRequested_)
+    {
+        preferencesDraft_ = preferencesActive_;
+        preferencesFutureResetConfirmed_ = false;
+        preferencesDialogVisible_ = true;
+        ImGui::OpenPopup("Preferences");
+        preferencesDialogRequested_ = false;
+    }
+    if (!ImGui::BeginPopupModal("Preferences", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) return;
+    if (preferencesCloseRequested_)
+    {
+        preferencesCloseRequested_ = preferencesDialogVisible_ = false;
+        ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+        return;
+    }
+    ImGui::TextUnformatted("Navigation");
+    ImGui::Separator();
+    const auto orbit = preferences::NavigationProfile::OrbitMiddleButton;
+    const auto pan = preferences::NavigationProfile::PanMiddleButton;
+    if (ImGui::RadioButton("Current CAD (default) — MMB Orbit, Shift+MMB Pan",
+        preferencesDraft_.navigationProfile == orbit)) preferencesDraft_.navigationProfile = orbit;
+    if (ImGui::RadioButton("Alternative — MMB Pan, Shift+MMB Orbit",
+        preferencesDraft_.navigationProfile == pan)) preferencesDraft_.navigationProfile = pan;
+    ImGui::TextDisabled("Mouse wheel: Zoom in both profiles");
+    ImGui::Spacing();
+    ImGui::TextUnformatted("Appearance");
+    ImGui::Separator();
+    const auto orange = preferences::SelectionAccent::Orange;
+    const auto blue = preferences::SelectionAccent::Blue;
+    if (ImGui::RadioButton("Orange selection (default)",
+        preferencesDraft_.selectionAccent == orange)) preferencesDraft_.selectionAccent = orange;
+    if (ImGui::RadioButton("Blue selection", preferencesDraft_.selectionAccent == blue))
+        preferencesDraft_.selectionAccent = blue;
+    const auto& sample = viewer::selectedColor(preferencesDraft_.selectionAccent);
+    ImGui::ColorButton("Selected geometry preview", ImVec4{
+        static_cast<float>(sample.x()), static_cast<float>(sample.y()),
+        static_cast<float>(sample.z()), 1.0F}, ImGuiColorEditFlags_NoTooltip);
+    ImGui::SameLine(); ImGui::TextUnformatted("Selected geometry preview");
+    ImGui::TextDisabled("Hover and error colors are separate.");
+    if (preferencesFutureVersion_)
+    {
+        ImGui::Separator();
+        ImGui::TextWrapped("A newer preferences file was found. Defaults are active. Saving will replace that file.");
+        ImGui::Checkbox("I understand and want to reset the newer file", &preferencesFutureResetConfirmed_);
+    }
+    if (!preferencesDiagnostic_.empty())
+    {
+        ImGui::Separator(); ImGui::TextWrapped("%s", preferencesDiagnostic_.c_str());
+    }
+    ImGui::Separator();
+    const bool canApply = preferences::valid(preferencesDraft_)
+        && (preferencesDraft_ != preferencesActive_ || preferencesFutureVersion_)
+        && (!preferencesFutureVersion_ || preferencesFutureResetConfirmed_);
+    if (ImGui::Button("Restore Defaults")) preferencesDraft_ = preferences::PreferencesService::defaults();
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!canApply);
+    if (ImGui::Button("Apply"))
+    {
+        preferencesApplyRequest_ = PreferencesApplyRequest{preferencesDraft_, false,
+            preferencesFutureResetConfirmed_};
+        preferencesPendingClose_ = false;
+    }
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (ImGui::Button("OK"))
+    {
+        if (canApply)
+        {
+            preferencesApplyRequest_ = PreferencesApplyRequest{preferencesDraft_, true,
+                preferencesFutureResetConfirmed_};
+            preferencesPendingClose_ = true;
+        }
+        else if (!preferencesFutureVersion_)
+        {
+            preferencesDialogVisible_ = false;
+            ImGui::CloseCurrentPopup();
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel"))
+    {
+        preferencesDraft_ = preferencesActive_;
+        preferencesDialogVisible_ = false;
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+}
 
 void ApplicationShell::drawUnsavedChangesDialog()
 {

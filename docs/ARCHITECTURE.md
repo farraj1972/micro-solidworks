@@ -1555,3 +1555,16 @@ one Undo/Redo transaction. Feature Manager hierarchy, expansion and status
 feedback remain derived/session-local. No dependency direction, persistence
 schema, accepted ADR or explicit rebuild policy changed. Suppression and
 reorder remain deferred to a future architectural decision.
+
+## SET-D01 / SET-01 — Application preferences
+
+SET-D01 is FROZEN in accepted ADR-0070 and ADR-0071. The Application owns
+`PreferencesService` and a typed per-user snapshot; the service stores schema
+version 1 in `%LOCALAPPDATA%/MicroSolidWorks/preferences.json`. A missing or
+invalid file cannot block CAD startup. Explicit Apply validates and persists
+before publishing the new snapshot. Viewer input receives only the navigation
+profile, and Viewer/UI receive only the selected-geometry accent. Neither
+Viewer nor UI reads the file. The preferences file and draft remain separate
+from `FeatureModel`, `.microsw`, document dirty state, CAD Undo/Redo and rebuild.
+Profile A (MMB Orbit) and Orange remain product defaults; Profile B (MMB Pan)
+and Blue are opt-in. SET-01 adds no external dependency or new CAD authority.

@@ -2,6 +2,12 @@
 
 Status: **FROZEN — OWNER APPROVED** (2026-10-20). The approved decision authorizes only the bounded SET-01 campaign; it does not change the frozen v1.1.0 executable. See [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md), [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) and the [SET-01 campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md).
 
+Implementation note (2026-10-20): SET-01 implements this accepted contract with
+schema version 1 under `%LOCALAPPDATA%/MicroSolidWorks/preferences.json`, typed
+Profile A/B and Orange/Blue values, transactional Apply, and Edit → Preferences.
+The owner Experience Gate passed; final V3 validation is pending. No accepted
+decision is changed by this note.
+
 ## Objectives and boundary
 
 Give each user stable, typed control over application behavior without turning personal preferences into CAD data. Resolve the two open [UI/UX v0.3 compatibility questions](UIUX_V0_3_GAP_ANALYSIS.md) by offering an alternative to the already validated middle-button mapping and orange selection. Preserve current behavior on first launch and for users who make no change. Future preferences may be added only for real workflows; this gate creates no generic plugin/configuration framework or new dependency.

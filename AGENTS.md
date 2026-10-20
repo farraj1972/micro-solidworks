@@ -1313,3 +1313,8 @@ V1.1-C4 implements the D20 correction and is FROZEN after a clean full Debug bui
 # Personal SolidWorks strategic addendum (APPROVED from V1.1-C5)
 
 For work from V1.1-C5 onward, Product over Education and Workflow over Feature govern priorities: reliable completion of bounded personal mechanical-engineering workflows takes precedence over educational completeness or isolated capabilities. Learning remains valuable. Build or Integrate Pragmatically may be evaluated for future work, but the dependency policy and accepted ADRs remain binding until a specific architectural decision changes them. Progressive Replacement starts with complete bounded workflows. V1.1-C5 retains its approved Feature Workflow Hardening scope. Micro SolidWorks v1.1.0 is FROZEN after the C5 V3 and APPROVED Experience Gate; see docs/V1_1_0_RELEASE.md. V1.2+ requires Personal SolidWorks - Product & Architecture Review and has no approved implementation roadmap. Earlier baseline purposes and decisions remain historically unchanged.
+
+SET-D01 - Application Settings & Preferences is FROZEN in ADR-0070/0071;
+the ADR inventory is 71/71 ACCEPTED. SET-01 is implemented with an approved
+owner Experience Gate, pending final V3 and documentary freeze. UI/UX v0.3
+remains PROPOSED as a design reference. V1.2-C1-C4 remain NOT AUTHORIZED.

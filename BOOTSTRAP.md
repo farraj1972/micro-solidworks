@@ -699,3 +699,9 @@ FROZEN after C5 V3 and an approved Experience Gate. V1.2+ has no approved
 roadmap and awaits the Personal SolidWorks Product & Architecture Review.
 Existing dependency policy and ADRs remain in force. See
 `docs/V1_1_0_RELEASE.md`.
+
+SET-D01 is FROZEN in ADR-0070/0071 (71/71 ACCEPTED). SET-01 implements
+per-user typed navigation and selection preferences, independent of CAD
+documents. Its owner Experience Gate passed; final V3 and documentary freeze
+remain pending. See `docs/PERSONAL_SOLIDWORKS_SET_01_VALIDATION.md`. UI/UX
+v0.3 remains PROPOSED; V1.2-C1–C4 remain NOT AUTHORIZED.

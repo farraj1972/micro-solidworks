@@ -1,4 +1,5 @@
 #include "app/PersistenceSession.h"
+#include "app/preferences/ApplicationPreferences.h"
 #include "app/logging/Logger.h"
 #include "app/sketch/SketchToolController.h"
 #include "app/window/ApplicationWindow.h"
@@ -28,10 +29,17 @@ bool hasSolid(const microsw::features::FeatureModel& m){ if(!m.resultFeatureId()
 int main(){
  microsw::Logger::info("Application starting");
  try{
+  microsw::preferences::PreferencesService preferences{microsw::preferences::userPreferencesPath()};
+  const auto preferencesLoad = preferences.load();
+  if (!preferencesLoad.diagnostic.empty()) microsw::Logger::warn(preferencesLoad.diagnostic);
   microsw::ApplicationWindow window{1280,720,"Micro SolidWorks"}; microsw::OpenGLContext gl{window}; microsw::ImGuiLayer ui{window,gl}; microsw::ApplicationShell shell{window};
+  shell.setPreferences(preferences.current(), preferences.futureVersionNeedsReset());
+  if (!preferencesLoad.diagnostic.empty()) shell.reportPreferencesLoad(preferencesLoad.diagnostic);
   microsw::constraints::ConstraintSolver solver{solverPolicy()}; microsw::PersistenceSession session{microsw::features::FeatureModel{solver}}; microsw::interaction::EditorContext editor;
   microsw::sketch::Sketch workingSketch; microsw::SketchToolController tools{workingSketch}; microsw::presentation::SketchPresentation sketchView; microsw::presentation::FeaturePresentation featureView; microsw::presentation::GeometryPresentation hiddenView;
   featureView.update(session.model()); sketchView.regenerate(workingSketch); microsw::viewer::WorkspaceViewport workspace{featureView.geometry()};workspace.setFeaturePresentation(&featureView);
+  workspace.setNavigationProfile(preferences.current().navigationProfile);
+  workspace.setSelectionAccent(preferences.current().selectionAccent);
   const auto featureVisible=[&](microsw::features::FeatureId id){
    const auto state=editor.displayState(id);if(state==microsw::interaction::DisplayState::Hidden||state==microsw::interaction::DisplayState::ActiveEditing)return false;
    if(const auto active=editor.activeSketchFeatureId()){const auto closure=session.model().deletionClosure(*active);if(std::find(closure.begin(),closure.end(),id)!=closure.end())return false;}
@@ -70,6 +78,18 @@ int main(){
    window.pollEvents();if(window.shouldClose()){if(closeApproved||!session.isDirty())break;window.cancelClose();pendingAction=PendingDocumentAction::Exit;shell.showUnsavedChangesDialog();}gl.clear();ui.beginFrame();
    const auto selectedVisual=workspace.selectedEntity(); const auto selectedSketchId=editor.activeSketchFeatureId()&&selectedVisual?sketchView.sketchId(*selectedVisual):std::nullopt; const auto* selected=selectedSketchId&&workingSketch.contains(*selectedSketchId)?&workingSketch.find(*selectedSketchId):nullptr;
    shell.setCurrentFilePath(session.currentFilePath()?session.currentFilePath()->string():std::string{});shell.setDocumentState(session.isDirty(),session.canUndo(),session.canRedo());window.setTitle(std::string{"Micro SolidWorks — "}+(session.currentFilePath()?session.currentFilePath()->filename().string():"Untitled")+(session.isDirty()?" *":"")); shell.drawSketch(workspace.projectionMode(),tools.tool(),workingSketch,selected,hasSolid(session.model()),&session.model(),&editor);
+   if (shell.preferencesApplyRequest())
+   {
+    const auto& request = *shell.preferencesApplyRequest();
+    const auto result = preferences.apply(request.candidate, request.confirmFutureVersionReset);
+    if (result.success)
+    {
+     workspace.setNavigationProfile(preferences.current().navigationProfile);
+     workspace.setSelectionAccent(preferences.current().selectionAccent);
+     shell.setPreferences(preferences.current(), false);
+    }
+    shell.reportPreferencesResult(result.success, result.diagnostic);
+   }
    try{
     if(shell.newDocumentRequest())requestAction(PendingDocumentAction::New);
     if(shell.saveAsDocumentRequest()){const auto r=saveAs();shell.reportPersistenceStatus(r.status==microsw::persistence::SaveStatus::Success?"Save As succeeded":r.diagnostic);}

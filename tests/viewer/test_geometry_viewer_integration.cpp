@@ -202,7 +202,8 @@ protected:
             const auto segments = presentedSegmentVertices(presentation, filter);
             const auto points = presentedPointVertices(presentation, filter);
             const auto depth = state == VisualState::Normal ? GL_LESS : GL_LEQUAL;
-            expectDraw(index, GL_LINES, lines, highlightColor(state, normalLineColor), depth);
+            expectDraw(index, GL_LINES, lines, highlightColor(state, normalLineColor,
+                workspace.selectionAccent()), depth);
             if (state == VisualState::Normal)
             {
                 const ReferenceAxes axes;
@@ -210,8 +211,10 @@ protected:
                 expectDraw(index, GL_LINES, axes.yAxis(), {0, 1, 0}, GL_LESS);
                 expectDraw(index, GL_LINES, axes.zAxis(), {0, 0, 1}, GL_LESS);
             }
-            expectDraw(index, GL_LINES, segments, highlightColor(state, normalSegmentColor), depth);
-            expectDraw(index, GL_POINTS, points, highlightColor(state, normalPointColor), depth);
+            expectDraw(index, GL_LINES, segments, highlightColor(state, normalSegmentColor,
+                workspace.selectionAccent()), depth);
+            expectDraw(index, GL_POINTS, points, highlightColor(state, normalPointColor,
+                workspace.selectionAccent()), depth);
             pointCount += points.size(); segmentCount += segments.size(); lineCount += lines.size();
         }
         EXPECT_EQ(index, draws.size());
@@ -219,12 +222,14 @@ protected:
         EXPECT_EQ(segmentCount, presentedSegmentVertices(presentation).size());
         EXPECT_EQ(lineCount, presentedLineVertices(presentation, lineContext()).size());
     }
-    void demoSlice(std::size_t entityIndex, const Point3& sample)
+    void demoSlice(std::size_t entityIndex, const Point3& sample,
+                   SelectionAccent accent = SelectionAccent::Orange)
     {
         const auto demo = demo::createGeometryDemoScene();
         const auto before = snapshot(demo);
         const auto id = demo.entities()[entityIndex].id();
         WorkspaceViewport workspace{demo};
+        workspace.setSelectionAccent(accent);
         EXPECT_EQ(presentedPointVertices(demo).size(), 3U);
         EXPECT_EQ(presentedSegmentVertices(demo).size(), 6U);
         EXPECT_EQ(presentedLineVertices(demo, lineContext()).size(), 4U);
@@ -353,6 +358,13 @@ TEST_F(GeometryViewerIntegration, DemoSegmentMidpointReachesActualSelectedDraw)
 { demoSlice(3, {0, -2, 0.5}); }
 TEST_F(GeometryViewerIntegration, DemoLineIdentityReachesViewDerivedSelectedDraw)
 { demoSlice(6, {-2, 3, 1}); }
+
+TEST_F(GeometryViewerIntegration, BlueSelectionReachesActualPointSegmentAndLineDraws)
+{
+    demoSlice(1, {2, 2, 1}, SelectionAccent::Blue);
+    demoSlice(3, {0, -2, 0.5}, SelectionAccent::Blue);
+    demoSlice(6, {-2, 3, 1}, SelectionAccent::Blue);
+}
 
 TEST_F(GeometryViewerIntegration, DemoHoverSelectionAndEmptyClickPartitionEveryPrimitiveExclusively)
 {

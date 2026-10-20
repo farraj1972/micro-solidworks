@@ -7,6 +7,7 @@
 #include "modeling/Boolean.h"
 #include "features/FeatureModel.h"
 #include "interaction/EditorContext.h"
+#include "app/preferences/ApplicationPreferences.h"
 
 #include <optional>
 #include <array>
@@ -27,6 +28,12 @@ struct CutExtrudeRequest
     features::FeatureId target;
     math::Scalar depth;
     features::CutDirection direction;
+};
+struct PreferencesApplyRequest
+{
+    preferences::ApplicationPreferences candidate;
+    bool closeOnSuccess{};
+    bool confirmFutureVersionReset{};
 };
 class ApplicationWindow;
 
@@ -81,6 +88,11 @@ public:
     [[nodiscard]] const std::optional<UnsavedDecision>& unsavedDecision() const noexcept { return unsavedDecision_; }
     void reportPersistenceStatus(std::string status) { persistenceStatus_ = std::move(status); }
     void setCurrentFilePath(std::string path) { currentFilePath_ = std::move(path); }
+    void setPreferences(preferences::ApplicationPreferences current, bool futureVersionNeedsReset = false);
+    [[nodiscard]] const std::optional<PreferencesApplyRequest>& preferencesApplyRequest() const noexcept
+    { return preferencesApplyRequest_; }
+    void reportPreferencesResult(bool success, std::string diagnostic);
+    void reportPreferencesLoad(std::string diagnostic) { preferencesDiagnostic_ = std::move(diagnostic); }
     [[nodiscard]] const WorkspaceLayout& workspaceRect() const noexcept { return workspace_; }
     [[nodiscard]] const WorkspaceInput& workspaceInput() const noexcept { return input_; }
     [[nodiscard]] const std::optional<interaction::EditorCommand>& editorCommandRequest() const noexcept { return editorCommandRequest_; }
@@ -115,6 +127,7 @@ private:
     void drawStatusBar();
     void drawAboutDialog();
     void drawUnsavedChangesDialog();
+    void drawPreferencesDialog();
     void beginFeatureEdit(features::FeatureId id, const features::FeatureModel& model);
     void beginFeatureRename(features::FeatureId id, const features::FeatureModel& model);
 
@@ -122,6 +135,16 @@ private:
     WorkspaceLayout workspace_{};
     WorkspaceInput input_{};
     bool aboutDialogRequested_{false};
+    bool preferencesDialogRequested_{};
+    bool preferencesDialogVisible_{};
+    bool preferencesCloseRequested_{};
+    bool preferencesFutureVersion_{};
+    bool preferencesFutureResetConfirmed_{};
+    bool preferencesPendingClose_{};
+    preferences::ApplicationPreferences preferencesActive_{};
+    preferences::ApplicationPreferences preferencesDraft_{};
+    std::optional<PreferencesApplyRequest> preferencesApplyRequest_;
+    std::string preferencesDiagnostic_;
     std::optional<math::Transform3> transformRequest_;
     std::optional<presentation::VisualEntityId> editorEntity_;
     std::string transformError_;

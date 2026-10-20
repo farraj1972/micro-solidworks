@@ -1,4 +1,5 @@
 #include "app/preferences/ApplicationPreferences.h"
+#include "app/PersistenceSession.h"
 
 #include <gtest/gtest.h>
 
@@ -110,4 +111,22 @@ TEST(ApplicationPreferences, UnwritableDestinationDoesNotPublish)
     EXPECT_FALSE(service.apply({pref::NavigationProfile::PanMiddleButton,
                                 pref::SelectionAccent::Blue}).success);
     EXPECT_EQ(service.current(), pref::PreferencesService::defaults());
+}
+
+TEST(ApplicationPreferences, ApplyingUserSettingsDoesNotChangeCadSession)
+{
+    TemporaryPreferences temporary;
+    microsw::PersistenceSession cad;
+    const auto modelSize = cad.model().history().size();
+    const auto dirty = cad.isDirty();
+    const auto canUndo = cad.canUndo();
+    const auto canRedo = cad.canRedo();
+    pref::PreferencesService service{temporary.file};
+    ASSERT_TRUE(service.apply({pref::NavigationProfile::PanMiddleButton,
+                               pref::SelectionAccent::Blue}).success);
+    EXPECT_EQ(cad.model().history().size(), modelSize);
+    EXPECT_EQ(cad.isDirty(), dirty);
+    EXPECT_EQ(cad.canUndo(), canUndo);
+    EXPECT_EQ(cad.canRedo(), canRedo);
+    EXPECT_FALSE(cad.currentFilePath());
 }
