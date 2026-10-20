@@ -26,12 +26,13 @@ microsw::features::PlanarRegionSet extrusionRegions(const microsw::sketch::Sketc
     return microsw::features::extractPlanarRegions(sketch);
 }
 
-constexpr float defaultModelPanelWidth = 320.0F;
 constexpr float minimumModelPanelWidth = 260.0F;
-constexpr float statusBarHeight = 26.0F;
-constexpr float commandBarHeight = 88.0F;
+constexpr float statusBarHeight = 44.0F;
+constexpr float documentHeaderHeight = 34.0F;
+constexpr float commandBarHeight = 106.0F;
+constexpr float shellTopHeight = documentHeaderHeight + commandBarHeight;
 
-enum class CadIcon { New, Open, Save, SaveAs, Rebuild, Sketch, ExitSketch, Select,
+enum class CadIcon { New, Open, Save, SaveAs, Rebuild, Sketch, ExitSketch, Select, View, Display, Export,
     Boolean,
     Line, Rectangle, Circle, Horizontal, Vertical, Coincident, Dimension, Extrude, CutExtrude, Undo, Redo };
 
@@ -64,6 +65,14 @@ void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
         line(-11,0,-3,8,3); line(-3,8,12,-9,3); break;
     case CadIcon::Select:
         draw->AddTriangleFilled({x-10,y-12},{x-7,y+10},{x+1,y+3},color); line(0,2,8,11,3); break;
+    case CadIcon::View:
+        circle(0,0,10); line(-10,0,10,0); line(0,-10,0,10); circle(0,0,2); break;
+    case CadIcon::Display:
+        draw->AddRect({x-9,y-9},{x+7,y+7},color,0,0,2); line(-9,-9,-2,-13);
+        line(7,-9,13,-13); line(7,7,13,3); break;
+    case CadIcon::Export:
+        draw->AddRect({x-10,y-10},{x+6,y+9},color,0,0,2); line(8,-3,8,12,3);
+        line(3,7,8,12,3); line(13,7,8,12,3); break;
     case CadIcon::Line:
         line(-11,9,11,-9,3); circle(-11,9,2); circle(11,-9,2); break;
     case CadIcon::Rectangle:
@@ -151,7 +160,7 @@ void ApplicationShell::beginFeatureEdit(features::FeatureId id, const features::
     const auto& feature = model.find(id);
     selectedFeature_ = id;
     editingFeature_.reset();
-    propertyManagerVisible_ = true;
+
     if (feature.kind() == features::FeatureKind::Sketch)
     {
         enterSketchRequest_ = true;
@@ -183,6 +192,9 @@ void ApplicationShell::beginFeatureRename(features::FeatureId id, const features
 
 void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::VisualEntity* selected)
 {
+    const auto width = ImGui::GetMainViewport()->WorkSize.x;
+    modelPanelWidth_ = std::clamp(width * 0.215F, minimumModelPanelWidth, 330.0F);
+    inspectorPanelWidth_ = std::clamp(width * 0.215F, minimumModelPanelWidth, 330.0F);
     input_ = {};
     preferencesApplyRequest_.reset();
     viewCommandRequest_.reset(); displayModeRequest_.reset();
@@ -191,6 +203,7 @@ void ApplicationShell::draw(ProjectionMode projectionMode, const presentation::V
     exportBrowseRequest_ = exportValidateRequest_ = exportWriteRequest_ = false;
     undoRequest_ = redoRequest_ = exitDocumentRequest_ = false; unsavedDecision_.reset();
     drawMainMenu(projectionMode);
+    drawDocumentHeader();
     drawModelPanel(selected);
     drawWorkspace();
     drawStatusBar();
@@ -225,6 +238,9 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
                                   bool hasActiveSolid, const features::FeatureModel* featureModel,
                                   interaction::EditorContext* editor)
 {
+    const auto width = ImGui::GetMainViewport()->WorkSize.x;
+    modelPanelWidth_ = std::clamp(width * 0.215F, minimumModelPanelWidth, 330.0F);
+    inspectorPanelWidth_ = std::clamp(width * 0.215F, minimumModelPanelWidth, 330.0F);
     input_ = {};
     preferencesApplyRequest_.reset();
     viewCommandRequest_.reset(); displayModeRequest_.reset();
@@ -249,16 +265,38 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     deleteFeatureRequest_.reset(); renameFeatureRequest_.reset();
     if(editor){
         using C=interaction::EditorCommand;
-        if(editor->activeCommand()==C::Extrude)workflowState_="Extrude — set parameters, then Confirm or Cancel";
-        else if(editor->activeCommand()==C::CutExtrude)workflowState_="Cut Extrude — set parameters, then Confirm or Cancel";
+        if(editor->activeCommand()==C::Extrude){
+            workflowState_="MODEL / EXTRUDE";
+            workflowGuidance_="Set a positive depth, then Create extrusion or Cancel in the inspector.";
+        }
+        else if(editor->activeCommand()==C::CutExtrude){
+            workflowState_="MODEL / CUT EXTRUDE";
+            workflowGuidance_="Check the source, target and depth, then Create cut or Cancel.";
+        }
         else if(editor->activeSketchFeatureId()){
             const char* tool=activeTool==SketchTool::Line?"Line":activeTool==SketchTool::Rectangle?"Rectangle":activeTool==SketchTool::Circle?"Circle":"Select";
-            workflowState_=std::string{"Editing Sketch — "}+tool+" tool";
-        }else workflowState_="Part editing — select a plane, face or feature";
+            workflowState_=std::string{"SKETCH / "}+tool;
+            workflowGuidance_=activeTool==SketchTool::Select
+                ? "Select geometry to edit dimensions, or choose a drawing tool. Exit Sketch when ready."
+                : editor->previewAnchor()
+                    ? "Move the pointer and click to finish the shape; Esc cancels this step."
+                    : "Click in the Graphics Area to start drawing; Esc returns to Select.";
+        }else{
+            workflowState_="MODEL";
+            workflowGuidance_=selectedPrincipalPlane_ ? "Choose Sketch to draw on the selected plane."
+                : selectedFeature_ ? "Inspect the selection, or use its context menu to edit, rename or delete."
+                : "Select a reference plane, face or feature to begin.";
+        }
     }
     drawMainMenu(projectionMode);
+    drawDocumentHeader();
     drawCommandBar(activeTool, sketch, selected, featureModel, editor);
     drawSketchPanel(activeTool, sketch, selected, hasActiveSolid, featureModel, editor);
+    if (cancelPropertyRequest_)
+        workflowFeedback_ = "Operation cancelled; no model change committed.";
+    else if (confirmPropertyRequest_ || featureDistanceRequest_ || featureCutRequest_
+        || extrusionRequest_ || cutExtrudeRequest_)
+        workflowFeedback_ = "Applying change...";
     drawWorkspace(activeTool, editor, featureModel);
     drawStatusBar();
     drawAboutDialog();
@@ -290,8 +328,11 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
                                       interaction::EditorContext* editor)
 {
     const auto* viewport = ImGui::GetMainViewport();
-    beginStructuralWindow("CAD Command Bar", viewport->WorkPos,
+    beginStructuralWindow("CAD Command Bar", {viewport->WorkPos.x, viewport->WorkPos.y + documentHeaderHeight},
         ImVec2{viewport->WorkSize.x, commandBarHeight});
+    const bool editing = editor && editor->activeSketchFeatureId();
+    ImGui::TextColored({0.38F, 0.68F, 1.0F, 1.0F}, "%s WORKSPACE", editing ? "SKETCH" : "MODEL");
+    ImGui::Separator();
     const auto commandButton = [&](const char* id, const char* label, const char* tooltip,
                                    CadIcon icon, bool enabled, bool active, const auto& action)
     {
@@ -312,10 +353,12 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("%s", tooltip);
         if (active) ImGui::PopStyleColor(2);
         if (!enabled) ImGui::EndDisabled();
-        if (clicked && enabled) action();
+        if (clicked && enabled) { workflowFeedback_.clear(); action(); }
         ImGui::PopID();
         ImGui::SameLine();
     };
+    if (!editing)
+    {
     commandButton("new", "New", "Create a new part", CadIcon::New, true, false, [&]{ newDocumentRequest_ = true; });
     commandButton("open", "Open", "Open a .microsw part", CadIcon::Open, true, false, [&]{ openDocumentRequest_ = true; });
     commandButton("save", "Save", "Save the current part", CadIcon::Save, true, false, [&]{ saveDocumentRequest_ = true; });
@@ -327,7 +370,7 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     commandButton("rebuild", "Rebuild", needsRebuild?"Rebuild features needing attention":"All features are up to date",
          CadIcon::Rebuild, needsRebuild, false, [&]{ rebuildFeaturesRequest_ = true; });
     ImGui::TextDisabled("|"); ImGui::SameLine();
-    const bool editing = editor && editor->activeSketchFeatureId();
+    }
     const auto* faceSelection=editor&&editor->selection()?std::get_if<interaction::TopologyFaceTarget>(&*editor->selection()):nullptr;
     const bool supportedSelectedFace=!faceSelection||(featureModel&&featureModel->semanticFaceRole(
         faceSelection->feature,faceSelection->body.index,faceSelection->face).has_value());
@@ -336,12 +379,14 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         "Sketch on this face is not yet supported";
     commandButton("sketch", editing ? "Exit" : "Sketch", sketchTip,
         editing ? CadIcon::ExitSketch : CadIcon::Sketch, editing||supportedSelectedFace, editing,
-        [&]{ if (editing) exitSketchRequest_ = true; else if(selectedPrincipalPlane_){sketchPlaneRequest_=selectedPrincipalPlane_;propertyManagerVisible_=true;}else if(faceSelection||selectedFeature_){enterSketchRequest_=true;propertyManagerVisible_=true;}else{sketchError_="Select Front, Top or Right Plane, or a supported planar face, before starting Sketch.";propertyManagerVisible_=false;} });
+        [&]{ if (editing) exitSketchRequest_ = true; else if(selectedPrincipalPlane_){sketchPlaneRequest_=selectedPrincipalPlane_;}else if(faceSelection||selectedFeature_){enterSketchRequest_=true;}else{sketchError_="Select Front, Top or Right Plane, or a supported planar face, before starting Sketch.";} });
+    if (editing)
+    {
     const auto tool = [&](const char* id, const char* label, const char* tip, CadIcon icon,
                           SketchTool sketchTool, interaction::EditorCommand command)
     {
         commandButton(id, label, tip, icon, editing, activeTool == sketchTool,
-            [&]{ sketchToolRequest_ = sketchTool; editorCommandRequest_ = command; propertyManagerVisible_ = true; });
+            [&]{ sketchToolRequest_ = sketchTool; editorCommandRequest_ = command;  });
     };
     tool("select", "Select", "Select sketch geometry", CadIcon::Select, SketchTool::Select, interaction::EditorCommand::Select);
     tool("line", "Line", "Create a two-point line", CadIcon::Line, SketchTool::Line, interaction::EditorCommand::Line);
@@ -360,10 +405,13 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     });
     commandButton("coincident", "Coincident", "Select two compatible endpoints", CadIcon::Coincident,
         editing, editor && editor->activeCommand()==interaction::EditorCommand::Coincident,
-        [&]{ editorCommandRequest_ = interaction::EditorCommand::Coincident; propertyManagerVisible_ = true; });
+        [&]{ editorCommandRequest_ = interaction::EditorCommand::Coincident;  });
     commandButton("dimension", "Dimension", "Create or edit a driving dimension", CadIcon::Dimension,
         editing && selected, editor && editor->activeCommand()==interaction::EditorCommand::Dimension,
-        [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension; propertyManagerVisible_ = true; });
+        [&]{ editorCommandRequest_ = interaction::EditorCommand::Dimension;  });
+    }
+    else
+    {
     ImGui::TextDisabled("|"); ImGui::SameLine();
     const sketch::Sketch* extrusionSketch = &model;
     if (editor && !editor->activeSketchFeatureId() && featureModel && selectedFeature_)
@@ -378,7 +426,7 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
     commandButton("extrude", "Extrude", supportedProfile ? "Create an extrusion from the active or selected Sketch"
         : regions.diagnostic.message.c_str(), CadIcon::Extrude,
         canExtrude, editor && editor->activeCommand()==interaction::EditorCommand::Extrude,
-        [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; });
+        [&]{ editorCommandRequest_ = interaction::EditorCommand::Extrude;  });
     bool hasCutTarget=false;
     if(featureModel&&selectedFeature_&&featureModel->find(*selectedFeature_).kind()==features::FeatureKind::Sketch)
     {
@@ -390,7 +438,40 @@ void ApplicationShell::drawCommandBar(SketchTool activeTool, const sketch::Sketc
         : "Select a closed Sketch created on an Extrude cap", CadIcon::CutExtrude,
         supportedProfile&&hasCutTarget,
         editor&&editor->activeCommand()==interaction::EditorCommand::CutExtrude,
-        [&]{editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;});
+        [&]{editorCommandRequest_=interaction::EditorCommand::CutExtrude;});
+    commandButton("views", "Views", "Choose a standard model orientation", CadIcon::View,
+        true, false, [&]{ ImGui::OpenPopup("Ribbon views"); });
+    if (ImGui::BeginPopup("Ribbon views"))
+    {
+        if (ImGui::MenuItem("Fit")) viewCommandRequest_ = ViewCommand::Fit;
+        if (ImGui::MenuItem("Isometric")) viewCommandRequest_ = ViewCommand::Isometric;
+        if (ImGui::MenuItem("Front")) viewCommandRequest_ = ViewCommand::Front;
+        if (ImGui::MenuItem("Back")) viewCommandRequest_ = ViewCommand::Back;
+        if (ImGui::MenuItem("Left")) viewCommandRequest_ = ViewCommand::Left;
+        if (ImGui::MenuItem("Right")) viewCommandRequest_ = ViewCommand::Right;
+        if (ImGui::MenuItem("Top")) viewCommandRequest_ = ViewCommand::Top;
+        if (ImGui::MenuItem("Bottom")) viewCommandRequest_ = ViewCommand::Bottom;
+        ImGui::EndPopup();
+    }
+    commandButton("display", "Display", "Choose shaded, shaded with edges, or wireframe", CadIcon::Display,
+        true, false, [&]{ ImGui::OpenPopup("Ribbon display"); });
+    if (ImGui::BeginPopup("Ribbon display"))
+    {
+        const auto mode = [&](const char* label, DisplayModeRequest value) {
+            if (ImGui::MenuItem(label, nullptr, displayMode_ == value))
+            { displayMode_ = value; displayModeRequest_ = value; }
+        };
+        mode("Shaded", DisplayModeRequest::Shaded);
+        mode("Shaded With Edges", DisplayModeRequest::ShadedWithEdges);
+        mode("Wireframe", DisplayModeRequest::Wireframe);
+        ImGui::EndPopup();
+    }
+    commandButton("export", "Export STL", "Export the selected solid body as an STL mesh", CadIcon::Export,
+        featureModel && std::any_of(featureModel->history().begin(), featureModel->history().end(),
+            [](const auto& feature) { return feature.cache().has_value()
+                && std::holds_alternative<features::SolidFeatureCache>(*feature.cache()); }),
+        false, [&]{ exportDialogRequested_ = true; exportValidated_ = false; exportStatus_.clear(); });
+    }
     ImGui::End();
 }
 
@@ -400,26 +481,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                                        interaction::EditorContext* editor)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight - commandBarHeight};
-    ImGui::SetNextWindowPos(ImVec2{viewport->WorkPos.x, viewport->WorkPos.y + commandBarHeight});
-    ImGui::SetNextWindowSize(ImVec2{defaultModelPanelWidth, contentSize.y}, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSizeConstraints(
-        ImVec2{minimumModelPanelWidth, contentSize.y},
-        ImVec2{viewport->WorkSize.x * 0.7F, contentSize.y});
-    constexpr ImGuiWindowFlags sketchPanelFlags =
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoBringToFrontOnFocus;
-    ImGui::Begin("Model", nullptr, sketchPanelFlags);
-    modelPanelWidth_ = ImGui::GetWindowSize().x;
-    if (ImGui::Selectable("FeatureManager", !propertyManagerVisible_, 0, ImVec2{145, 28}))
-        propertyManagerVisible_ = false;
-    ImGui::SameLine();
-    if (ImGui::Selectable("PropertyManager", propertyManagerVisible_, 0, ImVec2{145, 28}))
-        propertyManagerVisible_ = true;
+    const ImVec2 contentSize{viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight - shellTopHeight};
+    beginStructuralWindow("Model Browser",
+        {viewport->WorkPos.x, viewport->WorkPos.y + shellTopHeight},
+        {modelPanelWidth_, contentSize.y});
+    ImGui::TextUnformatted("Model Browser");
     ImGui::Separator();
-    if (!propertyManagerVisible_)
-    {
     ImGui::TextUnformatted("Document");
     ImGui::TextWrapped("%s%s", currentFilePath_.empty() ? "Untitled" : currentFilePath_.c_str(),
         documentDirty_ ? " *" : "");
@@ -488,7 +555,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     node.kind==features::FeatureKind::Sketch?"Edit Sketch":"Edit"))
                     beginFeatureEdit(node.featureId,*featureModel);
                 if(node.kind==features::FeatureKind::Boolean&&ImGui::MenuItem("Inspect"))
-                    {selectedFeature_=node.featureId;propertyManagerVisible_=true;}
+                    {selectedFeature_=node.featureId;}
                 if(ImGui::MenuItem("Rename","F2"))
                     beginFeatureRename(node.featureId,*featureModel);
                 if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide"))
@@ -525,7 +592,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 }
                 if(ImGui::BeginPopupContextItem("Plane actions")){
                     if(ImGui::MenuItem("Sketch on Plane")){
-                        selectedPrincipalPlane_=plane;selectedFeature_.reset();sketchPlaneRequest_=plane;propertyManagerVisible_=true;
+                        selectedPrincipalPlane_=plane;selectedFeature_.reset();sketchPlaneRequest_=plane;
                     }
                     ImGui::EndPopup();
                 }
@@ -580,11 +647,22 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
             ImGui::EndPopup();
         }
+    }
+    ImGui::End();
+
+    beginStructuralWindow("Context Inspector",
+        {viewport->WorkPos.x + viewport->WorkSize.x - inspectorPanelWidth_,
+         viewport->WorkPos.y + shellTopHeight},
+        {inspectorPanelWidth_, contentSize.y});
+    ImGui::TextUnformatted("Context Inspector");
+    ImGui::Separator();
+    if (featureModel)
+    {
         if(selectedPrincipalPlane_){
             ImGui::Separator();
             const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
             ImGui::Text("Selected: %s",name);
-            if(ImGui::Button("Sketch on Plane")){sketchPlaneRequest_=selectedPrincipalPlane_;propertyManagerVisible_=true;}
+            if(ImGui::Button("Sketch on Plane")){sketchPlaneRequest_=selectedPrincipalPlane_;}
         }
         if (selectedFeature_)
         {
@@ -618,7 +696,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     if(role){ImGui::Text("Support: %s of %s",features::semanticFaceRoleName(*role),owner.displayName().c_str());}
                     else ImGui::TextDisabled("Sketch on this face is not yet supported.");
                     if(role&&ImGui::Button("Sketch on this face"))
-                        {selectedFeature_=owner.id();enterSketchRequest_=true;propertyManagerVisible_=true;}
+                        {selectedFeature_=owner.id();enterSketchRequest_=true;}
                 }
                 else if(const auto*t=std::get_if<interaction::TopologyEdgeTarget>(&*editor->selection())){
                     const auto& owner=featureModel->find(t->feature);
@@ -641,12 +719,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     &std::get<features::SketchFeature>(feature.data()).support))
                     ImGui::Text("Support: %s of %s",features::semanticFaceRoleName(support->capRole),
                         featureModel->find(support->sourceFeatureId).displayName().c_str());
-                if (ImGui::Button("Edit Sketch")) { enterSketchRequest_ = true; propertyManagerVisible_ = true; }
+                if (ImGui::Button("Edit Sketch")) { enterSketchRequest_ = true;  }
                 ImGui::SameLine();
-                if (ImGui::Button("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude; propertyManagerVisible_ = true; }
+                if (ImGui::Button("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude;  }
                 const bool faceSupported=std::holds_alternative<features::SemanticFaceSupport>(
                     std::get<features::SketchFeature>(feature.data()).support);
-                if(faceSupported){ImGui::SameLine();if(ImGui::Button("Cut Extrude")){editorCommandRequest_=interaction::EditorCommand::CutExtrude;propertyManagerVisible_=true;}}
+                if(faceSupported){ImGui::SameLine();if(ImGui::Button("Cut Extrude")){editorCommandRequest_=interaction::EditorCommand::CutExtrude;}}
             }
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
@@ -716,10 +794,8 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
         ImGui::Separator();
     }
-        ImGui::TextWrapped("Select a feature to inspect it. Right-click a feature for Edit, Extrude, Show or Hide.");
-        ImGui::End();
-        return;
-    }
+    if (!selectedFeature_ && !selectedPrincipalPlane_ && (!editor || !editor->activeSketchFeatureId()))
+        ImGui::TextWrapped("Select a feature in the browser or a face in the viewport to inspect it.");
     ImGui::TextUnformatted(editor && editor->activeSketchFeatureId() ? "Edit sketch" : "Edit model");
     const char* toolName = activeTool == SketchTool::Select ? "Select" : activeTool == SketchTool::Line ? "Line"
         : activeTool == SketchTool::Rectangle ? "Rectangle" : activeTool == SketchTool::Circle ? "Circle" : "Arc";
@@ -781,7 +857,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 if (ImGui::Button("Continue to 3D extrusion", ImVec2{230, 36}))
                 {
                     editorCommandRequest_ = interaction::EditorCommand::Extrude;
-                    propertyManagerVisible_ = true;
+
                 }
             }
             else
@@ -1068,6 +1144,7 @@ void ApplicationShell::reportFeatureRebuild(const features::RebuildResult& resul
     else featureRebuildStatus_ = "Rebuild failed at "
         + (result.failedFeature ? model.find(*result.failedFeature).displayName() : std::string{"a feature"})
         + "; " + std::to_string(result.blockedCount) + " downstream feature(s) blocked. " + result.diagnostic;
+    workflowFeedback_ = featureRebuildStatus_;
 }
 
 void ApplicationShell::reportBooleanStatus(modeling::BooleanStatus status)
@@ -1157,20 +1234,44 @@ void ApplicationShell::drawMainMenu(ProjectionMode projectionMode)
     ImGui::EndMainMenuBar();
 }
 
+void ApplicationShell::drawDocumentHeader()
+{
+    const auto* viewport = ImGui::GetMainViewport();
+    beginStructuralWindow("Document Header", viewport->WorkPos,
+        {viewport->WorkSize.x, documentHeaderHeight});
+    ImGui::TextColored({0.45F, 0.72F, 1.0F, 1.0F}, "MICRO SOLIDWORKS");
+    ImGui::SameLine();
+    ImGui::TextDisabled("  |  ");
+    ImGui::SameLine();
+    const auto filename = currentFilePath_.empty() ? std::string{"Untitled"}
+        : std::filesystem::path{currentFilePath_}.filename().string();
+    ImGui::Text("%s%s", filename.c_str(), documentDirty_ ? "  *" : "");
+    if (documentDirty_ && ImGui::IsItemHovered())
+        ImGui::SetTooltip("This document has unsaved changes");
+    ImGui::End();
+}
+
 void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 contentSize{
         viewport->WorkSize.x,
-        viewport->WorkSize.y - statusBarHeight};
+        viewport->WorkSize.y - shellTopHeight - statusBarHeight};
 
     beginStructuralWindow(
-        "Model",
-        viewport->WorkPos,
+        "Model Browser",
+        {viewport->WorkPos.x, viewport->WorkPos.y + shellTopHeight},
         ImVec2{modelPanelWidth_, contentSize.y});
-    ImGui::TextUnformatted("Model");
+    ImGui::TextUnformatted("Model Browser");
     ImGui::Separator();
     ImGui::TextDisabled("No document");
+    ImGui::End();
+
+    beginStructuralWindow("Context Inspector",
+        {viewport->WorkPos.x + viewport->WorkSize.x - inspectorPanelWidth_,
+         viewport->WorkPos.y + shellTopHeight},
+        {inspectorPanelWidth_, contentSize.y});
+    ImGui::TextUnformatted("Context Inspector");
     ImGui::Separator();
     const auto selectedId = selected ? std::optional{selected->id()} : std::nullopt;
     if (selectedId != editorEntity_)
@@ -1227,10 +1328,10 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
                                      const features::FeatureModel* featureModel)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y + commandBarHeight};
+    const ImVec2 position{viewport->WorkPos.x + modelPanelWidth_, viewport->WorkPos.y + shellTopHeight};
     const ImVec2 size{
-        viewport->WorkSize.x - modelPanelWidth_,
-        viewport->WorkSize.y - statusBarHeight - commandBarHeight};
+        viewport->WorkSize.x - modelPanelWidth_ - inspectorPanelWidth_,
+        viewport->WorkSize.y - statusBarHeight - shellTopHeight};
 
     const ImGuiIO& io = ImGui::GetIO();
     workspace_ = {position.x - viewport->Pos.x, position.y - viewport->Pos.y,
@@ -1273,7 +1374,7 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
         const bool faceSelected=editor&&editor->selection()&&std::holds_alternative<interaction::TopologyFaceTarget>(*editor->selection());
         bool supportedFace=false;
         if(faceSelected&&featureModel){const auto&t=std::get<interaction::TopologyFaceTarget>(*editor->selection());supportedFace=featureModel->semanticFaceRole(t.feature,t.body.index,t.face).has_value();}
-        if(faceSelected&&ImGui::MenuItem("Sketch on selected face",nullptr,false,supportedFace)){enterSketchRequest_=true;propertyManagerVisible_=true;}
+        if(faceSelected&&ImGui::MenuItem("Sketch on selected face",nullptr,false,supportedFace)){enterSketchRequest_=true;}
         if(faceSelected&&!supportedFace)ImGui::TextDisabled("Sketch on this face is not yet supported.");
         if (selectedFeature_)
         {
@@ -1346,9 +1447,19 @@ void ApplicationShell::drawStatusBar()
         "Status Bar",
         position,
         ImVec2{viewport->WorkSize.x, statusBarHeight});
-    const std::string documentLabel = (currentFilePath_.empty() ? "Untitled" : currentFilePath_) + (documentDirty_ ? " *" : "");
-    ImGui::Text("%s | %s | %s", documentLabel.c_str(), workflowState_.c_str(),
-        persistenceStatus_.empty() ? "Ready" : persistenceStatus_.c_str());
+    ImGui::TextColored({0.39F, 0.72F, 1.0F, 1.0F}, "%s", workflowState_.c_str());
+    ImGui::SameLine(); ImGui::TextDisabled(" | "); ImGui::SameLine();
+    ImGui::TextUnformatted(workflowGuidance_.c_str());
+    const auto& feedback = !workflowFeedback_.empty() ? workflowFeedback_
+        : !featureRebuildStatus_.empty() ? featureRebuildStatus_
+        : !sketchError_.empty() ? sketchError_
+        : !extrusionStatus_.empty() ? extrusionStatus_ : persistenceStatus_;
+    const bool failure = feedback.find("fail") != std::string::npos
+        || feedback.find("reject") != std::string::npos
+        || feedback.find("block") != std::string::npos;
+    ImGui::TextColored(failure ? ImVec4{1.0F, 0.42F, 0.38F, 1.0F}
+        : ImVec4{0.48F, 0.88F, 0.57F, 1.0F}, "%s",
+        feedback.empty() ? (documentDirty_ ? "Unsaved changes" : "Ready") : feedback.c_str());
     ImGui::End();
 }
 

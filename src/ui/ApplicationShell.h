@@ -65,14 +65,14 @@ public:
     [[nodiscard]] const std::optional<sketch::SketchConstraintId>& removeConstraintRequest() const noexcept { return removeConstraintRequest_; }
     [[nodiscard]] const std::optional<std::pair<sketch::SketchConstraintId, math::Scalar>>& drivingValueRequest() const noexcept { return drivingValueRequest_; }
     [[nodiscard]] bool solveSketchRequest() const noexcept { return solveSketchRequest_; }
-    void reportSketchError(const std::string& error) { sketchError_ = error; }
+    void reportSketchError(const std::string& error) { sketchError_ = error; workflowFeedback_ = error; }
     [[nodiscard]] bool extrusionRequest() const noexcept { return extrusionRequest_; }
     [[nodiscard]] math::Scalar extrusionDistance() const noexcept { return extrusionDistance_; }
     [[nodiscard]] const std::optional<CutExtrudeRequest>& cutExtrudeRequest() const noexcept { return cutExtrudeRequest_; }
     [[nodiscard]] const std::optional<std::tuple<features::FeatureId, math::Scalar, features::CutDirection>>& featureCutRequest() const noexcept { return featureCutRequest_; }
     [[nodiscard]] math::Scalar cutDepth() const noexcept { return cutDepth_; }
-    void reportExtrusionError(const std::string& error) { extrusionStatus_ = "Extrusion rejected: " + error; }
-    void reportExtrusionSuccess() { extrusionStatus_ = "Solid regenerated"; }
+    void reportExtrusionError(const std::string& error) { extrusionStatus_ = "Extrusion rejected: " + error; workflowFeedback_ = extrusionStatus_; }
+    void reportExtrusionSuccess() { extrusionStatus_ = "Solid regenerated"; workflowFeedback_ = extrusionStatus_; }
     [[nodiscard]] bool loadBooleanDemoRequest() const noexcept { return loadBooleanDemoRequest_; }
     [[nodiscard]] bool loadBooleanUnsupportedRequest() const noexcept { return loadBooleanUnsupportedRequest_; }
     [[nodiscard]] bool assignOperandARequest() const noexcept { return assignOperandARequest_; }
@@ -97,16 +97,16 @@ public:
     [[nodiscard]] const std::filesystem::path& exportPath() const noexcept { return exportPath_; }
     void setExportPath(std::filesystem::path path) { exportPath_ = std::move(path); exportValidated_ = false; }
     void reportExportValidation(bool success, std::string diagnostic)
-    { exportValidated_ = success; exportStatus_ = std::move(diagnostic); }
+    { exportValidated_ = success; exportStatus_ = std::move(diagnostic); workflowFeedback_ = exportStatus_; }
     void reportExportWrite(bool success, std::string diagnostic)
-    { exportStatus_ = std::move(diagnostic); if (!success) exportValidated_ = false; }
+    { exportStatus_ = std::move(diagnostic); workflowFeedback_ = exportStatus_; if (!success) exportValidated_ = false; }
     [[nodiscard]] bool undoRequest() const noexcept { return undoRequest_; }
     [[nodiscard]] bool redoRequest() const noexcept { return redoRequest_; }
     [[nodiscard]] bool exitDocumentRequest() const noexcept { return exitDocumentRequest_; }
     void setDocumentState(bool dirty, bool canUndo, bool canRedo);
     void showUnsavedChangesDialog();
     [[nodiscard]] const std::optional<UnsavedDecision>& unsavedDecision() const noexcept { return unsavedDecision_; }
-    void reportPersistenceStatus(std::string status) { persistenceStatus_ = std::move(status); }
+    void reportPersistenceStatus(std::string status) { persistenceStatus_ = std::move(status); workflowFeedback_ = persistenceStatus_; }
     void setCurrentFilePath(std::string path) { currentFilePath_ = std::move(path); }
     void setPreferences(preferences::ApplicationPreferences current, bool futureVersionNeedsReset = false);
     [[nodiscard]] const std::optional<PreferencesApplyRequest>& preferencesApplyRequest() const noexcept
@@ -131,6 +131,7 @@ public:
     [[nodiscard]] const std::optional<DisplayModeRequest>& displayModeRequest() const noexcept { return displayModeRequest_; }
 
 private:
+    void drawDocumentHeader();
     void drawMainMenu(ProjectionMode projectionMode);
     void drawModelPanel(const presentation::VisualEntity* selected);
     void drawSketchPanel(SketchTool activeTool, const sketch::Sketch& sketch,
@@ -251,7 +252,9 @@ private:
     std::string currentFilePath_;
     std::string persistenceStatus_;
     std::string workflowState_{"Part editing"};
+    std::string workflowGuidance_{"Select a feature or reference plane to begin."};
+    std::string workflowFeedback_;
     float modelPanelWidth_{320.0F};
-    bool propertyManagerVisible_{};
+    float inspectorPanelWidth_{300.0F};
 };
 }

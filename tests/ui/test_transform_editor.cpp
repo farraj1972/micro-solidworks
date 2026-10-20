@@ -88,3 +88,32 @@ TEST(FeatureTree, DrawsHistoryStatesDependenciesAndParameters)
     EXPECT_FALSE(shell.featureBooleanRequest());
     ui.endFrame();
 }
+
+TEST(CadWorkspaceLayout, KeepsGraphicsAreaUsableAtDesktopSizes)
+{
+    microsw::ApplicationWindow window{1366, 768, "CAD workspace layout test"};
+    glfwHideWindow(static_cast<GLFWwindow*>(window.nativeHandle()));
+    microsw::OpenGLContext context{window};
+    microsw::ImGuiLayer ui{window, context};
+    microsw::ApplicationShell shell{window};
+    microsw::features::FeatureModel features;
+    microsw::interaction::EditorContext editor;
+    microsw::sketch::Sketch sketch;
+
+    for (const auto [width, height] : std::array<std::array<int, 2>, 2>{
+             std::array{1366, 768}, std::array{1920, 1080}})
+    {
+        glfwSetWindowSize(static_cast<GLFWwindow*>(window.nativeHandle()), width, height);
+        glfwPollEvents();
+        ui.beginFrame();
+        shell.drawSketch(microsw::ProjectionMode::Perspective,
+            microsw::SketchTool::Select, sketch, nullptr, false, &features, &editor);
+        const auto& graphics = shell.workspaceRect();
+        EXPECT_GE(graphics.width, width * 0.50) << width << "x" << height;
+        EXPECT_GE(graphics.height, height * 0.60) << width << "x" << height;
+        EXPECT_GT(graphics.x, 0);
+        EXPECT_LE(graphics.x + graphics.width, graphics.displayWidth);
+        EXPECT_LE(graphics.y + graphics.height, graphics.displayHeight);
+        ui.endFrame();
+    }
+}

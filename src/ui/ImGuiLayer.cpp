@@ -33,6 +33,28 @@ ImGuiLayer::ImGuiLayer(ApplicationWindow& window, OpenGLContext& openGLContext)
 
         ImGui::GetIO().IniFilename = nullptr;
         ImGui::StyleColorsDark();
+        auto& style = ImGui::GetStyle();
+        style.WindowPadding = {10.0F, 8.0F};
+        style.FramePadding = {8.0F, 5.0F};
+        style.ItemSpacing = {7.0F, 6.0F};
+        style.WindowRounding = 5.0F;
+        style.FrameRounding = 4.0F;
+        style.PopupRounding = 5.0F;
+        style.GrabRounding = 4.0F;
+        style.Colors[ImGuiCol_WindowBg] = {0.075F, 0.090F, 0.112F, 1.0F};
+        style.Colors[ImGuiCol_ChildBg] = {0.085F, 0.104F, 0.132F, 1.0F};
+        style.Colors[ImGuiCol_MenuBarBg] = {0.082F, 0.103F, 0.133F, 1.0F};
+        style.Colors[ImGuiCol_FrameBg] = {0.13F, 0.16F, 0.20F, 1.0F};
+        style.Colors[ImGuiCol_FrameBgHovered] = {0.18F, 0.23F, 0.30F, 1.0F};
+        style.Colors[ImGuiCol_Button] = {0.15F, 0.20F, 0.27F, 1.0F};
+        style.Colors[ImGuiCol_ButtonHovered] = {0.20F, 0.37F, 0.56F, 1.0F};
+        style.Colors[ImGuiCol_ButtonActive] = {0.18F, 0.45F, 0.73F, 1.0F};
+        style.Colors[ImGuiCol_Header] = {0.16F, 0.32F, 0.51F, 1.0F};
+        style.Colors[ImGuiCol_HeaderHovered] = {0.21F, 0.43F, 0.68F, 1.0F};
+        style.Colors[ImGuiCol_HeaderActive] = {0.20F, 0.48F, 0.78F, 1.0F};
+        style.Colors[ImGuiCol_CheckMark] = {0.35F, 0.67F, 1.0F, 1.0F};
+        style.Colors[ImGuiCol_SliderGrab] = {0.32F, 0.63F, 0.95F, 1.0F};
+        style.Colors[ImGuiCol_Separator] = {0.22F, 0.28F, 0.36F, 1.0F};
 
         Logger::info("Initializing ImGui GLFW backend");
         auto* nativeWindow = static_cast<GLFWwindow*>(window.nativeHandle());

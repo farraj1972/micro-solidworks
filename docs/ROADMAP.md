@@ -14,10 +14,10 @@ V1.3+: PROPOSED / NOT APPROVED
 K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
 Dependency policy: remains in force until a specific architectural decision
 SPEC-01 CAD/CAM traceability baseline: APPROVED / FROZEN; source and 29 requirements DRAFT / PROPOSED
-UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; package specification PROPOSED; gap analysis COMPLETE; implementation increments NOT AUTHORIZED
+UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; package specification PROPOSED; UX-01 adopts its bounded Model/Sketch shell
 SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
-UX-01/UX-02: PROPOSED / SEPARATE / NOT AUTHORIZED
+UX-01: ACTIVE — PRIORITY; UX-02/UX-03: PLANNED / NOT AUTHORIZED; CAD/CAM capability horizon: PRESERVED
 V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: FROZEN WITH CLEAN-ENVIRONMENT WAIVER; C4: FROZEN UNDER REVISED BOUNDED N2 ACCEPTANCE
 ```
 
@@ -68,19 +68,19 @@ records `EXISTS`, `PARTIAL`, `MISSING` and `DEFERRED` against the current UI.
 
 | Candidate sequence | Intended work | Governance |
 | --- | --- | --- |
-| UX-01 — Model/Sketch shell | Left browser continuously visible, right contextual inspector, clear mode and usable viewport; preserve current CAD commands and document safety. | Smallest proposed UI alignment slice; requires explicit increment authorization and Experience Gate. |
+| UX-01 — Model/Sketch shell | Left browser continuously visible, right contextual inspector, clear mode and usable viewport; preserve current CAD commands and document safety. | ACTIVE under the owner's UX-01 campaign; Experience Gate pending. |
 | UX-02 — Guided Sketch interaction | In-canvas dimension editing, selection cues and contextual micro-toolbar in bounded slices. | Proposed; no new geometry or solver capability implied by the image. |
 | UX-03 — Export UX | Minimal STL flow with active result/body, units, destination, quality and validator-driven feedback; full split CAD/mesh preview remains optional. | Proposed within v1.2-C2 after the C1 mesh contract; broader interchange remains unapproved. |
 | UX-04 — Future workspaces | Preserve Manufacture, simulation, operations and later interoperability as design references. | Vision only; no CAM implementation authorization. |
 
-**SET-D01 — Application Settings & Preferences Architecture** is [FROZEN](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md), with [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) and [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) **ACCEPTED** (71/71 ADRs accepted). The bounded [SET-01 first-slice campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) is **FROZEN** after an approved owner Experience Gate and clean V3 (918/918 tests). It implements typed per-user Profile A/B navigation and Orange/Blue selected geometry, preserving Profile A/Orange defaults. The two specific v0.3 compatibility gaps are resolved by executable opt-in settings. UX-01 remains separately proposed. SET-01 is cross-cutting and does not block the authorized v1.2 N2 workflow or STL export. v1.1.0 remains frozen.
+**SET-D01 — Application Settings & Preferences Architecture** is [FROZEN](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md), with [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) and [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) **ACCEPTED** (71/71 ADRs accepted). The bounded [SET-01 first-slice campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) is **FROZEN** after an approved owner Experience Gate and clean V3 (918/918 tests). It implements typed per-user Profile A/B navigation and Orange/Blue selected geometry, preserving Profile A/Orange defaults. The two specific v0.3 compatibility gaps are resolved by executable opt-in settings. UX-01 is now separately authorized and active. SET-01 is cross-cutting; v1.1.0 and v1.2.0 remain frozen.
 
 The visual references show Hole, Fillet, STEP and other future commands, and a
 `.mcad` example filename. These do not alter current feature scope or the
-accepted `.microsw` persistence contract. V1.2-C1 is PASS; C2 has technical
-PASS with Experience pending; C3 has a portable candidate awaiting isolated
-workflow evidence; C4 is authorized but pending, and K1/K2/K3
-remains OPEN.
+accepted `.microsw` persistence contract. V1.2-C1/C2 passed; C3 and C4 were
+frozen under the owner's documented acceptance exceptions. K1/K2/K3 remains
+OPEN and requires evidence. UX-01 does not authorize UX-02/UX-03, CAM, or
+advanced modeling commands shown in the references.
 
 ## Canonical MVP Roadmap
 
