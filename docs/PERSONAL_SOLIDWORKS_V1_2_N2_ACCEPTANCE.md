@@ -101,12 +101,29 @@ selected geometry or constraints rather than exposing the whole N2 task as a
 single guided sequence. These are implementation observations, not a claim
 that any one control is the sole blocker.
 
-The smallest corrective activity, if the repeated owner attempt still fails,
-is a bounded N2 dimensions/constraints UX review: observe the exact action
-where intent or state becomes unclear, then propose numeric entry/feedback and
-recovery within the existing Application/UI/EditorContext architecture. Retest
-from New Part through N2 STL and slicer. This may overlap the separately
-excluded UX-02 scope; no such implementation begins without reconciling that
-boundary. No new geometry, kernel, ADR, persistence schema or future
-Manufacture workspace is implied. Do not invent a broad UI rewrite or declare
-the Experience Gate approved.
+The bounded C4 correction addresses the concrete pocket-placement failure
+without implementing the separately excluded UX-02 in-canvas dimension system.
+It leaves the existing Application/UI/EditorContext ownership and Sketch
+geometry contract unchanged. Retest from New Part through N2 STL and slicer;
+do not declare the Experience Gate approved from source changes alone.
+
+### Exact rectangle entry candidate
+
+The owner's repeat export in `F:\downloads\export.stl` (SHA-256
+`7BDAAA163B88C1D28A97525E39744E3C34C710543FE264C53FB5CCD45B27644E`)
+contains a closed, consistently wound 796-triangle mesh of an 80 × 50 × 8 mm
+plate. The through-hole is present. The pocket floor is at Z=6 but its four
+corners bound X `[-0.952690,20.102491]` and Y `[-2.098002,14.238203]`,
+area about `343.962 mm²`; the target is X `[7,25]`, Y `[-7,7]`, area `252 mm²`.
+This isolates the observed mismatch to interactive pocket placement rather
+than STL byte integrity.
+
+The correction adds **Rectangle by dimensions (mm)** while editing a Sketch
+with the Rectangle tool. Center X/Y and Width/Height create the existing four
+independent `SketchLine` entities via `Sketch::addRectangle`; invalid inputs
+are rejected. No new geometry type, constraint, solver or persistence contract
+was added. The N2 pocket inputs are Center `(16,0)`, Width `18`, Height `14`.
+The targeted Debug build and 7 Sketch Tools/vertical-slice tests passed;
+Release build and updated candidate ZIP generation passed. Manual runtime
+validation of the updated candidate is pending. The new ZIP SHA-256 is in
+[C3 validation](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md).

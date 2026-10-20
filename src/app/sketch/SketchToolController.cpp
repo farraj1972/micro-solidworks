@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <numbers>
+#include <stdexcept>
 
 namespace microsw
 {
@@ -10,6 +11,20 @@ void SketchToolController::setTool(SketchTool tool) noexcept
 {
     tool_ = tool;
     pending_.clear();
+}
+
+std::array<sketch::SketchEntityId, 4> SketchToolController::addCenteredRectangle(
+    const geometry::Point2& center, math::Scalar width, math::Scalar height)
+{
+    if (!std::isfinite(width) || !std::isfinite(height)
+        || width <= geometry::defaultGeometricTolerance
+        || height <= geometry::defaultGeometricTolerance)
+        throw std::invalid_argument{"Rectangle width and height must be positive finite values"};
+    const geometry::Point2 first{center.x() - width / 2, center.y() - height / 2};
+    const geometry::Point2 opposite{center.x() + width / 2, center.y() + height / 2};
+    const auto ids = sketch_.addRectangle(first, opposite);
+    pending_.clear();
+    return ids;
 }
 
 std::vector<sketch::SketchEntityId> SketchToolController::click(const geometry::Point2& point)

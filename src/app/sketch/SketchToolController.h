@@ -2,6 +2,7 @@
 
 #include "core/sketch/Sketch.h"
 
+#include <array>
 #include <optional>
 #include <vector>
 
@@ -21,6 +22,8 @@ public:
     [[nodiscard]] std::optional<geometry::Point2> pendingPoint() const noexcept
         { return pending_.empty() ? std::nullopt : std::optional{pending_.back()}; }
     [[nodiscard]] std::vector<sketch::SketchEntityId> click(const geometry::Point2& point);
+    [[nodiscard]] std::array<sketch::SketchEntityId, 4> addCenteredRectangle(
+        const geometry::Point2& center, math::Scalar width, math::Scalar height);
     void cancel() noexcept { pending_.clear(); }
 
 private:

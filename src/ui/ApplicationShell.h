@@ -31,6 +31,12 @@ struct CutExtrudeRequest
     math::Scalar depth;
     features::CutDirection direction;
 };
+struct CenteredRectangleRequest
+{
+    geometry::Point2 center;
+    math::Scalar width;
+    math::Scalar height;
+};
 struct PreferencesApplyRequest
 {
     preferences::ApplicationPreferences candidate;
@@ -52,6 +58,7 @@ public:
     [[nodiscard]] const std::optional<math::Transform3>& transformRequest() const noexcept { return transformRequest_; }
     void reportTransformError(const std::string& error) { transformError_ = error; }
     [[nodiscard]] const std::optional<SketchTool>& sketchToolRequest() const noexcept { return sketchToolRequest_; }
+    [[nodiscard]] const std::optional<CenteredRectangleRequest>& centeredRectangleRequest() const noexcept { return centeredRectangleRequest_; }
     [[nodiscard]] const std::optional<sketch::SketchGeometry>& sketchGeometryRequest() const noexcept { return sketchGeometryRequest_; }
     [[nodiscard]] bool deleteSketchRequest() const noexcept { return deleteSketchRequest_; }
     [[nodiscard]] const std::optional<sketch::SketchConstraintValue>& addConstraintRequest() const noexcept { return addConstraintRequest_; }
@@ -163,6 +170,8 @@ private:
     std::optional<presentation::VisualEntityId> editorEntity_;
     std::string transformError_;
     std::optional<SketchTool> sketchToolRequest_;
+    std::optional<CenteredRectangleRequest> centeredRectangleRequest_;
+    std::array<double, 4> centeredRectangleDraft_{0.0, 0.0, 10.0, 10.0};
     std::optional<sketch::SketchGeometry> sketchGeometryRequest_;
     bool deleteSketchRequest_{};
     std::optional<sketch::SketchEntityId> sketchEditorEntity_;

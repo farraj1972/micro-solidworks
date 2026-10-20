@@ -229,6 +229,7 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     preferencesApplyRequest_.reset();
     viewCommandRequest_.reset(); displayModeRequest_.reset();
     sketchToolRequest_.reset();
+    centeredRectangleRequest_.reset();
     sketchGeometryRequest_.reset();
     deleteSketchRequest_ = false;
     addConstraintRequest_.reset(); removeConstraintRequest_.reset();
@@ -727,6 +728,27 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     {
         ImGui::TextColored(ImVec4{0.35F, 0.75F, 1.0F, 1.0F},
             model.size() == 0 ? "What would you like to draw?" : "Your sketch is ready for the next step.");
+        if (activeTool == SketchTool::Rectangle)
+        {
+            ImGui::Separator();
+            ImGui::TextUnformatted("Rectangle by dimensions (mm)");
+            ImGui::TextWrapped("Set the centre and size, then create an exact rectangle. Remove an unwanted outline first.");
+            ImGui::InputDouble("Center X", &centeredRectangleDraft_[0]);
+            ImGui::InputDouble("Center Y", &centeredRectangleDraft_[1]);
+            ImGui::InputDouble("Width", &centeredRectangleDraft_[2]);
+            ImGui::InputDouble("Height", &centeredRectangleDraft_[3]);
+            if (ImGui::Button("Create exact rectangle"))
+            {
+                const auto& d = centeredRectangleDraft_;
+                if (!std::isfinite(d[0]) || !std::isfinite(d[1])
+                    || !std::isfinite(d[2]) || !std::isfinite(d[3])
+                    || d[2] <= geometry::defaultGeometricTolerance
+                    || d[3] <= geometry::defaultGeometricTolerance)
+                    sketchError_ = "Enter finite centre coordinates and positive width/height in mm";
+                else
+                    centeredRectangleRequest_ = CenteredRectangleRequest{{d[0], d[1]}, d[2], d[3]};
+            }
+        }
         if (model.size() == 0)
         {
             ImGui::TextWrapped("Start with a closed rectangle. Choose a shape, then click in the Graphics Area.");

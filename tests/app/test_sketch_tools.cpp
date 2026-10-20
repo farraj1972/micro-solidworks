@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <numbers>
+#include <limits>
 
 namespace
 {
@@ -63,5 +64,31 @@ TEST(SketchTools, InvalidCompletionClearsPendingStateAndCreatesNothing)
     (void)tools.click({1, 2});
     tools.setTool(SketchTool::Rectangle);
     EXPECT_EQ(tools.pendingPointCount(), 0u);
+}
+
+TEST(SketchTools, NumericRectangleUsesExactCenterAndDimensions)
+{
+    sketch::Sketch model;
+    SketchToolController tools{model};
+    const auto lines = tools.addCenteredRectangle({16, 0}, 18, 14);
+    ASSERT_EQ(model.size(), 4u);
+    const auto& bottom = std::get<sketch::SketchLine>(model.find(lines[0]).geometry()).geometry;
+    const auto& right = std::get<sketch::SketchLine>(model.find(lines[1]).geometry()).geometry;
+    EXPECT_DOUBLE_EQ(bottom.a().x(), 7);
+    EXPECT_DOUBLE_EQ(bottom.a().y(), -7);
+    EXPECT_DOUBLE_EQ(bottom.b().x(), 25);
+    EXPECT_DOUBLE_EQ(bottom.b().y(), -7);
+    EXPECT_DOUBLE_EQ(right.b().x(), 25);
+    EXPECT_DOUBLE_EQ(right.b().y(), 7);
+}
+
+TEST(SketchTools, InvalidNumericRectangleLeavesSketchUnchanged)
+{
+    sketch::Sketch model;
+    SketchToolController tools{model};
+    EXPECT_THROW((void)tools.addCenteredRectangle({0, 0}, 0, 14), std::invalid_argument);
+    EXPECT_THROW((void)tools.addCenteredRectangle({0, 0}, 18,
+        std::numeric_limits<double>::infinity()), std::invalid_argument);
+    EXPECT_EQ(model.size(), 0u);
 }
 }

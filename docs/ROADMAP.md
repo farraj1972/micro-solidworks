@@ -39,8 +39,9 @@ on the usual Windows 10 PC; clean-environment runtime and exit-code evidence
 remain pending.
 The [C4 N2 acceptance checklist](PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
 records the exact owner workflow and the dimensions/constraints usability
-finding. The owner is retrying after a clarification of dimensions; independent
-N2 slicer evidence is still missing. N2 and v1.2 freeze remain pending.
+finding. A bounded exact-rectangle numeric entry candidate addresses the
+measured pocket-position mismatch; owner retest and independent N2 slicer
+evidence are still missing. N2 and v1.2 freeze remain pending.
 `docs/specification/README.md` indexes the separate SPEC-01 CAD/CAM reference
 horizon (R0–R9) and its frozen requirement traceability baseline. Its original
 sources are immutable; future requirements need versioned revisions. That
