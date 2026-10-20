@@ -1,9 +1,11 @@
 # V1.2-C2 — STL Export Implementation & UX Validation
 
-Status: **TECHNICAL PASS / EXPERIENCE PENDING**. The File → Export STL flow is
-implemented in the Debug candidate. Owner observation of the dialog and its
-Cancel/Validate/Export behavior is pending. C2 is not declared fully accepted
-until that evidence arrives.
+Status: **PASS for the bounded STL export flow**. The File → Export STL flow is
+implemented and the owner subsequently confirmed Validate/Export/Cancel,
+document/history integrity and successful reading of an exported STL from the
+portable build on the usual PC. An initial report that another application
+rejected the file was explicitly retracted as a false positive. The owner's
+exported part was not the canonical N2 plate, so this does not approve C4/N2.
 
 ## Behavior
 
@@ -39,8 +41,8 @@ Validation level: **V2** for Application/UI, native dialog, export I/O and
 FeatureModel/Presentation integration. Full CTest and clean build are reserved
 for the final baseline V3. Slicer acceptance and isolated Windows Release
 package are C4/C3 evidence respectively. The automated Windows capture failed
-with `FrameArrived timed out` after window activation failed; manual owner UI
-observation was requested. This is an environment limitation, not a UI PASS.
+with `FrameArrived timed out` after window activation failed; the later owner
+report supplies the bounded UI smoke, not independent N2 slicer acceptance.
 
 ## Experience check
 
@@ -49,4 +51,10 @@ body, binary STL, mm and quality. Validate, choose a `.stl` path, Export, and
 inspect the result/diagnostics. Cancel a second attempt and confirm native
 document dirty/Undo/Redo and any prior STL are unchanged. Test no current
 Solid and an invalid destination. Close normally. Record the first failure
-before declaring Experience PASS.
+before declaring Experience PASS. The owner reported these functional checks
+passing on the portable candidate. The STL found at `F:\downloads\export.stl`
+(SHA-256 `9B85F106AC2AE50AE7329D7349764EA94F11051DB368FB0D7B90441039928DF2`)
+was independently parsed: 272 triangles, exact binary byte count, finite
+coordinates, nondegenerate triangles, consistent winding/normals, edge
+incidence two and positive volume. Its bounds were X/Y `[-1,1]`, Z `[0,5]`;
+it is **not** the N2 fixture and is not counted toward the N2 slicer gate.

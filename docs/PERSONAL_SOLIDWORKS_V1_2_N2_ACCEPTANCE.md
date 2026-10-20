@@ -1,10 +1,13 @@
 # V1.2-C4 — N2 printable adapter plate acceptance
 
-Status: **PENDING EVIDENCE**. This is an executable owner checklist, not an
-Experience Gate or N2 approval. C1 export-mesh tests and C2 binary-STL parser
-tests pass; C2 UI observation, C3 isolated Windows workflow and independent
-slicer evidence are still required. Do not use this document to infer a release
-freeze.
+Status: **REWORK REQUIRED — OWNER EXPERIENCE GATE NOT APPROVED**. This is an
+executable owner checklist and failure record, not N2 approval. C1 export-mesh
+tests and C2 binary-STL parser tests pass. The owner subsequently verified the
+bounded STL export flow and same-PC portable operations, but stated that the
+current interface is not robust or intuitive enough to create the N2 part
+easily. The STL read in another application was a different part. The N2
+workflow and independent N2 slicer acceptance remain unverified. Do not use
+this document to infer a release freeze.
 
 ## Candidate and fixture
 
@@ -72,13 +75,38 @@ measured volume if it did not.
 | --- | --- | --- |
 | CAD workflow and edits | All steps 1–4, including rebuild and Undo/Redo | R2 automated and owner CAD evidence; integrated portable run pending |
 | Native persistence | Save, close, reopen, rebuild final part | R2 automated; integrated portable run pending |
-| Export mesh and file | Validation result, STL bytes, AABB/volume, no mutation | C1/C2 automated PASS; UI observation pending |
-| Independent slicer | Name/version, OS, STL file/hash, dimensions, hole, pocket, orientation, print preparation, warnings | **PENDING** |
-| Windows portable | OS build, no developer runtime dependency, startup, Save/Open/Export, preferences location, diagnostics, exit code | Release ZIP and out-of-tree startup only; **PENDING** |
-| Experience Gate | Owner decision: APPROVED / APPROVED WITH CHANGES / REWORK REQUIRED, with findings | **PENDING** |
+| Export mesh and file | Validation result, STL bytes, AABB/volume, no mutation | C1/C2 automated PASS; bounded UI/portable export owner-reported PASS for a non-N2 part |
+| Independent slicer | Name/version, OS, STL file/hash, dimensions, hole, pocket, orientation, print preparation, warnings | **N2 NOT TESTED**; the readable export was not the reference part |
+| Windows portable | OS build, no developer runtime dependency, startup, Save/Open/Export, preferences location, diagnostics, exit code | Same Windows 10 PC workflow owner-reported PASS; clean environment and exit code unverified |
+| Experience Gate | Owner decision: APPROVED / APPROVED WITH CHANGES / REWORK REQUIRED, with findings | **REWORK REQUIRED**: N2 part cannot be created easily with current interface |
 
-N2 decision: **PENDING EVIDENCE**. Only the bounded printable adapter-plate
+N2 decision: **NOT APPROVED / REWORK REQUIRED**. Only the bounded printable adapter-plate
 workflow can qualify; a passing STL parser alone does not establish slicer
 acceptance, package portability or general CAD capability. C4 PASS and v1.2
 freeze require the owner evidence above plus the final V3 on the final
 executable state. No physical print is required.
+
+## Experience finding and smallest next correction
+
+The owner could export and read a simpler part but could not complete the
+specified N2 plate easily, citing insufficient UI robustness and intuition,
+and identified **dimensions and constraints** as the first blocking stage,
+without a specific crash or error message. The exact N2 dimensions were
+restated for a further owner attempt; that attempt has no result yet.
+Code inspection shows that the
+reference-plane choice, sketch drawing, dimension editing, face-supported
+sketch, Cut direction and export live in separate contextual controls; the
+Rectangle tool creates independent sketch lines and the property panel edits
+selected geometry or constraints rather than exposing the whole N2 task as a
+single guided sequence. These are implementation observations, not a claim
+that any one control is the sole blocker.
+
+The smallest corrective activity, if the repeated owner attempt still fails,
+is a bounded N2 dimensions/constraints UX review: observe the exact action
+where intent or state becomes unclear, then propose numeric entry/feedback and
+recovery within the existing Application/UI/EditorContext architecture. Retest
+from New Part through N2 STL and slicer. This may overlap the separately
+excluded UX-02 scope; no such implementation begins without reconciling that
+boundary. No new geometry, kernel, ADR, persistence schema or future
+Manufacture workspace is implied. Do not invent a broad UI rewrite or declare
+the Experience Gate approved.

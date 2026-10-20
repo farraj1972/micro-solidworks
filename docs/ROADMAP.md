@@ -8,7 +8,7 @@ V1.1-C5: FROZEN; approved Feature Workflow Hardening scope, unchanged
 V1.1.0: FROZEN after Technical and Experience Gates
 P0 — Personal SolidWorks Product & Architecture Review: FROZEN
 R2 workflow-first / first bounded N2 target: APPROVED; N2 result NOT YET ESTABLISHED
-V1.2: C1–C4 IMPLEMENTATION AUTHORIZED; C1 PASS; C2 TECHNICAL PASS / EXPERIENCE PENDING; C3 CANDIDATE / EVIDENCE PENDING
+V1.2: C1–C4 IMPLEMENTATION AUTHORIZED; C1 PASS; C2 PASS; C3 SAME-PC PORTABLE PASS / CLEAN-ENVIRONMENT PENDING; C4 EXPERIENCE REWORK REQUIRED
 V1.2-READY: COMPLETE / owner approved subsequent C1–C4 execution
 V1.3+: PROPOSED / NOT APPROVED
 K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
@@ -18,7 +18,7 @@ UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; pack
 SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
 UX-01/UX-02: PROPOSED / SEPARATE / NOT AUTHORIZED
-V1.2-C1: PASS — validated export mesh; C2: TECHNICAL PASS / EXPERIENCE PENDING; C3: PORTABLE CANDIDATE / EVIDENCE PENDING; C4: AUTHORIZED / PENDING
+V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: PORTABLE CANDIDATE / CLEAN-ENVIRONMENT PENDING; C4: REWORK REQUIRED / N2 NOT APPROVED
 ```
 
 Product reliability and completion of bounded mechanical-engineering
@@ -30,14 +30,17 @@ consolidated the [v1.2 campaign proposal](PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROP
 for owner approval; the owner subsequently authorized sequential C1–C4.
 [C1 validated export-mesh evidence](PERSONAL_SOLIDWORKS_V1_2_C1_VALIDATION.md)
 is PASS. Later releases remain unapproved; no kernel migration is authorized.
-The [C2 export candidate](PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md) has targeted
-technical PASS; its owner UI Experience Gate remains pending.
+The [C2 export flow](PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md) has targeted
+technical and owner-reported bounded UI PASS; the initially reported STL
+rejection was retracted as a false positive.
 The [C3 portable candidate](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) has a
-Release ZIP and out-of-tree startup evidence; isolated Windows workflow and
-clean shutdown evidence remain pending.
+Release ZIP, out-of-tree startup and owner-reported Save/Open/Export/preferences
+on the usual Windows 10 PC; clean-environment runtime and exit-code evidence
+remain pending.
 The [C4 N2 acceptance checklist](PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
-records the exact owner workflow and missing independent slicer/portable
-evidence. N2 and v1.2 freeze remain pending.
+records the exact owner workflow and the dimensions/constraints usability
+finding. The owner is retrying after a clarification of dimensions; independent
+N2 slicer evidence is still missing. N2 and v1.2 freeze remain pending.
 `docs/specification/README.md` indexes the separate SPEC-01 CAD/CAM reference
 horizon (R0–R9) and its frozen requirement traceability baseline. Its original
 sources are immutable; future requirements need versioned revisions. That

@@ -43,7 +43,8 @@ The owner subsequently authorized C1–C4. `INT-001-EXP` now maps to
 and the File → Export STL UI in [`ApplicationShell`](../../src/ui/ApplicationShell.cpp).
 The [C1 mesh tests](../../tests/export/test_export_mesh.cpp) and
 [C2 independent STL parse tests](../../tests/export/test_stl_writer.cpp)
-pass in targeted validation. Owner UI Experience evidence is pending; the
+pass in targeted validation. The bounded export UI has owner-reported PASS
+for a non-N2 part; the
 [portable package](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) and
 [independent slicer/N2 gate](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
 are unapproved. `INT-001-IMP` is still absent. These later implementation

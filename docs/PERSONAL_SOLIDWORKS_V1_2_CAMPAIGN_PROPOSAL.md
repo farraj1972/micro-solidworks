@@ -10,6 +10,8 @@ Status: **C1–C4 IMPLEMENTATION AUTHORIZED BY OWNER; C1 PASS**. This detailed p
 
 **V1.2-C3 candidate update (2026-10-20):** [distribution evidence](PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md) covers the Release build, portable ZIP inventory and out-of-tree startup. Save/Open/Export, normal shutdown and isolated Windows 10 evidence are PENDING. C4 and N2 cannot be approved from this technical package evidence alone.
 
+**Owner follow-up (2026-10-20):** the first report of STL rejection was retracted as a false positive. Bounded C2 export and reading a non-N2 STL passed on the extracted portable build on the usual Windows 10 PC, together with owner-reported Save/Open/preferences/Cancel/close. C3 still lacks clean-environment dependency and recorded exit-code evidence. The N2 part was not the exported part; the owner identified dimensions/constraints usability as the first obstacle to completing N2 and is retrying with clarified dimensions. C4 Experience Gate is REWORK REQUIRED unless the repeat demonstrates the full workflow; N2 and freeze remain unapproved.
+
 ## Objective and bounded scope
 
 Deliver **N2 for one class of personally fabricated prismatic adapter plates**, not for the whole CAD product. The complete job is New Part → planar Sketch with rectangular outer loop **and circular inner loop** → driving dimensions/constraints → general additive Extrude (forming the axial through-hole) → Sketch on Face → one axial Cut Extrude (forming the blind pocket) → edit/rebuild → Undo/Redo → native Save/Close/Open → validated STL export → independent slicer inspection at the intended scale → prepare the print, using a Windows package without developer tools. Physical printing can strengthen evidence but is not required for N2.

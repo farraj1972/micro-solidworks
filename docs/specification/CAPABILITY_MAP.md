@@ -32,9 +32,9 @@ The classification is tied to the parent ID. A compound parent may be `PARTIALLY
 
 `INT-001-EXP` now has a validated CAD-derived export mesh and a binary STL
 writer with independent parser tests in [C1](../PERSONAL_SOLIDWORKS_V1_2_C1_VALIDATION.md)
-and [C2](../PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md). The export UI is built,
-but owner Experience evidence remains pending. The [C3 portable candidate](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md)
-has not passed the isolated Windows workflow, and [C4/N2](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
+and [C2](../PERSONAL_SOLIDWORKS_V1_2_C2_VALIDATION.md). The bounded export UI
+has owner-reported PASS on a non-N2 part. The [C3 portable candidate](../PERSONAL_SOLIDWORKS_V1_2_C3_VALIDATION.md)
+has passed same-PC Save/Open/Export but not a clean-environment test, and [C4/N2](../PERSONAL_SOLIDWORKS_V1_2_N2_ACCEPTANCE.md)
 awaits independent slicer evidence. `INT-001-IMP` remains not implemented.
 Thus the compound `INT-001` is at most **partially implemented** in the
 current candidate; the historical table above continues to describe v1.1.0.
