@@ -233,6 +233,12 @@ set_target_properties(microsw_presentation PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(microsw_presentation PUBLIC src)
 target_link_libraries(microsw_presentation PUBLIC microsw_features microsw_geometry microsw_sketch microsw_topology)
 
+add_library(microsw_export STATIC src/export/ExportMesh.cpp)
+target_compile_features(microsw_export PUBLIC cxx_std_20)
+set_target_properties(microsw_export PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(microsw_export PUBLIC src)
+target_link_libraries(microsw_export PUBLIC microsw_features microsw_presentation)
+
 add_library(microsw_viewer STATIC
     src/viewer/GeometryPicker.cpp
     src/viewer/PickingContext.cpp
@@ -448,6 +454,7 @@ if(BUILD_TESTING)
         tests/presentation/test_sketch_presentation.cpp
         tests/presentation/test_solid_presentation.cpp
         tests/presentation/test_solid_display.cpp
+        tests/export/test_export_mesh.cpp
         tests/presentation/test_visual_entity.cpp
         tests/viewer/test_presented_lines.cpp
         tests/viewer/test_presented_points.cpp
@@ -471,6 +478,7 @@ if(BUILD_TESTING)
         microsw_math
         microsw_modeling
         microsw_presentation
+        microsw_export
         microsw_sketch
         microsw_sketch_modeling_adapter
         microsw_topology

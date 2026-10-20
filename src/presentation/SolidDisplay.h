@@ -29,5 +29,6 @@ struct SolidDisplayData
 };
 
 [[nodiscard]] SolidDisplayData deriveSolidDisplay(const topology::Solid& solid,
-    features::FeatureId feature, interaction::BodyInstanceContext body);
+    features::FeatureId feature, interaction::BodyInstanceContext body,
+    int curveSegments = 24);
 }

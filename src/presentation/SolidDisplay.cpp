@@ -11,8 +11,6 @@ namespace microsw::presentation
 {
 namespace
 {
-constexpr int curveSegments = 24;
-
 bool samePlane(const geometry::Plane& a, const geometry::Plane& b)
 {
     return geometry::isParallel(a, b) && a.contains(b.origin());
@@ -38,7 +36,7 @@ bool isCoplanarSeam(const topology::Solid& solid, topology::EdgeId edge)
     return first && second && samePlane(*first, *second);
 }
 
-std::vector<geometry::Point3> edgePoints(const topology::Edge& edge, bool reversed)
+std::vector<geometry::Point3> edgePoints(const topology::Edge& edge, bool reversed, int curveSegments)
 {
     std::vector<geometry::Point3> result;
     std::visit([&](const auto& curve)
@@ -54,12 +52,12 @@ std::vector<geometry::Point3> edgePoints(const topology::Edge& edge, bool revers
     return result;
 }
 
-std::vector<geometry::Point3> wirePoints(const topology::Solid& solid, topology::WireId id)
+std::vector<geometry::Point3> wirePoints(const topology::Solid& solid, topology::WireId id, int curveSegments)
 {
     std::vector<geometry::Point3> result;
     for (const auto& use : solid.find(id).uses())
     {
-        auto points = edgePoints(solid.find(use.edge), use.orientation == topology::EdgeOrientation::Reversed);
+        auto points = edgePoints(solid.find(use.edge), use.orientation == topology::EdgeOrientation::Reversed, curveSegments);
         if (!result.empty()) points.erase(points.begin());
         result.insert(result.end(), points.begin(), points.end());
     }
@@ -90,9 +88,9 @@ std::vector<std::array<geometry::Point3,3>> triangulate(std::vector<ProjectedPoi
 }
 
 void appendPlanar(const topology::Solid& solid, const topology::Face& face,
-    interaction::TopologyFaceTarget target, const math::Vector3& outward, std::vector<FaceTriangle>& out)
+    interaction::TopologyFaceTarget target, const math::Vector3& outward, int curveSegments, std::vector<FaceTriangle>& out)
 {
-    const auto outer = wirePoints(solid, face.outerWire());
+    const auto outer = wirePoints(solid, face.outerWire(), curveSegments);
     if (outer.size() < 3) return;
     const auto basisNormal = outward;
     const auto& plane = std::get<geometry::Plane>(face.support());
@@ -104,7 +102,7 @@ void appendPlanar(const topology::Solid& solid, const topology::Face& face,
     std::vector<ProjectedPoint> polygon;for(const auto&p:outer)polygon.push_back(project(p));if(signedArea(polygon)<0)std::reverse(polygon.begin(),polygon.end());
     std::vector<std::vector<ProjectedPoint>> holes;
     for(const auto holeId:face.innerWires()){
-        std::vector<ProjectedPoint> hole;for(const auto&p:wirePoints(solid,holeId))hole.push_back(project(p));if(signedArea(hole)>0)std::reverse(hole.begin(),hole.end());
+        std::vector<ProjectedPoint> hole;for(const auto&p:wirePoints(solid,holeId,curveSegments))hole.push_back(project(p));if(signedArea(hole)>0)std::reverse(hole.begin(),hole.end());
         holes.push_back(std::move(hole));
     }
     // Merge holes in projected order rather than topology insertion order;
@@ -124,7 +122,7 @@ void appendPlanar(const topology::Solid& solid, const topology::Face& face,
 }
 
 void appendCylinder(const topology::Solid& solid, const topology::Face& face,
-    interaction::TopologyFaceTarget target, bool reversed, std::vector<FaceTriangle>& out)
+    interaction::TopologyFaceTarget target, bool reversed, int curveSegments, std::vector<FaceTriangle>& out)
 {
     const auto& cylinder = std::get<geometry::Cylinder>(face.support());
     const auto radialNormal = [&](const geometry::Point3& a, const geometry::Point3& b,
@@ -142,7 +140,7 @@ void appendCylinder(const topology::Solid& solid, const topology::Face& face,
     std::vector<std::vector<geometry::Point3>> arcs;
     for(const auto& use:solid.find(face.outerWire()).uses())
         if(std::holds_alternative<geometry::CircularArc3>(solid.find(use.edge).geometry()))
-            arcs.push_back(edgePoints(solid.find(use.edge),use.orientation==topology::EdgeOrientation::Reversed));
+            arcs.push_back(edgePoints(solid.find(use.edge),use.orientation==topology::EdgeOrientation::Reversed,curveSegments));
     if(arcs.size()!=2) return;
     const auto pointDistance=[](const geometry::Point3&a,const geometry::Point3&b){return (b-a).length();};
     if(pointDistance(arcs[0].front(),arcs[1].front()) > pointDistance(arcs[0].front(),arcs[1].back()))
@@ -158,15 +156,15 @@ void appendCylinder(const topology::Solid& solid, const topology::Face& face,
 }
 
 SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::FeatureId feature,
-    interaction::BodyInstanceContext body)
+    interaction::BodyInstanceContext body, int curveSegments)
 {
-    if(!solid.isValid()||!feature.isValid()) throw std::invalid_argument{"Solid display requires valid inputs"};
+    if(!solid.isValid()||!feature.isValid()||curveSegments<3) throw std::invalid_argument{"Solid display requires valid inputs"};
     SolidDisplayData result;
     for(std::size_t i=0;i<solid.edges().size();++i)
     {
         const auto edge = topology::EdgeId{static_cast<std::uint32_t>(i)};
         if (!isCoplanarSeam(solid, edge))
-            result.edges.push_back({edgePoints(solid.edges()[i],false),{feature,body,edge}});
+            result.edges.push_back({edgePoints(solid.edges()[i],false,curveSegments),{feature,body,edge}});
     }
     for(const auto& use:solid.rootShell().uses())
     {
@@ -178,8 +176,8 @@ SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::Feat
         },face.support());
         if(use.orientation==topology::FaceOrientation::Reversed) outward=-outward;
         const interaction::TopologyFaceTarget target{feature,body,use.face};
-        if(std::holds_alternative<geometry::Plane>(face.support())) appendPlanar(solid,face,target,outward,result.triangles);
-        else appendCylinder(solid,face,target,use.orientation==topology::FaceOrientation::Reversed,result.triangles);
+        if(std::holds_alternative<geometry::Plane>(face.support())) appendPlanar(solid,face,target,outward,curveSegments,result.triangles);
+        else appendCylinder(solid,face,target,use.orientation==topology::FaceOrientation::Reversed,curveSegments,result.triangles);
     }
     return result;
 }
