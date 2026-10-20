@@ -33,7 +33,7 @@ Classification means `EXISTS` for a usable present capability, `PARTIAL` for a p
 | Sketch-specific workspace | **PARTIAL** | Sketch mode has Line/Rectangle/Circle, constraints, previews, grid snap, plane-normal view and Exit Sketch. Tools remain in the shared bar; properties/constraints are in the left panel. The reference's sketch ribbon, in-canvas dimensions and contextual edit controls are absent. |
 | DimensionCallout / direct editing | **MISSING** | Dimensions are edited numerically in `drawSketchPanel`; the 2026-10-20 R2 correction synchronizes the solved Sketch view after application. No editable dimension labels or handles are drawn in the canvas. |
 | FloatingMicroToolbar | **MISSING** | Existing right-click/context actions and inspector buttons do not provide a toolbar near selected geometry. |
-| Export workflow / DataExchangeNavigator / ValidationChecklist | **DEFERRED** | No STL/export commands are present in `src/ui` or `src/app`. The [v1.2 campaign proposal](PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROPOSAL.md) names STL contract and implementation as C1/C2, both still unauthorized. CAD-to-mesh validation and split preview require their own contract and evidence. |
+| Export workflow / DataExchangeNavigator / ValidationChecklist | **MISSING** | No STL/export commands are present in `src/ui` or `src/app`. The [v1.2 campaign proposal](PERSONAL_SOLIDWORKS_V1_2_CAMPAIGN_PROPOSAL.md) assigns a minimal mouse-first, validator-driven STL flow to C2 after C1; both remain unauthorized. The complete UX-REF-04 workspace and split preview are design reference, not prerequisites. |
 | Manufacture OperationsTree / SimulationTimeline | **DEFERRED** | No CAM workspace or operation model exists. UX-REF-03 is a long-term consistency reference only. |
 | Visual theme and custom icon system | **PARTIAL** | The application has a dark ImGui shell and project-drawn CAD command icons in `ApplicationShell.cpp`. The graphite/blue hierarchy, typography, responsive density and full icon family of the references need an authorized visual pass; do not copy the PNG artwork into product assets. |
 
@@ -43,7 +43,7 @@ Each item below is a **candidate increment**, not an approved implementation bas
 
 1. **UX-01 — Model/Sketch shell alignment (smallest coherent next slice).** Keep the left Model Browser visible, move contextual properties into a right Inspector, retain a minimum usable viewport, and give Model/Sketch an explicit mode cue. Preserve existing commands, selection, Confirm/Cancel and document safety. Acceptance: the owner can repeat the existing adapter-plate CAD workflow without hidden controls, ambiguous mode or technical IDs. This is a UI layout/workflow proposal requiring explicit increment authorization.
 2. **UX-02 — Guided Sketch interaction.** Plan in-canvas dimension callouts, selection feedback, local micro-toolbar and exact inspector synchronization, then implement in bounded slices. Do not infer new sketch primitives or solver semantics from UX-REF-02. Measure discoverability, legibility and editing/Undo behavior on the same mechanical fixture.
-3. **UX-03 — Export workflow UX, coupled to authorized v1.2 C1/C2.** Specify format, units, destination, body selection, CAD-versus-derived-mesh preview, validation checklist and actionable errors only after the STL export contract is authorized. The validator's technical result must drive the UI; the mockup's green checklist is not evidence that a mesh is printable.
+3. **UX-03 — Export workflow UX, coupled to proposed v1.2 C2.** After an authorized C1 defines the mesh contract, C2 should expose File / Export → STL, active result/body, destination, explicit units/quality, validation and actionable result. The validator's technical result must drive the UI; the mockup's green checklist is not evidence that a mesh is printable. A full Export Workspace or split CAD/mesh preview is optional unless the Experience Gate proves it necessary.
 4. **UX-04 — Future workspace consistency.** Retain Manufacture, broader interchange, scripting, drawings and assemblies as vision/roadmap inputs for later product and architecture review. No CAM implementation or fake enabled commands.
 
 Two **specific compatibility questions** are resolved by the FROZEN executable [SET-01 preferences slice](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md). Specification §7.3's middle-button Pan is available as opt-in Profile B; Profile A keeps the existing middle-button Orbit and Shift+middle-button Pan defaults. Specification §7.1's blue selection is available as an opt-in accent; Orange remains the default. The owner Experience Gate validated both alternatives, their persistence and the original defaults; final V3 passed 918/918 tests. [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) and [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) are **ACCEPTED**. The package specification remains **PROPOSED — DESIGN REFERENCE**, and UX-01 must not silently change these defaults.
@@ -51,3 +51,14 @@ Two **specific compatibility questions** are resolved by the FROZEN executable [
 Other open design choices from the [specification](uiux_v03_pkg/MICRO_SOLIDWORKS_UIUX_SPEC_V0_3.md) remain open: ribbon density, panel pin/auto-hide, command-search timing, minimum in-canvas editing, floating-toolbar trigger, dark-theme contrast, first STL validation panel and future scripting/manufacture surfaces. UX-01 should decide only the subset needed for its approved scope. Any decision affecting accepted ownership, persistence, module boundaries or dependency policy requires the established Decision Gate process.
 
 The design target may guide future reviews now, but no v1.2 increment, export code, CAM feature, new dependency or architectural change is authorized by tracking this package.
+
+## V1.2-READY adoption ruling
+
+The [readiness review](PERSONAL_SOLIDWORKS_V1_2_READINESS_REVIEW.md) keeps UI/UX
+v0.3 **PROPOSED — DESIGN REFERENCE**. Its two specific MMB/selection conflicts
+are **RESOLVED BY CONFIGURABLE PREFERENCES** in frozen SET-01 (Profile B and
+Blue opt-in; Profile A and Orange defaults). The minimum Export UX is proposed
+for C2, driven by actual C1 validation. UX-01/UX-02 Model/Sketch shell and
+in-canvas improvements remain separate proposed work, not automatic N2 entry
+blockers. UX-REF-03 Manufacture and its toolpaths/timeline remain visionary;
+no simulated control is presented as an available product command.
