@@ -16,7 +16,7 @@ void PanZoomNavigation::handle(
 
 void PanZoomNavigation::handle(
     const WorkspaceLayout& workspace, const WorkspaceInput& input,
-    OrbitCamera& camera, ProjectionState& projection)
+    OrbitCamera& camera, ProjectionState& projection, bool panWhenShift)
 {
     if (!input.focused || !input.pointerValid || input.blocked
         || !std::isfinite(input.x) || !std::isfinite(input.y))
@@ -25,7 +25,7 @@ void PanZoomNavigation::handle(
         return;
     }
     const bool overWorkspace = input.workspaceHovered && contains(workspace, input.x, input.y);
-    if (!input.middleDown || !input.shiftDown)
+    if (!input.middleDown || input.shiftDown != panWhenShift)
         active_ = false;
     else if (input.middlePressed)
     {

@@ -96,6 +96,34 @@ TEST_F(WorkspaceHighlightTest, AllPrimitiveHighlightsCoexistWithNormalGeometryGr
     }
 }
 
+TEST_F(WorkspaceHighlightTest, ProfileSwitchCancelsCapturedDragUntilRelease)
+{
+    WorkspaceViewport workspace;
+    WorkspaceInput drag = input;
+    drag.middlePressed = drag.middleDown = true;
+    workspace.updateNavigation(layout, drag);
+    const auto beforeSwitch = workspace.projectPoint(layout, 128, 128, geometry::Point3{1, 0, 0});
+    ASSERT_TRUE(beforeSwitch);
+    workspace.setNavigationProfile(NavigationProfile::PanMiddleButton);
+    EXPECT_EQ(workspace.navigationProfile(), NavigationProfile::PanMiddleButton);
+    drag.middlePressed = false; drag.x += 20;
+    workspace.updateNavigation(layout, drag);
+    const auto duringCanceledGesture = workspace.projectPoint(layout, 128, 128, geometry::Point3{1, 0, 0});
+    ASSERT_TRUE(duringCanceledGesture);
+    EXPECT_NEAR(duringCanceledGesture->x, beforeSwitch->x, 1e-8);
+    EXPECT_NEAR(duringCanceledGesture->y, beforeSwitch->y, 1e-8);
+    drag.middleDown = false;
+    workspace.updateNavigation(layout, drag);
+    drag.middlePressed = drag.middleDown = true;
+    workspace.updateNavigation(layout, drag);
+    drag.middlePressed = false; drag.x += 20;
+    workspace.updateNavigation(layout, drag);
+    const auto afterNewGesture = workspace.projectPoint(layout, 128, 128, geometry::Point3{1, 0, 0});
+    ASSERT_TRUE(afterNewGesture);
+    EXPECT_GT(std::abs(afterNewGesture->x - beforeSwitch->x), 1e-3);
+    EXPECT_EQ(glGetError(), GL_NO_ERROR);
+}
+
 TEST_F(WorkspaceHighlightTest, HighlightSurvivesNavigationProjectionAndHiDpiRestore)
 {
     presentation::GeometryPresentation presentation;

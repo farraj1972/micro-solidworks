@@ -1,5 +1,6 @@
 #include "viewer/PanZoomNavigation.h"
 #include "viewer/OrbitNavigation.h"
+#include "viewer/ProjectionState.h"
 #include "core/math/Tolerance.h"
 
 #include <gtest/gtest.h>
@@ -46,6 +47,23 @@ TEST(PanNavigationTest, ShiftPressActivatesWithoutFirstFrameJump)
     navigation.handle(layout, panPress(), camera);
     EXPECT_TRUE(navigation.active());
     EXPECT_TRUE(almostEqual(camera.position(), position));
+}
+
+TEST(PanNavigationTest, AlternativeProfileRoutesPlainMiddleToPan)
+{
+    OrbitCamera camera;
+    PanZoomNavigation navigation;
+    microsw::viewer::ProjectionState projection;
+    auto input = panPress(); input.shiftDown = false;
+    navigation.handle(layout, input, camera, projection, false);
+    EXPECT_TRUE(navigation.active());
+    const auto before = camera.target();
+    input.middlePressed = false; input.x += 40;
+    navigation.handle(layout, input, camera, projection, false);
+    EXPECT_FALSE(almostEqual(camera.target(), before));
+    input.shiftDown = true;
+    navigation.handle(layout, input, camera, projection, false);
+    EXPECT_FALSE(navigation.active());
 }
 
 TEST(PanNavigationTest, HorizontalSignsFollowCursor)

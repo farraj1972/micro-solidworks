@@ -35,6 +35,22 @@ TEST(OrbitNavigationTest, BeginActivatesWithoutMovingCamera)
     EXPECT_TRUE(almostEqual(position, camera.position()));
 }
 
+TEST(OrbitNavigationTest, AlternativeProfileRoutesOnlyShiftMiddleToOrbit)
+{
+    OrbitCamera camera;
+    OrbitNavigation navigation;
+    auto input = press();
+    navigation.handle(layout, input, camera, true);
+    EXPECT_FALSE(navigation.active());
+    input.shiftDown = true;
+    navigation.handle(layout, input, camera, true);
+    EXPECT_TRUE(navigation.active());
+    const auto before = camera.forward();
+    input.middlePressed = false; input.x += 40;
+    navigation.handle(layout, input, camera, true);
+    EXPECT_FALSE(almostEqual(camera.forward(), before));
+}
+
 TEST(OrbitNavigationTest, RightAndLeftHaveExplicitYawSigns)
 {
     OrbitCamera camera{{}, 10, 0, 0};

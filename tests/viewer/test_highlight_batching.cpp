@@ -136,6 +136,12 @@ TEST(HighlightColors, NormalPaletteIsPreservedAndHighlightColorsAreDistinct)
         EXPECT_FALSE(microsw::math::almostEqual(highlightColor(VisualState::Hovered, normal), normal));
         EXPECT_FALSE(microsw::math::almostEqual(highlightColor(VisualState::Selected, normal), normal));
         EXPECT_FALSE(microsw::math::almostEqual(hoveredGeometryColor, selectedGeometryColor));
+        EXPECT_TRUE(microsw::math::almostEqual(
+            highlightColor(VisualState::Selected, normal, SelectionAccent::Orange), selectedGeometryColor));
+        EXPECT_TRUE(microsw::math::almostEqual(
+            highlightColor(VisualState::Selected, normal, SelectionAccent::Blue), selectedGeometryBlue));
+        EXPECT_TRUE(microsw::math::almostEqual(
+            highlightColor(VisualState::Hovered, normal, SelectionAccent::Blue), hoveredGeometryColor));
     }
 }
 }

@@ -164,6 +164,10 @@ public:
     ProjectionState projection;
     OrbitNavigation navigation;
     PanZoomNavigation panZoomNavigation;
+    NavigationProfile navigationProfile{NavigationProfile::OrbitMiddleButton};
+    SelectionAccent selectionAccent{SelectionAccent::Orange};
+    bool lastMiddleDown{};
+    bool suppressGestureUntilRelease{};
     const math::Scalar verticalFov = std::numbers::pi_v<math::Scalar> / 3.0;
     const math::Scalar nearPlane = 0.1;
     // Keep the origin aids within clipping range at the maximum zoom distance.
@@ -199,6 +203,18 @@ void WorkspaceViewport::setPresentation(
 void WorkspaceViewport::setFeaturePresentation(const presentation::FeaturePresentation* presentation) noexcept
 { impl_->featurePresentation=presentation; }
 void WorkspaceViewport::setDisplayMode(SolidDisplayMode mode) noexcept { impl_->displayMode=mode; }
+void WorkspaceViewport::setNavigationProfile(NavigationProfile profile) noexcept
+{
+    if (impl_->navigationProfile == profile) return;
+    impl_->suppressGestureUntilRelease = impl_->lastMiddleDown
+        || impl_->navigation.active() || impl_->panZoomNavigation.active();
+    impl_->navigation.end();
+    impl_->panZoomNavigation.end();
+    impl_->navigationProfile = profile;
+}
+NavigationProfile WorkspaceViewport::navigationProfile() const noexcept { return impl_->navigationProfile; }
+void WorkspaceViewport::setSelectionAccent(SelectionAccent accent) noexcept { impl_->selectionAccent = accent; }
+SelectionAccent WorkspaceViewport::selectionAccent() const noexcept { return impl_->selectionAccent; }
 SolidDisplayMode WorkspaceViewport::displayMode() const noexcept { return impl_->displayMode; }
 void WorkspaceViewport::setViewBasis(const math::Vector3& forward, const math::Vector3& up)
 { impl_->camera.setOrientation(forward, up); }
@@ -277,8 +293,13 @@ void WorkspaceViewport::updateNavigation(const WorkspaceLayout& layout, const Wo
 {
     if (input.projectionRequest)
         setProjectionMode(*input.projectionRequest);
-    impl_->navigation.handle(layout, input, impl_->camera);
-    impl_->panZoomNavigation.handle(layout, input, impl_->camera, impl_->projection);
+    impl_->lastMiddleDown = input.middleDown;
+    if (!input.middleDown) impl_->suppressGestureUntilRelease = false;
+    auto routed = input;
+    if (impl_->suppressGestureUntilRelease) routed.middleDown = routed.middlePressed = false;
+    const bool alternative = impl_->navigationProfile == NavigationProfile::PanMiddleButton;
+    impl_->navigation.handle(layout, routed, impl_->camera, alternative);
+    impl_->panZoomNavigation.handle(layout, routed, impl_->camera, impl_->projection, !alternative);
 }
 
 std::optional<presentation::VisualEntityId> WorkspaceViewport::hoveredEntity() const noexcept
@@ -487,7 +508,31 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
         const auto drawState=[&](const std::optional<SolidTarget>& target,const math::Vector3& color){if(!target)return;
             if(const auto*face=std::get_if<interaction::TopologyFaceTarget>(&*target)){std::vector<rendering::LitVertex>v;for(const auto&t:display.triangles)if(t.target==*face)for(const auto&p:t.points)v.push_back({{p.x(),p.y(),p.z()},t.normal});impl_->triangles.setVertices(v);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->triangles.draw();}
             else if(const auto*edge=std::get_if<interaction::TopologyEdgeTarget>(&*target)){std::vector<math::Vector3>v;for(const auto&e:display.edges)if(e.target==*edge)for(std::size_t i=1;i<e.points.size();++i){v.push_back({e.points[i-1].x(),e.points[i-1].y(),e.points[i-1].z()});v.push_back({e.points[i].x(),e.points[i].y(),e.points[i].z()});}impl_->solidEdges.setVertices(v);impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->shader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();}glDepthFunc(GL_LESS);};
-        drawState(impl_->solidHover,{0.25,0.9,1.0});drawState(impl_->solidSelection,{1.0,0.48,0.08});
+        drawState(impl_->solidHover,{0.25,0.9,1.0});
+        drawState(impl_->solidSelection,selectedSolidHighlightColor(impl_->selectionAccent));
+        // A selected feature has a logical VisualEntityId but no explicit
+        // face/edge target. Trace its topology boundary in every display mode.
+        if (impl_->selection.selected())
+            if (const auto selectedFeature = impl_->featurePresentation->featureId(*impl_->selection.selected()))
+            {
+                std::vector<math::Vector3> outline;
+                for (const auto& edge : display.edges)
+                    if (edge.target.feature == *selectedFeature)
+                        for (std::size_t i = 1; i < edge.points.size(); ++i)
+                        {
+                            const auto& a = edge.points[i-1]; const auto& b = edge.points[i];
+                            outline.push_back({a.x(), a.y(), a.z()});
+                            outline.push_back({b.x(), b.y(), b.z()});
+                        }
+                impl_->solidEdges.setVertices(outline);
+                impl_->shader.bind();
+                impl_->shader.setMatrix4("uModel",math::Matrix4::identity());
+                impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));
+                impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(
+                    impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
+                impl_->shader.setVector3("uColor",selectedSolidHighlightColor(impl_->selectionAccent));
+                glDepthFunc(GL_LEQUAL); impl_->solidEdges.draw(); glDepthFunc(GL_LESS);
+            }
         // Face highlights use the lit program. The wire presentation below
         // shares this pass and requires the base program to be current again.
         impl_->shader.bind();
@@ -529,14 +574,14 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     };
     const auto drawLines = [&](VisualState state)
     {
-        impl_->shader.setVector3("uColor", highlightColor(state, normalLineColor));
+        impl_->shader.setVector3("uColor", highlightColor(state, normalLineColor, impl_->selectionAccent));
         impl_->lines.draw();
     };
     const auto drawSegmentsAndPoints = [&](VisualState state)
     {
-        impl_->shader.setVector3("uColor", highlightColor(state, normalSegmentColor));
+        impl_->shader.setVector3("uColor", highlightColor(state, normalSegmentColor, impl_->selectionAccent));
         impl_->segments.draw();
-        impl_->shader.setVector3("uColor", highlightColor(state, normalPointColor));
+        impl_->shader.setVector3("uColor", highlightColor(state, normalPointColor, impl_->selectionAccent));
         impl_->points.draw();
     };
 

@@ -7,6 +7,7 @@
 #include "core/geometry/Plane.h"
 #include "viewer/GeometryPicker.h"
 #include "viewer/SolidPicker.h"
+#include "viewer/ViewerPreferences.h"
 
 #include <memory>
 
@@ -60,6 +61,10 @@ public:
     void setFeaturePresentation(const presentation::FeaturePresentation* presentation) noexcept;
     void setSolidPickingEnabled(bool enabled) noexcept;
     void setDisplayMode(SolidDisplayMode mode) noexcept;
+    void setNavigationProfile(NavigationProfile profile) noexcept;
+    [[nodiscard]] NavigationProfile navigationProfile() const noexcept;
+    void setSelectionAccent(SelectionAccent accent) noexcept;
+    [[nodiscard]] SelectionAccent selectionAccent() const noexcept;
     [[nodiscard]] SolidDisplayMode displayMode() const noexcept;
     void setViewBasis(const math::Vector3& forward, const math::Vector3& up);
     void setStandardView(StandardView view);

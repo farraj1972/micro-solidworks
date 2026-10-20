@@ -1,12 +1,14 @@
 #pragma once
 
+#include "viewer/ViewerPreferences.h"
+
 #include <filesystem>
 #include <string>
 
 namespace microsw::preferences
 {
-enum class NavigationProfile { OrbitMiddleButton, PanMiddleButton };
-enum class SelectionAccent { Orange, Blue };
+using NavigationProfile = viewer::NavigationProfile;
+using SelectionAccent = viewer::SelectionAccent;
 
 struct ApplicationPreferences
 {

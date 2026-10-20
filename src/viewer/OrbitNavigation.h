@@ -20,7 +20,8 @@ public:
     void update(double x, double y, OrbitCamera& camera);
     void end() noexcept { active_ = false; }
     [[nodiscard]] bool active() const noexcept { return active_; }
-    void handle(const WorkspaceLayout& workspace, const WorkspaceInput& input, OrbitCamera& camera);
+    void handle(const WorkspaceLayout& workspace, const WorkspaceInput& input, OrbitCamera& camera,
+                bool orbitWhenShift = false);
 
 private:
     bool active_{};

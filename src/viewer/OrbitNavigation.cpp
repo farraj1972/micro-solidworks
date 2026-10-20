@@ -44,10 +44,11 @@ void OrbitNavigation::update(double x, double y, OrbitCamera& camera)
 }
 
 void OrbitNavigation::handle(
-    const WorkspaceLayout& workspace, const WorkspaceInput& input, OrbitCamera& camera)
+    const WorkspaceLayout& workspace, const WorkspaceInput& input, OrbitCamera& camera,
+    bool orbitWhenShift)
 {
     if (!input.focused || !input.pointerValid || input.blocked
-        || input.shiftDown || !input.middleDown)
+        || input.shiftDown != orbitWhenShift || !input.middleDown)
     {
         end();
         return;

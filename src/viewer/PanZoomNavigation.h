@@ -22,8 +22,9 @@ public:
     // Perspective-only entry point preserves the B2.9 contract.
     void handle(const WorkspaceLayout& workspace, const WorkspaceInput& input, OrbitCamera& camera);
     void handle(const WorkspaceLayout& workspace, const WorkspaceInput& input,
-                OrbitCamera& camera, ProjectionState& projection);
+                OrbitCamera& camera, ProjectionState& projection, bool panWhenShift = true);
     [[nodiscard]] bool active() const noexcept { return active_; }
+    void end() noexcept { active_ = false; }
 
 private:
     void updatePan(double x, double y, OrbitCamera& camera, double referenceScale);
