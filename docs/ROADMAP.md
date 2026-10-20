@@ -13,6 +13,7 @@ V1.3+: PROPOSED / NOT APPROVED
 K1/K2/K3 final kernel decision: OPEN — EVIDENCE REQUIRED
 Dependency policy: remains in force until a specific architectural decision
 SPEC-01 CAD/CAM traceability baseline: APPROVED / FROZEN; source and 29 requirements DRAFT / PROPOSED
+UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; package specification PROPOSED; gap analysis COMPLETE; implementation increments NOT AUTHORIZED
 ```
 
 Product reliability and completion of bounded mechanical-engineering
@@ -28,6 +29,30 @@ sources are immutable; future requirements need versioned revisions. That
 horizon is conceptual and does not replace this canonical implementation
 roadmap or authorize v1.2, CAM or scripting. SPEC-01 took no new architectural
 decision.
+
+## UI/UX v0.3 — Design target and proposed adoption
+
+The owner designated [`docs/uiux_v03_pkg/`](uiux_v03_pkg/README.md) as the
+repository's UI/UX reference package. Its five documents and four canonical
+images (Model, Sketch, Manufacture, Export) are tracked together; the image
+SHA-256 values match the package's [visual registry](uiux_v03_pkg/VISUAL_REFERENCE_REGISTRY_V0_3.md).
+The package's specification retains its stated **PROPOSED — READY FOR OWNER
+REVIEW** status. The images define visual hierarchy and interaction direction,
+not approval of every illustrated command or permission to change frozen
+architecture. The [component audit and evidence matrix](UIUX_V0_3_GAP_ANALYSIS.md)
+records `EXISTS`, `PARTIAL`, `MISSING` and `DEFERRED` against the current UI.
+
+| Candidate sequence | Intended work | Governance |
+| --- | --- | --- |
+| UX-01 — Model/Sketch shell | Left browser continuously visible, right contextual inspector, clear mode and usable viewport; preserve current CAD commands and document safety. | Smallest proposed UI alignment slice; requires explicit increment authorization and Experience Gate. |
+| UX-02 — Guided Sketch interaction | In-canvas dimension editing, selection cues and contextual micro-toolbar in bounded slices. | Proposed; no new geometry or solver capability implied by the image. |
+| UX-03 — Export UX | STL-specific units, destination, body selection, CAD/mesh preview and validation feedback. | Depends on authorization and technical contract for proposed v1.2-C1/C2; broader interchange remains unapproved. |
+| UX-04 — Future workspaces | Preserve Manufacture, simulation, operations and later interoperability as design references. | Vision only; no CAM implementation authorization. |
+
+The visual references show Hole, Fillet, STEP and other future commands, and a
+`.mcad` example filename. These do not alter current feature scope or the
+accepted `.microsw` persistence contract. `v1.2` remains READY FOR REVIEW,
+V1.2-C1–C4 remain unauthorized, and K1/K2/K3 remains OPEN.
 
 ## Canonical MVP Roadmap
 
