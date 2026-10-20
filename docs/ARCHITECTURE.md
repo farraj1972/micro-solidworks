@@ -1568,3 +1568,5 @@ Viewer nor UI reads the file. The preferences file and draft remain separate
 from `FeatureModel`, `.microsw`, document dirty state, CAD Undo/Redo and rebuild.
 Profile A (MMB Orbit) and Orange remain product defaults; Profile B (MMB Pan)
 and Blue are opt-in. SET-01 adds no external dependency or new CAD authority.
+SET-01 is FROZEN after the approved owner Experience Gate and clean V3
+(918/918 tests); see [validation](PERSONAL_SOLIDWORKS_SET_01_VALIDATION.md).

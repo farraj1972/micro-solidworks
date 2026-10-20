@@ -5,7 +5,7 @@ Status: **FROZEN — OWNER APPROVED** (2026-10-20). The approved decision author
 Implementation note (2026-10-20): SET-01 implements this accepted contract with
 schema version 1 under `%LOCALAPPDATA%/MicroSolidWorks/preferences.json`, typed
 Profile A/B and Orange/Blue values, transactional Apply, and Edit → Preferences.
-The owner Experience Gate passed; final V3 validation is pending. No accepted
+The owner Experience Gate and final V3 (918/918 tests) passed. No accepted
 decision is changed by this note.
 
 ## Objectives and boundary

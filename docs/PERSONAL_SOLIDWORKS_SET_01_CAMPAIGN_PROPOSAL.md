@@ -1,6 +1,6 @@
 # SET-01 — Application Preferences First Slice
 
-Status: **IMPLEMENTED — OWNER EXPERIENCE GATE APPROVED; FINAL V3 PENDING** (2026-10-20). The [SET-D01 decision](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md) is FROZEN and [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) / [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) are ACCEPTED. The owner authorized this bounded campaign. This plan changes neither v1.1.0 nor the proposed v1.2-C1–C4 state.
+Status: **FROZEN — OWNER EXPERIENCE GATE AND V3 PASSED** (2026-10-20). The [SET-D01 decision](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md) is FROZEN and [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) / [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) are ACCEPTED. The owner authorized this bounded campaign. This plan changes neither v1.1.0 nor the proposed v1.2-C1–C4 state. Evidence is recorded in [SET-01 validation](PERSONAL_SOLIDWORKS_SET_01_VALIDATION.md).
 
 ## Goal and bounded workflow
 
