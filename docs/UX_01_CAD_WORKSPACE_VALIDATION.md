@@ -1,6 +1,6 @@
 # UX-01 — CAD Workspace Modernization validation
 
-Status: **TECHNICAL V3 PASS / EXPERIENCE GATE APPROVED WITH CHANGES / FREEZE READY**.
+Status: **FROZEN — TECHNICAL V3 PASS / EXPERIENCE GATE APPROVED WITH CHANGES**.
 Entry baseline: frozen Personal SolidWorks v1.2.0 (`b34ca58`), with frozen
 v1.1.0, P0, SPEC-01 and SET-01 unchanged. UX-01 is the only authorized UI
 campaign in this record. UX-02/UX-03, kernel work and new CAD/CAM capabilities
@@ -111,7 +111,8 @@ formalized later; none was specified as a remaining UX-01 blocking change.
 The owner reported normal close of both the corrected incremental build and
 the clean final V3 executable. This Experience decision does not approve any
 new command, architecture or future campaign. The technical and experience
-gates are complete, subject only to documentary freeze and Git hygiene.
+gates are complete. The remaining conceptual/design differences will be
+formalized separately; no new UX-01 blocking requirement was specified.
 
 ## Architecture and roadmap
 
@@ -121,3 +122,11 @@ STL mesh remain derived. ADR-0001–0071, native `.microsw`, SET-01 and the
 dependency policy are unchanged. UX-02/UX-03 are planned but unauthorized;
 advanced modeling, exchange, drawing, assembly, scripting and CAM remain
 tracked in the SPEC-01 horizon. K1/K2/K3 is still open.
+
+## Freeze
+
+The final executable source is the corrective UX-01.5 commit `ab2eafa`.
+Only documentation/state metadata changes after that validated source; V0
+consistency review, `git diff --check` and Git status complete the freeze.
+The local annotated tag is `ux-01-cad-workspace-modernization`. No push is
+performed; the owner manages GitHub publication.

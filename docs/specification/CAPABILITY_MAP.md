@@ -45,14 +45,14 @@ current candidate; the historical table above continues to describe v1.1.0.
 
 ## UX-01 current addendum (historical SPEC-01 cut unchanged)
 
-Frozen v1.2.0 delivered bounded STL export; UX-01 is a separately authorized
+Frozen v1.2.0 delivered bounded STL export; UX-01 is a separately frozen
 Model/Sketch workspace modernization. The left Model Browser, right Context
 Inspector, contextual ribbon and status guidance are implemented in
 [`ApplicationShell`](../../src/ui/ApplicationShell.cpp). These add evidence for
 the bounded `CAD-005` and `UX-001`–`UX-005` interaction children, **not** full
 approval or fulfillment of their DRAFT parent requirements. Targeted UI,
-selection, editor, session and preferences tests pass; UX-01's final V3 and
-owner Experience Gate are tracked in
+selection, editor, session and preferences tests pass; UX-01's final V3
+(928/928) and owner Experience Gate (APPROVED WITH CHANGES) are tracked in
 [`UX_01_CAD_WORKSPACE_VALIDATION`](../UX_01_CAD_WORKSPACE_VALIDATION.md).
 Command search, in-canvas dimensions, floating toolbar and richer Export UX
 remain UX-02/UX-03 plans. All deferred modeling, STEP/DXF/3MF, drawings,

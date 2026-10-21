@@ -66,7 +66,8 @@ ADR-0049–0052 and frozen SET-01 preferences. No new authoritative CAD state or
 dependency direction was introduced. The left browser/right inspector, Model/
 Sketch ribbon and guidance are recorded in
 [`UX-01 validation`](../UX_01_CAD_WORKSPACE_VALIDATION.md), with targeted
-layout, tree, editor, viewport, history and preference tests. Final V3 and
-owner Experience evidence are pending and must be added before any UX-01
-freeze. The full DRAFT requirements, UX-02/UX-03 and CAM horizon remain
+layout, tree, editor, viewport, history and preference tests. Final V3 passed
+928/928, and the owner Experience Gate is APPROVED WITH CHANGES, with the
+remaining conceptual/design differences to be formalized later. The full
+DRAFT requirements, UX-02/UX-03 and CAM horizon remain
 unchanged; this addendum does not approve them.

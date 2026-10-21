@@ -1,6 +1,6 @@
 # UI/UX v0.3 — Reference inventory and adoption analysis
 
-Status: **DOCUMENTED GAP ANALYSIS / UX-01 AUTHORIZED AND ACTIVE** (2026-10-20).
+Status: **DOCUMENTED GAP ANALYSIS / UX-01 FROZEN** (2026-10-21).
 
 The owner designated [`uiux_v03_pkg`](uiux_v03_pkg/README.md) as the visual and interaction target for Micro SolidWorks. The package itself labels its specification **PROPOSED — READY FOR OWNER REVIEW**. This analysis records the target and its gaps without changing that formal status, an accepted ADR, the frozen `v1.1.0` baseline, or the authorization state of v1.2. The four images are design references, not executable screenshots or assets to insert into the application. The source package is preserved verbatim and tracked with this analysis.
 
@@ -19,7 +19,7 @@ The mockups display a `.mcad` filename, but the current native document is `.mic
 
 ## Current executable versus v0.3 components
 
-Classification means `EXISTS` for a usable present capability, `PARTIAL` for a present but materially different or incomplete one, `MISSING` for a target absent in current CAD UI, and `DEFERRED` for a future capability outside the current authorization. UX-01 code and targeted-test evidence is reflected below; executable visual acceptance is pending in [UX-01 validation](UX_01_CAD_WORKSPACE_VALIDATION.md).
+Classification means `EXISTS` for a usable present capability, `PARTIAL` for a present but materially different or incomplete one, `MISSING` for a target absent in current CAD UI, and `DEFERRED` for a future capability outside the current authorization. UX-01 code, final V3 and owner visual acceptance with changes are recorded in [UX-01 validation](UX_01_CAD_WORKSPACE_VALIDATION.md).
 
 | Component | State | Current evidence and gap |
 | --- | --- | --- |
@@ -35,13 +35,13 @@ Classification means `EXISTS` for a usable present capability, `PARTIAL` for a p
 | FloatingMicroToolbar | **MISSING** | Existing right-click/context actions and inspector buttons do not provide a toolbar near selected geometry. |
 | Export workflow / DataExchangeNavigator / ValidationChecklist | **PARTIAL** | Frozen v1.2.0 includes File → Export STL, body/quality/path selection and validator-driven status. The complete UX-REF-04 workspace, split preview and other formats remain deferred to later work. |
 | Manufacture OperationsTree / SimulationTimeline | **DEFERRED** | No CAM workspace or operation model exists. UX-REF-03 is a long-term consistency reference only. |
-| Visual theme and custom icon system | **PARTIAL** | The application uses a graphite/blue ImGui palette and project-drawn CAD icons for supported commands. Runtime screenshot comparison and owner visual acceptance remain pending; the full illustrated icon family is intentionally absent. |
+| Visual theme and custom icon system | **PARTIAL** | The application uses a graphite/blue ImGui palette, an installed Windows UI font and project-drawn CAD icons for supported commands. Owner-supplied before/after runtime captures and Experience Gate APPROVED WITH CHANGES are recorded; the full illustrated icon family is intentionally absent. |
 
 ## Sequenced adoption proposal
 
-UX-01 is authorized and active; UX-02/UX-03 remain planned, not authorized by this campaign. Preserve Dear ImGui, GLFW, OpenGL and the CAD/render ownership boundary. Use impact-based validation during increments and the explicitly required V3 and owner Experience Gate at UX-01 closure.
+UX-01 is FROZEN after V3 and owner Experience Gate APPROVED WITH CHANGES; UX-02/UX-03 remain planned, not authorized by this campaign. Preserve Dear ImGui, GLFW, OpenGL and the CAD/render ownership boundary. The owner will formalize remaining conceptual and design differences separately; that statement does not itself expand the next campaign.
 
-1. **UX-01 — Model/Sketch shell alignment (active).** Keep the left Model Browser visible, move contextual properties into a right Inspector, retain a minimum usable viewport, and give Model/Sketch an explicit mode cue. Preserve existing commands, selection, Confirm/Cancel and document safety. Acceptance requires technical and owner Experience Gates.
+1. **UX-01 — Model/Sketch shell alignment (frozen).** The left Model Browser stays visible beside the right Inspector and usable viewport, with distinct Model/Sketch commands and mode cues. Existing commands, selection, Confirm/Cancel and document safety passed the technical and owner Experience Gates.
 2. **UX-02 — Guided Sketch interaction.** Plan in-canvas dimension callouts, selection feedback, local micro-toolbar and exact inspector synchronization, then implement in bounded slices. Do not infer new sketch primitives or solver semantics from UX-REF-02. Measure discoverability, legibility and editing/Undo behavior on the same mechanical fixture.
 3. **UX-03 — Export workflow UX.** The bounded C1/C2 STL flow is frozen in v1.2.0. A full Export Workspace, richer checklist or split CAD/mesh preview requires separate authorization; the mockup's green checklist is not evidence that a mesh is printable.
 4. **UX-04 — Future workspace consistency.** Retain Manufacture, broader interchange, scripting, drawings and assemblies as vision/roadmap inputs for later product and architecture review. No CAM implementation or fake enabled commands.
