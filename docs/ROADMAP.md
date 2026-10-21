@@ -17,7 +17,7 @@ SPEC-01 CAD/CAM traceability baseline: APPROVED / FROZEN; source and 29 requirem
 UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; package specification PROPOSED; UX-01 adopts its bounded Model/Sketch shell
 SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
-UX-01: FROZEN — V3 928/928 PASS; Experience Gate APPROVED WITH CHANGES; UX-01.R1: APPROVED / FROZEN; UX-02: AUTHORIZED / IN PROGRESS; CAD/CAM capability horizon: PRESERVED
+UX-01: FROZEN — V3 928/928 PASS; Experience Gate APPROVED WITH CHANGES; UX-01.R1: APPROVED / FROZEN; UX-02: FROZEN — V3 940/940 PASS and owner Experience Gate APPROVED; CAD/CAM capability horizon: PRESERVED
 V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: FROZEN WITH CLEAN-ENVIRONMENT WAIVER; C4: FROZEN UNDER REVISED BOUNDED N2 ACCEPTANCE
 ```
 
@@ -72,7 +72,7 @@ implementation candidates and evidence without authorizing executable changes.
 | --- | --- | --- |
 | UX-01 — Model/Sketch shell | Left browser continuously visible, right contextual inspector, clear mode and usable viewport; preserve current CAD commands and document safety. | FROZEN after final V3 928/928 PASS and owner Experience Gate APPROVED WITH CHANGES. Remaining conceptual/design differences require later formalization. |
 | UX-01.R1 — Canonical UI contract | Documentary comparison of all four design images with actual UX-01 Model captures; region, design-system and UX-02 handoff contracts. | APPROVED / FROZEN; normative UI/UX composition guidance; UX-01 remains FROZEN. |
-| UX-02 — Guided Sketch interaction | In-canvas dimension editing, selection cues and contextual micro-toolbar in bounded slices. | AUTHORIZED / IN PROGRESS; no new geometry or solver capability implied by the image. |
+| UX-02 — Guided Sketch interaction | In-canvas dimension editing, selection cues and contextual micro-toolbar in bounded slices. | FROZEN; executable slices, final V3 940/940 PASS and full owner Experience Gate APPROVED. See [validation and roteiro](UX_02_GUIDED_SKETCH_VALIDATION.md). No new geometry or solver capability implied by the image. |
 | UX-03 — Export UX | Bounded STL export from v1.2.0 is frozen; a fuller Export workspace, validation display and split CAD/mesh preview remain optional future work. | Planned separately; broader interchange remains unapproved. |
 | UX-04 — Future workspaces | Preserve Manufacture, simulation, operations and later interoperability as design references. | Vision only; no CAM implementation authorization. |
 
