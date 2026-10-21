@@ -1,6 +1,7 @@
 #include "ui/SketchDimensionCallout.h"
 
 #include <gtest/gtest.h>
+#include <array>
 
 namespace
 {
@@ -51,6 +52,39 @@ TEST(SketchDimensionCallout, UsesProjectorForAnySketchPlane)
     EXPECT_DOUBLE_EQ(callouts[0].first.x, 6);
     EXPECT_DOUBLE_EQ(callouts[0].second.x, 14);
     EXPECT_DOUBLE_EQ(callouts[0].first.y, 15);
+}
+
+TEST(SketchDimensionCallout, ProjectsPrincipalAndOffsetFaceSketchesThroughTheirOwnPlane)
+{
+    using microsw::sketch::SketchPlane;
+    const std::array planes{
+        SketchPlane{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}, // Top
+        SketchPlane{{0, 0, 0}, {1, 0, 0}, {0, 0, 1}}, // Front
+        SketchPlane{{0, 0, 0}, {0, 1, 0}, {0, 0, 1}}, // Right
+        SketchPlane{{12, -7, 8}, {1, 0, 0}, {0, 1, 0}} // Supported planar face
+    };
+    for (const auto& plane : planes)
+    {
+        Sketch sketch{plane};
+        const auto line = sketch.addLine({{2, 3}, {8, 3}});
+        const auto dimension = sketch.addConstraint(
+            microsw::sketch::LineLength{{line, SubElementKind::LineBody}, 6});
+        const auto project = [&](const microsw::geometry::Point2& local)
+            -> std::optional<ScreenPoint> {
+            const auto world = sketch.plane().toWorld(local);
+            return ScreenPoint{world.x() + world.z() * 0.5,
+                world.y() - world.z() * 0.25};
+        };
+        const auto callouts = microsw::ui::deriveSketchDimensionCallouts(sketch, project);
+        ASSERT_EQ(callouts.size(), 1u);
+        EXPECT_EQ(callouts[0].constraint, dimension);
+        const auto start = project({2, 3});
+        const auto end = project({8, 3});
+        EXPECT_DOUBLE_EQ(callouts[0].first.x, start->x);
+        EXPECT_DOUBLE_EQ(callouts[0].first.y, start->y);
+        EXPECT_DOUBLE_EQ(callouts[0].second.x, end->x);
+        EXPECT_DOUBLE_EQ(callouts[0].second.y, end->y);
+    }
 }
 
 TEST(SketchDimensionCallout, SupportsCoordinateDimensionsAndClippedProjection)

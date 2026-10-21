@@ -73,6 +73,34 @@ int main(){
    editor.activateSketch(id);editor.select(microsw::interaction::LogicalTarget{id});workspace.clearSelection();shell.setSelectedFeature(id);tools.setTool(microsw::SketchTool::Select);refreshSketch();const auto&p=workingSketch.plane();workspace.setViewBasis(-p.normal(),p.yAxis()); };
   enum class PendingDocumentAction{None,New,Open,Exit}; PendingDocumentAction pendingAction=PendingDocumentAction::None; bool closeApproved=false;
   const auto resetEditor=[&]{editor.resetSession();for(const auto&feature:session.model().history())if(feature.kind()==microsw::features::FeatureKind::CutExtrude)editor.setDisplayState(std::get<microsw::features::CutExtrudeFeature>(feature.data()).targetResultFeatureId,microsw::interaction::DisplayState::Hidden);workingSketch={};sketchView={};featureView={};shell.setSelectedFeature(std::nullopt);tools.setTool(microsw::SketchTool::Select);workspace.clearSelection();};
+  const auto restoreAfterHistory=[&](std::optional<microsw::features::FeatureId> activeSketch,
+      std::optional<microsw::interaction::LogicalTarget> selection){
+   const auto selectedFeature=shell.selectedFeature();
+   resetEditor();
+   const auto featureExists=[&](microsw::features::FeatureId id){return std::any_of(
+       session.model().history().begin(),session.model().history().end(),
+       [&](const auto& feature){return feature.id()==id;});};
+   if(activeSketch&&featureExists(*activeSketch)){
+    const auto& feature=session.model().find(*activeSketch);
+    if(feature.kind()==microsw::features::FeatureKind::Sketch&&feature.cache()
+        &&std::holds_alternative<microsw::features::SketchFeatureCache>(*feature.cache())){
+     workingSketch=std::get<microsw::features::SketchFeatureCache>(*feature.cache()).solvedSketch;
+     editor.activateSketch(*activeSketch);
+     shell.setSelectedFeature(*activeSketch);
+     if(selection&&std::holds_alternative<microsw::sketch::SketchConstraintId>(*selection)
+         &&workingSketch.containsConstraint(std::get<microsw::sketch::SketchConstraintId>(*selection)))
+      editor.select(selection);
+     else editor.select(microsw::interaction::LogicalTarget{*activeSketch});
+     refreshSketch();
+     return;
+    }
+   }
+   if(selectedFeature&&featureExists(*selectedFeature)){
+    shell.setSelectedFeature(selectedFeature);
+    editor.select(microsw::interaction::LogicalTarget{*selectedFeature});
+   }
+   refreshFeatures();
+  };
   const auto performAction=[&](PendingDocumentAction action){if(action==PendingDocumentAction::New){session.newDocument();resetEditor();refreshFeatures();shell.reportPersistenceStatus("New document — choose Sketch to begin");}else if(action==PendingDocumentAction::Open){const auto path=microsw::chooseMicroswFileToOpen(window);if(!path){shell.reportPersistenceStatus("Open cancelled");return;}std::string d;const auto s=session.open(*path,&d);if(s==microsw::persistence::OpenStatus::SuccessRebuilt||s==microsw::persistence::OpenStatus::SuccessRebuildFailed){resetEditor();if(s==microsw::persistence::OpenStatus::SuccessRebuilt)refreshFeatures();else{workspace.setPresentation(hiddenView);workspace.setFeaturePresentation(nullptr);}shell.reportPersistenceStatus(s==microsw::persistence::OpenStatus::SuccessRebuilt?"Open succeeded":"File opened; rebuild needs attention: "+d);}else shell.reportPersistenceStatus("Open failed: "+d);}else if(action==PendingDocumentAction::Exit){closeApproved=true;window.requestClose();}};
   const auto saveAs=[&]{const auto path=microsw::chooseMicroswFileToSave(window,session.currentFilePath());if(!path)return microsw::persistence::SaveResult{microsw::persistence::SaveStatus::InvalidPath,"Save As cancelled"};return session.saveAs(*path);};
   const auto requestAction=[&](PendingDocumentAction action){if(session.isDirty()){pendingAction=action;shell.showUnsavedChangesDialog();}else performAction(action);};
@@ -139,8 +167,8 @@ int main(){
     if(shell.openDocumentRequest())requestAction(PendingDocumentAction::Open);
     if(shell.exitDocumentRequest())requestAction(PendingDocumentAction::Exit);
     if(shell.unsavedDecision()){if(*shell.unsavedDecision()==microsw::UnsavedDecision::Cancel)pendingAction=PendingDocumentAction::None;else if(*shell.unsavedDecision()==microsw::UnsavedDecision::DontSave){const auto action=pendingAction;pendingAction=PendingDocumentAction::None;performAction(action);}else{const auto r=session.currentFilePath()?session.save():saveAs();if(r.status==microsw::persistence::SaveStatus::Success){const auto action=pendingAction;pendingAction=PendingDocumentAction::None;performAction(action);}else{pendingAction=PendingDocumentAction::None;shell.reportPersistenceStatus(r.diagnostic);}}}
-     if(shell.undoRequest()&&session.undo()){const auto selectedFeature=shell.selectedFeature();resetEditor();if(selectedFeature&&std::any_of(session.model().history().begin(),session.model().history().end(),[&](const auto& f){return f.id()==*selectedFeature;})){shell.setSelectedFeature(selectedFeature);editor.select(microsw::interaction::LogicalTarget{*selectedFeature});}refreshFeatures();shell.reportPersistenceStatus("Undo");}
-     if(shell.redoRequest()&&session.redo()){const auto selectedFeature=shell.selectedFeature();resetEditor();if(selectedFeature&&std::any_of(session.model().history().begin(),session.model().history().end(),[&](const auto& f){return f.id()==*selectedFeature;})){shell.setSelectedFeature(selectedFeature);editor.select(microsw::interaction::LogicalTarget{*selectedFeature});}refreshFeatures();shell.reportPersistenceStatus("Redo");}
+     if(shell.undoRequest()){const auto active=editor.activeSketchFeatureId();const auto selection=editor.selection();if(session.undo()){restoreAfterHistory(active,selection);shell.reportPersistenceStatus("Undo");}}
+     if(shell.redoRequest()){const auto active=editor.activeSketchFeatureId();const auto selection=editor.selection();if(session.redo()){restoreAfterHistory(active,selection);shell.reportPersistenceStatus("Redo");}}
     if(shell.sketchPlaneRequest())enterSketch(std::nullopt,shell.sketchPlaneRequest());
     else if(shell.enterSketchRequest())enterSketch(shell.selectedFeature());
     if(shell.exitSketchRequest()&&editor.activeSketchFeatureId()){(void)commitSketch(false);editor.exitSketch();refreshFeatures();}
