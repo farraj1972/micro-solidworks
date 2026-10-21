@@ -9,6 +9,7 @@
 #include "interaction/EditorContext.h"
 #include "app/preferences/ApplicationPreferences.h"
 #include "export/ExportMesh.h"
+#include "ui/SketchDimensionCallout.h"
 
 #include <optional>
 #include <array>
@@ -55,6 +56,8 @@ public:
                     const sketch::Sketch& sketch, const sketch::SketchEntity* selected = nullptr,
                     bool hasActiveSolid = false, const features::FeatureModel* featureModel = nullptr,
                     interaction::EditorContext* editor = nullptr);
+    void setSketchDimensionCallouts(std::vector<ui::SketchDimensionCallout> callouts)
+        { sketchDimensionCallouts_ = std::move(callouts); }
     [[nodiscard]] const std::optional<math::Transform3>& transformRequest() const noexcept { return transformRequest_; }
     void reportTransformError(const std::string& error) { transformError_ = error; }
     [[nodiscard]] const std::optional<SketchTool>& sketchToolRequest() const noexcept { return sketchToolRequest_; }
@@ -192,6 +195,7 @@ private:
     struct DimensionDraft { math::Scalar value{}, committedValue{}; };
     std::optional<features::FeatureId> sketchDimensionDraftFeature_;
     std::unordered_map<std::uint64_t, DimensionDraft> sketchDimensionDrafts_;
+    std::vector<ui::SketchDimensionCallout> sketchDimensionCallouts_;
     std::string sketchError_;
     std::optional<sketch::SketchConstraintValue> addConstraintRequest_;
     std::optional<sketch::SketchConstraintId> removeConstraintRequest_;

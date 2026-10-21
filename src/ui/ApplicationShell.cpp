@@ -1485,6 +1485,33 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
             draw->AddText(ImVec2{cursor.x + 9, cursor.y + 7}, IM_COL32(100, 255, 120, 255), cue);
         }
     }
+    if (editor && editor->activeSketchFeatureId())
+    {
+        auto* draw = ImGui::GetWindowDrawList();
+        const auto origin = viewport->Pos;
+        const ImVec2 clipMin{position.x + 4.0F, position.y + 28.0F};
+        const ImVec2 clipMax{position.x + size.x - 4.0F, position.y + size.y - 4.0F};
+        draw->PushClipRect(clipMin, clipMax, true);
+        for (const auto& callout : sketchDimensionCallouts_)
+        {
+            const ImVec2 a{origin.x + static_cast<float>(callout.first.x),
+                           origin.y + static_cast<float>(callout.first.y)};
+            const ImVec2 b{origin.x + static_cast<float>(callout.second.x),
+                           origin.y + static_cast<float>(callout.second.y)};
+            const ImVec2 label{origin.x + static_cast<float>(callout.label.x),
+                               origin.y + static_cast<float>(callout.label.y)};
+            const ImU32 ink = IM_COL32(155, 205, 250, 235);
+            draw->AddLine(a, b, ink, 1.0F);
+            draw->AddLine(b, label, ink, 1.0F);
+            const ImVec2 textSize = ImGui::CalcTextSize(callout.text.c_str());
+            const ImVec2 lo{label.x - 6.0F, label.y - 3.0F};
+            const ImVec2 hi{label.x + textSize.x + 6.0F, label.y + textSize.y + 3.0F};
+            draw->AddRectFilled(lo, hi, IM_COL32(22, 38, 56, 225), 4.0F);
+            draw->AddRect(lo, hi, ink, 4.0F);
+            draw->AddText(label, IM_COL32(234, 242, 250, 255), callout.text.c_str());
+        }
+        draw->PopClipRect();
+    }
     ImGui::End();
 }
 

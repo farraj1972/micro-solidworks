@@ -305,6 +305,7 @@ target_link_libraries(microsw_viewer PRIVATE microsw_presentation microsw_render
 
 add_library(microsw_ui STATIC
     src/ui/ApplicationShell.cpp
+    src/ui/SketchDimensionCallout.cpp
       src/ui/FeatureTreeModel.cpp
     src/ui/ImGuiLayer.cpp
 )
@@ -412,6 +413,7 @@ if(BUILD_TESTING)
         tests/test_infrastructure.cpp
         tests/ui/test_transform_editor.cpp
           tests/ui/test_feature_tree_model.cpp
+        tests/ui/test_sketch_dimension_callout.cpp
         tests/test_logging.cpp
         tests/geometry/test_point2.cpp
         tests/geometry/test_circular2.cpp
