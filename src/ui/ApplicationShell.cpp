@@ -108,6 +108,29 @@ void drawCadIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
     }
 }
 
+void drawFeatureTreeIcon(ImDrawList* draw, CadIcon icon, ImVec2 center, ImU32 color)
+{
+    const float x = center.x, y = center.y;
+    if (icon == CadIcon::Sketch)
+    {
+        draw->AddRect({x-6,y-5},{x+5,y+5},color,1,0,1.5F);
+        draw->AddLine({x-3,y+2},{x+7,y-7},color,1.5F);
+    }
+    else if (icon == CadIcon::Boolean)
+    {
+        draw->AddCircle({x-3,y},5,color,12,1.5F);
+        draw->AddCircle({x+3,y},5,color,12,1.5F);
+    }
+    else
+    {
+        draw->AddRect({x-6,y-3},{x+2,y+5},color,0,0,1.5F);
+        draw->AddRect({x-2,y-6},{x+6,y+2},color,0,0,1.5F);
+        draw->AddLine({x-6,y-3},{x-2,y-6},color,1.5F);
+        if (icon == CadIcon::CutExtrude)
+            draw->AddCircle({x+2,y-1},2,color,10,1.5F);
+    }
+}
+
 bool displayModeButton(microsw::DisplayModeRequest mode)
 {
     const ImVec2 size{38, 24};
@@ -547,7 +570,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 node.kind==features::FeatureKind::CutExtrude?CadIcon::CutExtrude:CadIcon::Boolean;
             const auto top=ImGui::GetItemRectMin();
             const auto right=ImGui::GetItemRectMax();
-            drawCadIcon(ImGui::GetWindowDrawList(),icon,{right.x-63,(top.y+right.y)*0.5F},
+            drawFeatureTreeIcon(ImGui::GetWindowDrawList(),icon,{right.x-53,(top.y+right.y)*0.5F},
                 ImGui::GetColorU32(ImGuiCol_Text));
             if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
                 if(selectedFeature_!=node.featureId){editingFeature_.reset();workflowFeedback_.clear();}
@@ -819,12 +842,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     }
     if (!selectedFeature_ && !selectedPrincipalPlane_ && (!editor || !editor->activeSketchFeatureId()))
         ImGui::TextWrapped("Select a feature in the browser or a face in the viewport to inspect it.");
-    ImGui::TextUnformatted(editor && editor->activeSketchFeatureId() ? "Edit sketch" : "Edit model");
-    const char* toolName = activeTool == SketchTool::Select ? "Select" : activeTool == SketchTool::Line ? "Line"
-        : activeTool == SketchTool::Rectangle ? "Rectangle" : activeTool == SketchTool::Circle ? "Circle" : "Arc";
-    ImGui::Text("Current tool: %s", toolName);
     if (editor && editor->activeSketchFeatureId())
     {
+        ImGui::TextUnformatted("SKETCH TOOLS");
+        const char* toolName = activeTool == SketchTool::Select ? "Select" : activeTool == SketchTool::Line ? "Line"
+            : activeTool == SketchTool::Rectangle ? "Rectangle" : activeTool == SketchTool::Circle ? "Circle" : "Arc";
+        ImGui::Text("Current tool: %s", toolName);
         ImGui::TextColored(ImVec4{0.35F, 0.75F, 1.0F, 1.0F},
             model.size() == 0 ? "What would you like to draw?" : "Your sketch is ready for the next step.");
         if (activeTool == SketchTool::Rectangle)
@@ -909,7 +932,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             ImGui::TextColored(ImVec4{0.4F, 1.0F, 0.45F, 1.0F}, "%s", cue);
         }
     }
-    ImGui::Separator();
+    if (editor && editor->activeSketchFeatureId()) ImGui::Separator();
 
     if (editor && editor->activeCommand() == interaction::EditorCommand::Extrude)
     {
@@ -973,6 +996,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel",ImVec2{90,34}))cancelPropertyRequest_=true;
         ImGui::TextWrapped("The target is inferred from the supporting face. No internal IDs are required.");
         ImGui::End();return;
+    }
+
+    if (!editor || !editor->activeSketchFeatureId())
+    {
+        ImGui::End();
+        return;
     }
 
     const auto activeSketch = editor ? editor->activeSketchFeatureId() : std::nullopt;

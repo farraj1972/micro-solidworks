@@ -11,6 +11,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <cstdlib>
+#include <filesystem>
 #include <stdexcept>
 
 namespace microsw
@@ -32,6 +34,23 @@ ImGuiLayer::ImGuiLayer(ApplicationWindow& window, OpenGLContext& openGLContext)
         Logger::info("Dear ImGui context created");
 
         ImGui::GetIO().IniFilename = nullptr;
+        // The built-in pixel font is too small for a desktop CAD inspector.
+        // Load the installed Windows UI font at runtime; do not redistribute it.
+        ImFont* uiFont = nullptr;
+        if (const char* windowsDirectory = std::getenv("WINDIR"))
+        {
+            const auto fontPath = std::filesystem::path{windowsDirectory} / "Fonts" / "segoeui.ttf";
+            if (std::filesystem::exists(fontPath))
+                uiFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 17.0F);
+        }
+        if (uiFont == nullptr)
+        {
+            ImFontConfig fallback;
+            fallback.SizePixels = 17.0F;
+            uiFont = ImGui::GetIO().Fonts->AddFontDefault(&fallback);
+        }
+        if (uiFont == nullptr)
+            throw std::runtime_error{"Failed to load the UI font"};
         ImGui::StyleColorsDark();
         auto& style = ImGui::GetStyle();
         style.WindowPadding = {10.0F, 8.0F};

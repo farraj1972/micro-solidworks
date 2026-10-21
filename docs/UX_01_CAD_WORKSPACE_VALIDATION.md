@@ -1,6 +1,6 @@
 # UX-01 — CAD Workspace Modernization validation
 
-Status: **TECHNICAL V3 PASS / EXPERIENCE GATE PENDING**.
+Status: **TECHNICAL V3 PASS / EXPERIENCE GATE APPROVED WITH CHANGES / FREEZE READY**.
 Entry baseline: frozen Personal SolidWorks v1.2.0 (`b34ca58`), with frozen
 v1.1.0, P0, SPEC-01 and SET-01 unchanged. UX-01 is the only authorized UI
 campaign in this record. UX-02/UX-03, kernel work and new CAD/CAM capabilities
@@ -31,7 +31,7 @@ and Blue are opt-in.
 | UX-01.2 | Implemented | Browser remains visible while the Inspector shows selected feature, face, edge, support, source/target, editable parameters and diagnostics; transient draft resets on selection changes. |
 | UX-01.3 | Implemented | Model and Sketch ribbons expose existing actions with contextual availability and tooltips. Unsupported illustrated commands remain absent. |
 | UX-01.4 | Implemented | Guidance names current mode, next step and result; editing and FAILED/BLOCKED/dirty states have explicit cues. Existing Confirm/Cancel transactions remain authoritative. |
-| UX-01.5 | In validation | Desktop layout, design comparison, roadmap traceability and Experience Gate. |
+| UX-01.5 | Complete | Desktop layout, design comparison, roadmap traceability, correction and Experience Gate. |
 
 ## Visual comparison and intentional deviations
 
@@ -45,12 +45,22 @@ not an interactive view cube. Sketch dimensions remain in the Inspector rather
 than on the canvas. The existing Export STL dialog remains in place. These
 deviations preserve frozen behavior and avoid fictitious capabilities.
 
-**Executable screenshots:** pending. The Windows Computer Use service located
-the running `Micro SolidWorks — Untitled` window, but both capture attempts
-failed (`FrameArrived timed out` and `window capture timed out`). No generated
-or reference image is represented as a screenshot of the executable. The owner
-must provide manual visual evidence/assessment of Model and Sketch composition
-for Experience closure.
+**Executable screenshots:** the owner supplied a [Model capture before the
+legibility correction](ux01_validation/UX-01-MODEL-BEFORE-CORRECTION.png) and a
+[Model capture after correction](ux01_validation/UX-01-MODEL-EXECUTABLE.png).
+The latter is 1919×1041 pixels; the owner estimated Windows scaling at 100%.
+These are captures of the real executable, not the reference images. Computer
+Use located the running window, but automatic capture timed out twice, so the
+owner captured and assessed it manually. A Sketch-mode executable screenshot
+was not supplied; the owner inspected both modes in the Experience Gate.
+
+The first capture exposed a tiny built-in pixel font, feature icons taller than
+their tree rows, and Sketch controls displayed in the Model inspector. The
+corrective change loads the installed Windows UI font (with a fallback), draws
+tree icons at row size and renders Sketch-specific controls only in Sketch mode.
+The owner confirmed all three defects corrected in the second build. Remaining
+conceptual/design differences are acknowledged for later formalization, without
+altering the approved UX-01 scope or authorizing UX-02/UX-03.
 
 ## Validation
 
@@ -66,7 +76,7 @@ Geometry, Topology, Modeling, CAD kernel or external dependency changed.
 - UX-01.3 incremental app build and contextual availability/layout tests: PASS.
 - UX-01.4 incremental app build: PASS; transaction semantics unchanged and
   previously affected history tests passed.
-- UX-01.5 final V3: **PASS**. Fresh configure and full Debug build from
+- UX-01.5 first V3: **PASS**. Fresh configure and full Debug build from
   `out/ux-01-v3-build` using the already pinned local dependency sources;
   928/928 CTest PASS; zero compiler warnings; the executable created a main
   window and exited normally with code 0 after a close request. Build and
@@ -77,17 +87,31 @@ Geometry, Topology, Modeling, CAD kernel or external dependency changed.
   persistence contracts and ADRs are unchanged. `git diff --check` PASS.
 - Windows 125%/150% visual scaling: pending owner observation if available;
   the layout test checks logical desktop sizes, not OS DPI rendering.
+- Corrective UI change after the first V3: affected app/test incremental build
+  PASS; seven directly relevant UI, feature-tree and guided-workflow tests
+  PASS; `git diff --check` PASS.
+- Final V3 after the correction: fresh configure and full Debug build in
+  `out/ux-01-v3-r2` PASS with no project compiler warnings; full CTest
+  **928/928 PASS** in 323.46 seconds. The owner opened that clean-build
+  executable and closed it normally through File → Exit. A separate automated
+  hidden-window close probe did not exit after `CloseMainWindow`; its test
+  processes were stopped and it is not used as evidence of normal shutdown.
+  Normal interactive shutdown is supported by the owner's direct observation.
 
 ## Experience Gate
 
-**Pending owner decision.** Use the 26-step roteiro in the UX-01 campaign,
-covering New, plane selection, Sketch, rectangle/dimension, Extrude,
-Sketch-on-Face, Cut, edit/Cancel/Confirm, Undo/Redo, Save/Open, Export STL,
-Preferences and normal close. Evaluate the Model/Sketch visual match and
-browser/inspector simultaneity as well as workflow behavior. Record exactly
-`APPROVED`, `APPROVED WITH CHANGES` or `REWORK REQUIRED`, including untested
-steps and observations. No freeze commit/tag is permitted until technical V3
-passes and the owner approves the Experience Gate.
+The owner completed the 26-step roteiro in guided blocks: steps 1–4, 5–9,
+10–14, 15–16, 17–21, 22–23 and 24–25 were all reported PASS. The Save/Open
+fixture and binary STL exist under ignored `out/`. The first visual review was
+`REWORK REQUIRED`; the owner supplied the screenshot above. After the
+legibility/context correction the owner confirmed the three observed defects
+fixed and issued **APPROVED WITH CHANGES** for Model and Sketch. The stated
+condition is that remaining conceptual and design differences will be
+formalized later; none was specified as a remaining UX-01 blocking change.
+The owner reported normal close of both the corrected incremental build and
+the clean final V3 executable. This Experience decision does not approve any
+new command, architecture or future campaign. The technical and experience
+gates are complete, subject only to documentary freeze and Git hygiene.
 
 ## Architecture and roadmap
 
