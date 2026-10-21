@@ -114,7 +114,8 @@ int main(){
       [&](const microsw::geometry::Point2& local)->std::optional<microsw::interaction::ScreenPoint>{
         const auto screen=workspace.projectPoint(rect,fb.width,fb.height,workingSketch.plane().toWorld(local));
         if(!screen)return std::nullopt;
-        return microsw::interaction::ScreenPoint{rect.x+screen->x,rect.y+screen->y};
+        // Callouts stay viewport-local; ApplicationShell adds the window origin.
+        return microsw::interaction::ScreenPoint{screen->x,screen->y};
       }));
    }else shell.setSketchDimensionCallouts({});
    shell.setCurrentFilePath(session.currentFilePath()?session.currentFilePath()->string():std::string{});shell.setDocumentState(session.isDirty(),session.canUndo(),session.canRedo());window.setTitle(std::string{"Micro SolidWorks — "}+(session.currentFilePath()?session.currentFilePath()->filename().string():"Untitled")+(session.isDirty()?" *":"")); shell.drawSketch(workspace.projectionMode(),tools.tool(),workingSketch,selected,hasSolid(session.model()),&session.model(),&editor);
