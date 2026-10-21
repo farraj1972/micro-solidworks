@@ -70,7 +70,7 @@ int main(){
    workingSketch=std::get<microsw::features::SketchFeature>(session.model().find(id).data()).sketch;
    const auto rebuild=session.model().rebuild();if(rebuild.status==microsw::features::RebuildStatus::Failed)throw std::runtime_error{rebuild.diagnostic};
    workingSketch=std::get<microsw::features::SketchFeatureCache>(*session.model().find(id).cache()).solvedSketch;
-   editor.activateSketch(id);editor.select(microsw::interaction::LogicalTarget{id});workspace.clearSelection();shell.setSelectedFeature(id);tools.setTool(microsw::SketchTool::Select);refreshSketch();const auto&p=workingSketch.plane();workspace.setViewBasis(-p.normal(),p.yAxis()); };
+   editor.activateSketch(id);editor.select(microsw::interaction::LogicalTarget{id});workspace.clearSelection();shell.setSelectedFeature(id);tools.setTool(microsw::SketchTool::Select);refreshSketch();const auto&p=workingSketch.plane();workspace.setViewBasis(-p.normal(),p.yAxis());workspace.fitPresentedGeometry(shell.workspaceRect()); };
   enum class PendingDocumentAction{None,New,Open,Exit}; PendingDocumentAction pendingAction=PendingDocumentAction::None; bool closeApproved=false;
   const auto resetEditor=[&]{editor.resetSession();for(const auto&feature:session.model().history())if(feature.kind()==microsw::features::FeatureKind::CutExtrude)editor.setDisplayState(std::get<microsw::features::CutExtrudeFeature>(feature.data()).targetResultFeatureId,microsw::interaction::DisplayState::Hidden);workingSketch={};sketchView={};featureView={};shell.setSelectedFeature(std::nullopt);tools.setTool(microsw::SketchTool::Select);workspace.clearSelection();};
   const auto restoreAfterHistory=[&](std::optional<microsw::features::FeatureId> activeSketch,

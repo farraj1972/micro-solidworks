@@ -69,6 +69,8 @@ public:
     void setViewBasis(const math::Vector3& forward, const math::Vector3& up);
     void setStandardView(StandardView view);
     void fitVisibleGeometry();
+    // Frame the current derived geometry in the existing camera orientation.
+    void fitPresentedGeometry(const WorkspaceLayout& layout);
 
     // Empty/invalid surfaces are no-ops. Restores the OpenGL states changed by this pass.
     void render(const WorkspaceLayout& layout, int framebufferWidth, int framebufferHeight);

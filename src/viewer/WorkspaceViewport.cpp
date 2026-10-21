@@ -240,6 +240,54 @@ void WorkspaceViewport::fitVisibleGeometry()
     const auto extent=std::max<math::Scalar>(1.0,(hi-lo).length());impl_->camera.setTarget((lo+hi)*0.5);impl_->camera.setDistance(extent*1.5);impl_->projection.setVisibleHeight(extent*1.2);
 }
 
+void WorkspaceViewport::fitPresentedGeometry(const WorkspaceLayout& layout)
+{
+    if (!impl_->presentation || impl_->presentation->empty()
+        || layout.width <= 0 || layout.height <= 0) return;
+    std::vector<math::Vector3> points;
+    const auto append = [&](const geometry::Point3& p) {
+        points.emplace_back(p.x(), p.y(), p.z());
+    };
+    for (const auto& entity : impl_->presentation->entities())
+        std::visit([&](const auto& value) {
+            using T = std::decay_t<decltype(value)>;
+            if constexpr (std::is_same_v<T, geometry::Point3>) append(value);
+            else if constexpr (std::is_same_v<T, geometry::Segment3>) {
+                append(value.a()); append(value.b());
+            } else if constexpr (std::is_same_v<T, geometry::Line3>) append(value.origin());
+            else if constexpr (std::is_same_v<T, presentation::Polyline3>)
+                for (const auto& point : value.points()) append(point);
+            else if constexpr (std::is_same_v<T, presentation::SegmentSet3>)
+                for (const auto& segment : value.segments()) {
+                    append(segment.a()); append(segment.b());
+                }
+        }, presentation::worldGeometry(entity));
+    if (points.empty()) return;
+    auto lo = points.front(), hi = lo;
+    for (const auto& p : points) {
+        lo = {std::min(lo.x(), p.x()), std::min(lo.y(), p.y()), std::min(lo.z(), p.z())};
+        hi = {std::max(hi.x(), p.x()), std::max(hi.y(), p.y()), std::max(hi.z(), p.z())};
+    }
+    const auto target = (lo + hi) * 0.5;
+    const auto right = impl_->camera.right(), up = impl_->camera.up();
+    const auto forward = impl_->camera.forward();
+    math::Scalar halfWidth = 0, halfHeight = 0, halfDepth = 0;
+    for (const auto& p : points) {
+        const auto offset = p - target;
+        halfWidth = std::max(halfWidth, std::abs(math::dot(offset, right)));
+        halfHeight = std::max(halfHeight, std::abs(math::dot(offset, up)));
+        halfDepth = std::max(halfDepth, std::abs(math::dot(offset, forward)));
+    }
+    const auto aspect = layout.width / layout.height;
+    const auto visibleHeight = std::max<math::Scalar>(10.0,
+        2.8 * std::max(halfHeight, halfWidth / aspect));
+    const auto distance = std::max<math::Scalar>(10.0,
+        visibleHeight / (2.0 * std::tan(impl_->verticalFov / 2.0)) + halfDepth + 1.0);
+    impl_->camera.setTarget(target);
+    impl_->camera.setDistance(distance);
+    impl_->projection.setVisibleHeight(visibleHeight);
+}
+
 ProjectionMode WorkspaceViewport::projectionMode() const noexcept
 {
     return impl_->projection.mode();

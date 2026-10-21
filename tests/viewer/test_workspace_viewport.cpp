@@ -434,6 +434,33 @@ TEST_F(WorkspaceViewportTest, ActiveSketchPlaneReceivesPointerForAllPrincipalOri
     }
 }
 
+TEST_F(WorkspaceViewportTest, FramesAnExistingOffCentreRightPlaneSketchForDimensions)
+{
+    microsw::presentation::GeometryPresentation sketch;
+    const microsw::sketch::SketchPlane plane{{},{0,1,0},{0,0,1}};
+    const auto a = plane.toWorld(microsw::geometry::Point2{-18.404688957882602,24.714942952222447});
+    const auto b = plane.toWorld(microsw::geometry::Point2{11.505610225865823,22.396753412948975});
+    (void)sketch.add(microsw::geometry::Segment3{a,b});
+    WorkspaceViewport viewport{sketch};
+    const WorkspaceLayout layout{329,190,1260,797,1920,1040};
+    viewport.setViewBasis(-plane.normal(),plane.yAxis());
+    EXPECT_FALSE(viewport.projectPoint(layout,1920,1040,a));
+    EXPECT_FALSE(viewport.projectPoint(layout,1920,1040,b));
+    for (const auto mode : {microsw::ProjectionMode::Perspective,
+                            microsw::ProjectionMode::Orthographic}) {
+        viewport.setProjectionMode(mode);
+        viewport.fitPresentedGeometry(layout);
+        for (const auto& point : {a,b}) {
+            const auto screen = viewport.projectPoint(layout,1920,1040,point);
+            ASSERT_TRUE(screen);
+            EXPECT_GT(screen->x, 0);
+            EXPECT_LT(screen->x, layout.width);
+            EXPECT_GT(screen->y, 0);
+            EXPECT_LT(screen->y, layout.height);
+        }
+    }
+}
+
 TEST_F(WorkspaceViewportTest, PickingTracksProjectionAndZoomWithoutStoredHitState)
 {
     microsw::presentation::GeometryPresentation presentation;
