@@ -1,5 +1,7 @@
 #include "presentation/FeaturePresentation.h"
 #include <gtest/gtest.h>
+#include <algorithm>
+#include <cmath>
 namespace { microsw::sketch::Sketch rectangle(double x0,double y0,double x1,double y1){microsw::sketch::Sketch s;(void)s.addRectangle({x0,y0},{x1,y1});return s;} }
 TEST(FeaturePresentation,PreservesVisualIdentityAcrossSuccessfulRebuild){
  microsw::features::FeatureModel model;auto s=model.addSketch(rectangle(0,0,4,4));auto e=model.addExtrude(s,4);
@@ -41,4 +43,28 @@ TEST(FeaturePresentation,PresentsVisibleSketchesAsIndependentReferences){
  ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);microsw::presentation::FeaturePresentation p;p.update(model);
  EXPECT_EQ(p.sketchReferences().size(),4u);
  p.update(model,[&](auto id){return id!=sketch;});EXPECT_TRUE(p.sketchReferences().empty());
+}
+TEST(FeaturePresentation,PreservesCoplanarHighlightRegionsWhenAggregatingPocketDisplay){
+ microsw::features::FeatureModel model;
+ const auto base=model.addExtrude(model.addSketch(rectangle(-40,-25,40,25)),8);
+ const auto profile=model.addFaceSketch(rectangle(-9,-7,9,7),base,
+  microsw::features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(profile,base,3,microsw::features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+ microsw::presentation::FeaturePresentation presentation;
+ presentation.update(model,[&](auto id){return id==cut;});
+ const auto& display=presentation.solidDisplay();
+ ASSERT_FALSE(display.coplanarNeighbors.empty());
+ std::vector<microsw::interaction::TopologyFaceTarget> wallFaces;
+ for(const auto& triangle:display.triangles){
+  if(std::all_of(triangle.points.begin(),triangle.points.end(),[](const auto& point){
+   return std::abs(point.y()+25)<1e-8;
+  })&&std::find(wallFaces.begin(),wallFaces.end(),triangle.target)==wallFaces.end())
+   wallFaces.push_back(triangle.target);
+ }
+ ASSERT_GE(wallFaces.size(),2u);
+ const auto region=microsw::presentation::faceHighlightRegion(display,wallFaces.front());
+ for(const auto face:wallFaces)
+  EXPECT_NE(std::find(region.begin(),region.end(),face),region.end());
+ EXPECT_EQ(display.triangles.front().target.feature,cut);
 }

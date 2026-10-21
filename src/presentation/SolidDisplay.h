@@ -29,9 +29,16 @@ struct SolidDisplayData
 {
     std::vector<FaceTriangle> triangles;
     std::vector<PresentedEdge> edges;
+    // Connected coplanar patches are one visual highlight region, while each
+    // triangle still retains its exact rebuild-local FaceId for picking.
+    std::vector<std::array<interaction::TopologyFaceTarget, 2>> coplanarNeighbors;
 };
 
 [[nodiscard]] SolidDisplayData deriveSolidDisplay(const topology::Solid& solid,
     features::FeatureId feature, interaction::BodyInstanceContext body,
     int curveSegments = 24);
+[[nodiscard]] std::vector<interaction::TopologyFaceTarget> faceHighlightRegion(
+    const SolidDisplayData& display, interaction::TopologyFaceTarget selected);
+[[nodiscard]] std::vector<interaction::TopologyEdgeTarget> edgeHighlightRegion(
+    const SolidDisplayData& display, interaction::TopologyEdgeTarget selected);
 }

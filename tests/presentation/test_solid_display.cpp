@@ -76,22 +76,27 @@ TEST(SolidDisplay, BlindPocketDoesNotExposeCoplanarOuterFaceSeams)
 TEST(SolidDisplay, RectangularPocketSplitsOuterWallIntoCoplanarFaceTargetsWithoutVisibleSeam)
 {
  features::FeatureModel model;
- sketch::Sketch base;(void)base.addRectangle({0,0},{10,10});
- const auto target=model.addExtrude(model.addSketch(std::move(base)),10);
- sketch::Sketch pocket;(void)pocket.addRectangle({3,3},{7,7});
+ sketch::Sketch base;(void)base.addRectangle({-40,-25},{40,25});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+ sketch::Sketch pocket;(void)pocket.addRectangle({-9,-7},{9,7});
  const auto source=model.addFaceSketch(std::move(pocket),target,features::ExtrudeCapRole::EndCap);
- const auto cut=model.addCutExtrude(source,target,4,features::CutDirection::Reverse);
+ const auto cut=model.addCutExtrude(source,target,3,features::CutDirection::Reverse);
  ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
  const auto& solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
  ASSERT_TRUE(solid.isValid());
  const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
  std::vector<topology::FaceId> outerWallFaces;
  for(const auto& triangle:display.triangles){
-  if(std::all_of(triangle.points.begin(),triangle.points.end(),[](const auto&point){return std::abs(point.y())<1e-8;}))
+  if(std::all_of(triangle.points.begin(),triangle.points.end(),[](const auto&point){return std::abs(point.y()+25)<1e-8;}))
    if(std::find(outerWallFaces.begin(),outerWallFaces.end(),triangle.target.face)==outerWallFaces.end())
     outerWallFaces.push_back(triangle.target.face);
  }
  EXPECT_GE(outerWallFaces.size(),2u);
+ const auto region=presentation::faceHighlightRegion(display,{cut,{0},outerWallFaces.front()});
+ for(const auto face:outerWallFaces)
+  EXPECT_NE(std::find(region.begin(),region.end(),
+   interaction::TopologyFaceTarget{cut,{0},face}),region.end());
+ EXPECT_LT(region.size(),solid.faces().size());
  for(const auto face:outerWallFaces){
   const interaction::TopologyFaceTarget targetFace{cut,{0},face};
   EXPECT_GT(std::count_if(display.edges.begin(),display.edges.end(),[&](const auto& edge){
@@ -102,10 +107,35 @@ TEST(SolidDisplay, RectangularPocketSplitsOuterWallIntoCoplanarFaceTargetsWithou
  const auto artificialFloorSeam=std::count_if(display.edges.begin(),display.edges.end(),[](const auto& edge){
   if(edge.points.size()!=2)return false;
   const auto& a=edge.points[0];const auto& b=edge.points[1];
-  return std::abs(a.y())<1e-8&&std::abs(b.y())<1e-8
-   &&std::abs(a.z()-6)<1e-8&&std::abs(b.z()-6)<1e-8;
+  return std::abs(a.y()+25)<1e-8&&std::abs(b.y()+25)<1e-8
+   &&std::abs(a.z()-5)<1e-8&&std::abs(b.z()-5)<1e-8;
  });
  EXPECT_EQ(artificialFloorSeam,0);
+}
+TEST(SolidDisplay, RectangularPocketHighlightsOneStraightExteriorCornerAcrossSplitEdges)
+{
+ features::FeatureModel model;
+ sketch::Sketch base;(void)base.addRectangle({-40,-25},{40,25});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+ sketch::Sketch pocket;(void)pocket.addRectangle({-9,-7},{9,7});
+ const auto profile=model.addFaceSketch(std::move(pocket),target,features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(profile,target,3,features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+ const auto& solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
+ const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
+ std::vector<interaction::TopologyEdgeTarget> cornerSegments;
+ for(const auto& edge:display.edges){
+  if(edge.points.size()!=2)continue;
+  const auto& a=edge.points[0];const auto& b=edge.points[1];
+  if(std::abs(a.x()+40)<1e-8&&std::abs(b.x()+40)<1e-8
+      &&std::abs(a.y()+25)<1e-8&&std::abs(b.y()+25)<1e-8)
+   cornerSegments.push_back(edge.target);
+ }
+ ASSERT_GE(cornerSegments.size(),2u);
+ const auto region=presentation::edgeHighlightRegion(display,cornerSegments.front());
+ for(const auto edge:cornerSegments)
+  EXPECT_NE(std::find(region.begin(),region.end(),edge),region.end());
+ EXPECT_LT(region.size(),display.edges.size());
 }
 TEST(SolidDisplay, HoledCapVisibleEdgesRetainIncidentFaceIdentity)
 {

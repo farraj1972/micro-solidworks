@@ -170,7 +170,12 @@ SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::Feat
     {
         const auto edge = topology::EdgeId{static_cast<std::uint32_t>(i)};
         const auto incident = incidentFaces(solid, edge);
-        if (!isCoplanarSeam(solid, incident))
+        if (isCoplanarSeam(solid, incident))
+        {
+            result.coplanarNeighbors.push_back({{
+                {feature,body,incident[0]},{feature,body,incident[1]}}});
+        }
+        else
         {
             std::vector<interaction::TopologyFaceTarget> faceTargets;
             faceTargets.reserve(incident.size());
@@ -193,5 +198,48 @@ SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::Feat
         else appendCylinder(solid,face,target,use.orientation==topology::FaceOrientation::Reversed,curveSegments,result.triangles);
     }
     return result;
+}
+
+std::vector<interaction::TopologyFaceTarget> faceHighlightRegion(
+    const SolidDisplayData& display, interaction::TopologyFaceTarget selected)
+{
+    std::vector<interaction::TopologyFaceTarget> region{selected};
+    for(std::size_t i=0;i<region.size();++i)
+        for(const auto& pair:display.coplanarNeighbors)
+            for(std::size_t side=0;side<2;++side)
+                if(pair[side]==region[i]
+                    &&std::find(region.begin(),region.end(),pair[1-side])==region.end())
+                    region.push_back(pair[1-side]);
+    return region;
+}
+
+std::vector<interaction::TopologyEdgeTarget> edgeHighlightRegion(
+    const SolidDisplayData& display, interaction::TopologyEdgeTarget selected)
+{
+    const auto continuesStraight=[](const PresentedEdge& first,const PresentedEdge& second){
+        if(first.target.feature!=second.target.feature||first.target.body!=second.target.body
+            ||first.points.size()!=2||second.points.size()!=2)return false;
+        const auto& a=first.points;const auto& b=second.points;
+        const bool joined=geometry::areCoincident(a[0],b[0])
+            ||geometry::areCoincident(a[0],b[1])
+            ||geometry::areCoincident(a[1],b[0])
+            ||geometry::areCoincident(a[1],b[1]);
+        if(!joined)return false;
+        const auto firstDirection=(a[1]-a[0]).normalized();
+        const auto secondDirection=(b[1]-b[0]).normalized();
+        return math::cross(firstDirection,secondDirection).length()
+            <=geometry::defaultGeometricTolerance;
+    };
+    std::vector<interaction::TopologyEdgeTarget> region{selected};
+    for(std::size_t i=0;i<region.size();++i){
+        const auto current=std::find_if(display.edges.begin(),display.edges.end(),
+            [&](const auto& edge){return edge.target==region[i];});
+        if(current==display.edges.end())continue;
+        for(const auto& candidate:display.edges)
+            if(continuesStraight(*current,candidate)
+                &&std::find(region.begin(),region.end(),candidate.target)==region.end())
+                region.push_back(candidate.target);
+    }
+    return region;
 }
 }

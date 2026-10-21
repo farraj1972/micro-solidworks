@@ -23,6 +23,8 @@ void FeaturePresentation::update(const features::FeatureModel& model, const Visi
    auto display=deriveSolidDisplay(solid->solids[index],record.id(),interaction::BodyInstanceContext{index});
    solidDisplay_.triangles.insert(solidDisplay_.triangles.end(),display.triangles.begin(),display.triangles.end());
    solidDisplay_.edges.insert(solidDisplay_.edges.end(),display.edges.begin(),display.edges.end());
+   solidDisplay_.coplanarNeighbors.insert(solidDisplay_.coplanarNeighbors.end(),
+    display.coplanarNeighbors.begin(),display.coplanarNeighbors.end());
   }
  }
  for(auto it=visualIds_.begin();it!=visualIds_.end();){
