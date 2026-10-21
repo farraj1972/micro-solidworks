@@ -69,4 +69,19 @@ TEST(SketchDimensionCallout, SupportsCoordinateDimensionsAndClippedProjection)
         [](const microsw::geometry::Point2&) -> std::optional<ScreenPoint> { return std::nullopt; });
     EXPECT_TRUE(clipped.empty());
 }
+
+TEST(SketchDimensionCallout, HitTestingClaimsOnlyTheVisibleLabel)
+{
+    Sketch sketch;
+    const auto line = sketch.addLine({{0, 0}, {40, 0}});
+    const auto id = sketch.addConstraint(
+        microsw::sketch::LineLength{{line, SubElementKind::LineBody}, 40});
+    const auto callouts = microsw::ui::deriveSketchDimensionCallouts(sketch, identityProject);
+    ASSERT_EQ(callouts.size(), 1u);
+    const auto width = [](const std::string& text) { return text.size() * 8.0; };
+    EXPECT_EQ(microsw::ui::hitTestSketchDimensionCallouts(callouts,
+        {callouts[0].label.x + 2, callouts[0].label.y + 2}, width, 16), id);
+    EXPECT_FALSE(microsw::ui::hitTestSketchDimensionCallouts(callouts,
+        {20, 0}, width, 16));
+}
 }

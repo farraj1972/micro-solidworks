@@ -279,6 +279,8 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
     loadBooleanUnsupportedRequest_ = false;
     assignOperandARequest_ = assignOperandBRequest_ = false;
     booleanRequest_.reset();
+    confirmedDimensionRequest_.reset();
+    dimensionPointerClaimed_ = false;
     featureDistanceRequest_.reset(); featureBooleanRequest_.reset(); rebuildFeaturesRequest_ = false;
     newDocumentRequest_ = openDocumentRequest_ = saveDocumentRequest_ = saveAsDocumentRequest_ = false;
     exportBrowseRequest_ = exportValidateRequest_ = exportWriteRequest_ = false;
@@ -299,8 +301,11 @@ void ApplicationShell::drawSketch(ProjectionMode projectionMode, SketchTool acti
         else if(editor->activeSketchFeatureId()){
             const char* tool=activeTool==SketchTool::Line?"Line":activeTool==SketchTool::Rectangle?"Rectangle":activeTool==SketchTool::Circle?"Circle":"Select";
             workflowState_=std::string{"SKETCH / "}+tool;
+            const bool dimensionSelected = editor->selection()
+                && std::holds_alternative<sketch::SketchConstraintId>(*editor->selection());
             workflowGuidance_=activeTool==SketchTool::Select
-                ? "Select geometry to edit dimensions, or choose a drawing tool. Exit Sketch when ready."
+                ? dimensionSelected ? "Double-click the selected dimension or choose Edit in the inspector."
+                    : "Select geometry or a dimension in the canvas. Exit Sketch when ready."
                 : editor->previewAnchor()
                     ? "Move the pointer and click to finish the shape; Esc cancels this step."
                     : "Click in the Graphics Area to start drawing; Esc returns to Select.";
@@ -1044,7 +1049,78 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     };
     const auto primaryDimension = selected ? dimensionFor(selected->id(),
         selected->type() == sketch::SketchEntityType::Circle) : std::nullopt;
-    if (!selected) ImGui::TextWrapped("Choose a tool or select a sketch entity.");
+    const auto selectedDimension = editor && editor->selection()
+        ? std::get_if<sketch::SketchConstraintId>(&*editor->selection()) : nullptr;
+    const auto dimensionId = selectedDimension && model.containsConstraint(*selectedDimension)
+        && sketch::isDrivingDimension(model.findConstraint(*selectedDimension).value())
+        ? std::optional{*selectedDimension} : std::nullopt;
+    if (displayedDimension_ != dimensionId)
+    {
+        displayedDimension_ = dimensionId;
+        if (editingDimension_ != dimensionId)
+        {
+            editingDimension_.reset();
+            editingDimensionInitialized_ = false;
+        }
+    }
+    if (editingDimension_ && editingDimension_ != dimensionId)
+    {
+        editingDimension_.reset();
+        editingDimensionInitialized_ = false;
+    }
+    if (dimensionId)
+    {
+        const auto& value = model.findConstraint(*dimensionId).value();
+        const double committed = std::visit([](const auto& dimension) -> double {
+            using T = std::decay_t<decltype(dimension)>;
+            if constexpr (std::is_same_v<T, sketch::HorizontalDistance>
+                || std::is_same_v<T, sketch::VerticalDistance>
+                || std::is_same_v<T, sketch::LineLength>
+                || std::is_same_v<T, sketch::CircleRadius>) return dimension.value;
+            else return 0.0;
+        }, value);
+        const char* kind = std::holds_alternative<sketch::LineLength>(value) ? "Line length"
+            : std::holds_alternative<sketch::CircleRadius>(value) ? "Circle radius"
+            : std::holds_alternative<sketch::HorizontalDistance>(value) ? "Horizontal distance"
+            : "Vertical distance";
+        ImGui::TextUnformatted("SELECTED DIMENSION");
+        ImGui::Text("%s: %.6g mm", kind, committed);
+        if (editingDimension_ == dimensionId)
+        {
+            if (!editingDimensionInitialized_)
+            {
+                editingDimensionDraft_ = committed;
+                editingDimensionInitialized_ = true;
+            }
+            ImGui::InputDouble("New value (mm)", &editingDimensionDraft_);
+            bool valid = true;
+            try { (void)sketch::withDrivingValue(value, editingDimensionDraft_); }
+            catch (const std::exception&) { valid = false; }
+            if (!valid) ImGui::TextWrapped("Enter a finite value; lengths and radii must be positive.");
+            if (!valid) ImGui::BeginDisabled();
+            if (ImGui::Button("Confirm dimension"))
+            {
+                confirmedDimensionRequest_ = std::pair{*dimensionId, editingDimensionDraft_};
+                editingDimension_.reset();
+                editingDimensionInitialized_ = false;
+            }
+            if (!valid) ImGui::EndDisabled();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel dimension") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+            {
+                editingDimension_.reset();
+                editingDimensionInitialized_ = false;
+                workflowFeedback_ = "Dimension edit cancelled; model unchanged.";
+            }
+        }
+        else if (ImGui::Button("Edit dimension"))
+        {
+            editingDimension_ = *dimensionId;
+            editingDimensionInitialized_ = false;
+        }
+        ImGui::Separator();
+    }
+    if (!selected && !dimensionId) ImGui::TextWrapped("Choose a tool or select sketch geometry or a dimension.");
     else
     {
         std::visit([&](const auto& typed)
@@ -1376,7 +1452,7 @@ void ApplicationShell::drawModelPanel(const presentation::VisualEntity* selected
     ImGui::End();
 }
 
-void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::EditorContext* editor,
+void ApplicationShell::drawWorkspace(SketchTool activeTool, interaction::EditorContext* editor,
                                      const features::FeatureModel* featureModel)
 {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -1491,6 +1567,27 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
         const auto origin = viewport->Pos;
         const ImVec2 clipMin{position.x + 4.0F, position.y + 28.0F};
         const ImVec2 clipMax{position.x + size.x - 4.0F, position.y + size.y - 4.0F};
+        const auto mouse = ImGui::GetMousePos();
+        std::optional<sketch::SketchConstraintId> hoveredDimension;
+        if (activeTool == SketchTool::Select && ImGui::IsWindowHovered()
+            && mouse.x >= clipMin.x && mouse.x <= clipMax.x
+            && mouse.y >= clipMin.y && mouse.y <= clipMax.y)
+            hoveredDimension = ui::hitTestSketchDimensionCallouts(sketchDimensionCallouts_,
+                {mouse.x - origin.x, mouse.y - origin.y},
+                [](const std::string& value) { return ImGui::CalcTextSize(value.c_str()).x; },
+                ImGui::GetFontSize());
+        dimensionPointerClaimed_ = hoveredDimension.has_value();
+        if (hoveredDimension)
+        {
+            editor->setHover(interaction::LogicalTarget{*hoveredDimension});
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                editor->select(interaction::LogicalTarget{*hoveredDimension});
+                if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                    editingDimension_ = *hoveredDimension;
+            }
+        }
         draw->PushClipRect(clipMin, clipMax, true);
         for (const auto& callout : sketchDimensionCallouts_)
         {
@@ -1500,7 +1597,17 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, const interaction::E
                            origin.y + static_cast<float>(callout.second.y)};
             const ImVec2 label{origin.x + static_cast<float>(callout.label.x),
                                origin.y + static_cast<float>(callout.label.y)};
-            const ImU32 ink = IM_COL32(155, 205, 250, 235);
+            const bool selectedDimension = editor->selection()
+                && std::holds_alternative<sketch::SketchConstraintId>(*editor->selection())
+                && std::get<sketch::SketchConstraintId>(*editor->selection()) == callout.constraint;
+            const auto& selectedColor = viewer::selectedColor(preferencesActive_.selectionAccent);
+            const ImU32 selectedInk = ImGui::ColorConvertFloat4ToU32(
+                ImVec4{static_cast<float>(selectedColor.x()),
+                    static_cast<float>(selectedColor.y()),
+                    static_cast<float>(selectedColor.z()), 1.0F});
+            const ImU32 ink = selectedDimension ? selectedInk
+                : hoveredDimension == callout.constraint ? IM_COL32(105, 230, 255, 255)
+                : IM_COL32(155, 205, 250, 235);
             draw->AddLine(a, b, ink, 1.0F);
             draw->AddLine(b, label, ink, 1.0F);
             const ImVec2 textSize = ImGui::CalcTextSize(callout.text.c_str());

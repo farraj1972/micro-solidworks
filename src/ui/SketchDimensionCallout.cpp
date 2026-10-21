@@ -106,4 +106,19 @@ std::vector<SketchDimensionCallout> deriveSketchDimensionCallouts(
     }
     return result;
 }
+
+std::optional<sketch::SketchConstraintId> hitTestSketchDimensionCallouts(
+    const std::vector<SketchDimensionCallout>& callouts,
+    interaction::ScreenPoint pointer,
+    const std::function<double(const std::string&)>& textWidth,
+    double textHeight)
+{
+    for (auto it = callouts.rbegin(); it != callouts.rend(); ++it)
+        if (pointer.x >= it->label.x - 6.0
+            && pointer.x <= it->label.x + textWidth(it->text) + 6.0
+            && pointer.y >= it->label.y - 3.0
+            && pointer.y <= it->label.y + textHeight + 3.0)
+            return it->constraint;
+    return std::nullopt;
+}
 }

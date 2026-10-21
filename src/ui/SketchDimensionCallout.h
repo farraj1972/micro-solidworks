@@ -29,4 +29,10 @@ using SketchPointProjector = std::function<std::optional<interaction::ScreenPoin
 [[nodiscard]] std::vector<SketchDimensionCallout> deriveSketchDimensionCallouts(
     const sketch::Sketch& solvedSketch, const SketchPointProjector& project);
 
+[[nodiscard]] std::optional<sketch::SketchConstraintId> hitTestSketchDimensionCallouts(
+    const std::vector<SketchDimensionCallout>& callouts,
+    interaction::ScreenPoint pointer,
+    const std::function<double(const std::string&)>& textWidth,
+    double textHeight);
+
 }

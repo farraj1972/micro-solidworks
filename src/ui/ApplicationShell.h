@@ -67,6 +67,8 @@ public:
     [[nodiscard]] const std::optional<sketch::SketchConstraintValue>& addConstraintRequest() const noexcept { return addConstraintRequest_; }
     [[nodiscard]] const std::optional<sketch::SketchConstraintId>& removeConstraintRequest() const noexcept { return removeConstraintRequest_; }
     [[nodiscard]] const std::optional<std::pair<sketch::SketchConstraintId, math::Scalar>>& drivingValueRequest() const noexcept { return drivingValueRequest_; }
+    [[nodiscard]] const std::optional<std::pair<sketch::SketchConstraintId, math::Scalar>>& confirmedDimensionRequest() const noexcept { return confirmedDimensionRequest_; }
+    [[nodiscard]] bool dimensionPointerClaimed() const noexcept { return dimensionPointerClaimed_; }
     [[nodiscard]] bool solveSketchRequest() const noexcept { return solveSketchRequest_; }
     void reportSketchError(const std::string& error) { sketchError_ = error; workflowFeedback_ = error; }
     [[nodiscard]] bool extrusionRequest() const noexcept { return extrusionRequest_; }
@@ -157,7 +159,7 @@ private:
                         const features::FeatureModel* featureModel,
                         interaction::EditorContext* editor);
     void drawWorkspace(SketchTool activeTool = SketchTool::Select,
-                       const interaction::EditorContext* editor = nullptr,
+                       interaction::EditorContext* editor = nullptr,
                        const features::FeatureModel* featureModel = nullptr);
     void drawStatusBar();
     void drawAboutDialog();
@@ -200,6 +202,12 @@ private:
     std::optional<sketch::SketchConstraintValue> addConstraintRequest_;
     std::optional<sketch::SketchConstraintId> removeConstraintRequest_;
     std::optional<std::pair<sketch::SketchConstraintId, math::Scalar>> drivingValueRequest_;
+    std::optional<std::pair<sketch::SketchConstraintId, math::Scalar>> confirmedDimensionRequest_;
+    std::optional<sketch::SketchConstraintId> editingDimension_;
+    std::optional<sketch::SketchConstraintId> displayedDimension_;
+    math::Scalar editingDimensionDraft_{};
+    bool editingDimensionInitialized_{};
+    bool dimensionPointerClaimed_{};
     bool solveSketchRequest_{};
     bool extrusionRequest_{};
     math::Scalar extrusionDistance_{5.0};

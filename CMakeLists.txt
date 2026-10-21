@@ -328,6 +328,7 @@ target_link_libraries(microsw_ui PRIVATE
 
 add_executable(micro_solidworks
     src/app/main.cpp
+    src/app/SketchDimensionEdit.cpp
     src/app/DocumentHistory.cpp
     src/app/PersistenceSession.cpp
     src/app/demo/GeometryDemoScene.cpp
@@ -402,6 +403,7 @@ if(BUILD_TESTING)
         src/app/demo/GeometryDemoScene.cpp
         src/app/DocumentHistory.cpp
         src/app/PersistenceSession.cpp
+        src/app/SketchDimensionEdit.cpp
         src/app/sketch/SketchToolController.cpp
         tests/constraints/test_constraint_solver.cpp
         tests/app/test_geometry_demo_scene.cpp
@@ -410,6 +412,7 @@ if(BUILD_TESTING)
         tests/app/test_extrusion_vertical_slice.cpp
         tests/app/test_boolean_vertical_slice.cpp
         tests/app/test_document_history.cpp
+        tests/app/test_sketch_dimension_edit.cpp
         tests/test_infrastructure.cpp
         tests/ui/test_transform_editor.cpp
           tests/ui/test_feature_tree_model.cpp
