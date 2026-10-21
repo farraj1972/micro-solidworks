@@ -242,6 +242,12 @@ separate technical finding with fixture and affected ADRs.
 
 ## 10. Open owner decisions
 
+**Subsequent resolution:** the owner authorized the bounded UX-04.1 Model
+selection/context increment on 2026-10-21. The review below remains the
+historical proposal; [UX-04.1 validation](UX_04_1_MODEL_SELECTION_VALIDATION.md)
+tracks execution and the pending Experience Gate. UX-03 and later UX-04 slices
+remain outside that authorization.
+
 1. Approve or reject **Option A before UX-03**, including proposed use of
    `UX-04` for Model refinement and moving the old UX-04 future-workspace
    placeholder to unnumbered vision.
@@ -258,8 +264,9 @@ architectural approval before implementation.
 
 ## 11. Next executable increment proposal — UX-04.1
 
-**Name:** `UX-04.1 — Model Selection and Context Clarity` (**PROPOSED / NOT
-AUTHORIZED**).
+**Name:** `UX-04.1 — Model Selection and Context Clarity` (**AUTHORIZED;
+implementation and Experience Gate tracked in
+[UX-04.1 validation](UX_04_1_MODEL_SELECTION_VALIDATION.md)**).
 
 **Objective:** on the saved extrude-plus-pocket fixture, selecting a side face
 must show truthful continuous surface feedback and unmistakably identify the
