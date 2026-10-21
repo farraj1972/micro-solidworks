@@ -6,7 +6,10 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <gtest/gtest.h>
+#include <imgui.h>
+#include <algorithm>
 #include <array>
+#include <cmath>
 
 TEST(TransformEditor, DrawsEverySelectedPrimitiveAndHandlesDeselection)
 {
@@ -87,6 +90,64 @@ TEST(SketchEditor, DrawsSelectedDimensionWithoutSelectedGeometry)
     EXPECT_FALSE(shell.sketchGeometryRequest());
     EXPECT_FALSE(shell.deleteSketchRequest());
     ui.endFrame();
+}
+
+TEST(SketchEditor, DrawsDimensionAtWorkspaceOffset)
+{
+    microsw::ApplicationWindow window{900, 700, "Sketch dimension offset test"};
+    glfwHideWindow(static_cast<GLFWwindow*>(window.nativeHandle()));
+    microsw::OpenGLContext context{window};
+    microsw::ImGuiLayer ui{window, context};
+    microsw::ApplicationShell shell{window};
+    microsw::sketch::Sketch sketch;
+    const auto line = sketch.addLine({{0, 0}, {30, 0}});
+    const auto dimension = sketch.addConstraint(microsw::sketch::LineLength{
+        {line, microsw::sketch::SubElementKind::LineBody}, 30});
+    microsw::features::FeatureModel features;
+    const auto sketchFeature = features.addSketch(sketch);
+    ASSERT_EQ(features.rebuild().status, microsw::features::RebuildStatus::Success);
+    microsw::interaction::EditorContext editor;
+    editor.activateSketch(sketchFeature);
+
+    ui.beginFrame();
+    shell.drawSketch(microsw::ProjectionMode::Perspective,
+        microsw::SketchTool::Select, sketch, nullptr, false, &features, &editor);
+    const auto layout = shell.workspaceRect();
+    ui.endFrame();
+    ASSERT_GT(layout.x, 0);
+    ASSERT_GT(layout.y, 0);
+    shell.setSketchDimensionCallouts({{dimension, line, {100,100}, {200,100},
+        {150,75}, "L 30 mm"}});
+
+    ui.beginFrame();
+    shell.drawSketch(microsw::ProjectionMode::Perspective,
+        microsw::SketchTool::Select, sketch, nullptr, false, &features, &editor);
+    const auto drawnLayout = shell.workspaceRect();
+    ui.endFrame();
+    const auto* data = ImGui::GetDrawData();
+    ASSERT_NE(data, nullptr);
+    const auto mainOrigin = ImGui::GetMainViewport()->Pos;
+    const auto expectedX = mainOrigin.x + drawnLayout.x + 100;
+    const auto expectedY = mainOrigin.y + drawnLayout.y + 100;
+    bool found = false;
+    int matchingColor = 0;
+    float nearest = 1e9F;
+    ImVec2 nearestPosition{};
+    for (int list = 0; list < data->CmdListsCount; ++list)
+        for (const auto& vertex : data->CmdLists[list]->VtxBuffer)
+            if (vertex.col == IM_COL32(155, 205, 250, 235)) {
+                ++matchingColor;
+                const auto distance = static_cast<float>(std::hypot(
+                    vertex.pos.x - expectedX, vertex.pos.y - expectedY));
+                if (distance < nearest) { nearest = distance; nearestPosition = vertex.pos; }
+                if (std::abs(vertex.pos.x - expectedX) < 2
+                    && std::abs(vertex.pos.y - expectedY) < 2) found = true;
+            }
+    EXPECT_TRUE(found) << "The dimension line must use the Workspace origin; "
+        << "matching vertices=" << matchingColor << ", nearest=" << nearest
+        << " at " << nearestPosition.x << "," << nearestPosition.y
+        << ", expected=" << expectedX << "," << expectedY
+        << ", layout=" << drawnLayout.x << "," << drawnLayout.y;
 }
 
 TEST(FeatureTree, DrawsHistoryStatesDependenciesAndParameters)

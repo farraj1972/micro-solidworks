@@ -1603,7 +1603,9 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, interaction::EditorC
     if (editor && editor->activeSketchFeatureId())
     {
         auto* draw = ImGui::GetWindowDrawList();
-        const auto origin = viewport->Pos;
+        // Callouts are projected in Workspace-local coordinates, unlike
+        // pointer/preview state which is relative to the main viewport.
+        const auto origin = position;
         const ImVec2 clipMin{position.x + 4.0F, position.y + 28.0F};
         const ImVec2 clipMax{position.x + size.x - 4.0F, position.y + size.y - 4.0F};
         const auto mouse = ImGui::GetMousePos();

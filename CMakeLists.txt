@@ -495,6 +495,7 @@ if(BUILD_TESTING)
         tests/viewer/test_presented_points.cpp
         tests/viewer/test_presented_segments.cpp
     )
+    target_include_directories(micro_solidworks_tests PRIVATE ${imgui_SOURCE_DIR})
 
     target_compile_features(micro_solidworks_tests PRIVATE cxx_std_20)
     set_target_properties(micro_solidworks_tests PROPERTIES
