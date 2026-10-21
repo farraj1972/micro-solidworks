@@ -20,6 +20,9 @@ struct PresentedEdge
 {
     std::vector<geometry::Point3> points;
     interaction::TopologyEdgeTarget target;
+    // Rebuild-local face targets incident to this visible CAD edge. Coplanar
+    // seams are excluded with the edge, so face highlighting cannot invent one.
+    std::vector<interaction::TopologyFaceTarget> incidentFaces;
 };
 
 struct SolidDisplayData

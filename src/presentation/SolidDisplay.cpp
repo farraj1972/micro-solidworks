@@ -16,23 +16,29 @@ bool samePlane(const geometry::Plane& a, const geometry::Plane& b)
     return geometry::isParallel(a, b) && a.contains(b.origin());
 }
 
-bool isCoplanarSeam(const topology::Solid& solid, topology::EdgeId edge)
+std::vector<topology::FaceId> incidentFaces(const topology::Solid& solid, topology::EdgeId edge)
 {
-    std::vector<const topology::Face*> incident;
+    std::vector<topology::FaceId> incident;
     const auto containsEdge = [&](topology::WireId wire) {
         const auto& uses = solid.find(wire).uses();
         return std::any_of(uses.begin(), uses.end(),
             [&](const topology::OrientedEdgeUse& use) { return use.edge == edge; });
     };
-    for (const auto& face : solid.faces())
+    for (const auto& use : solid.rootShell().uses())
     {
+        const auto& face = solid.find(use.face);
         bool contains = containsEdge(face.outerWire());
         for (const auto wire : face.innerWires()) contains = contains || containsEdge(wire);
-        if (contains) incident.push_back(&face);
+        if (contains) incident.push_back(use.face);
     }
+    return incident;
+}
+
+bool isCoplanarSeam(const topology::Solid& solid, const std::vector<topology::FaceId>& incident)
+{
     if (incident.size() != 2) return false;
-    const auto* first = std::get_if<geometry::Plane>(&incident[0]->support());
-    const auto* second = std::get_if<geometry::Plane>(&incident[1]->support());
+    const auto* first = std::get_if<geometry::Plane>(&solid.find(incident[0]).support());
+    const auto* second = std::get_if<geometry::Plane>(&solid.find(incident[1]).support());
     return first && second && samePlane(*first, *second);
 }
 
@@ -163,8 +169,15 @@ SolidDisplayData deriveSolidDisplay(const topology::Solid& solid, features::Feat
     for(std::size_t i=0;i<solid.edges().size();++i)
     {
         const auto edge = topology::EdgeId{static_cast<std::uint32_t>(i)};
-        if (!isCoplanarSeam(solid, edge))
-            result.edges.push_back({edgePoints(solid.edges()[i],false,curveSegments),{feature,body,edge}});
+        const auto incident = incidentFaces(solid, edge);
+        if (!isCoplanarSeam(solid, incident))
+        {
+            std::vector<interaction::TopologyFaceTarget> faceTargets;
+            faceTargets.reserve(incident.size());
+            for (const auto face : incident) faceTargets.push_back({feature, body, face});
+            result.edges.push_back({edgePoints(solid.edges()[i],false,curveSegments),
+                {feature,body,edge},std::move(faceTargets)});
+        }
     }
     for(const auto& use:solid.rootShell().uses())
     {

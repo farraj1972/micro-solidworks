@@ -23,6 +23,7 @@
 #include "presentation/SolidDisplay.h"
 #include "rendering/TriangleRenderer.h"
 #include "presentation/WorldGeometry.h"
+#include <algorithm>
 #include <limits>
 #include <type_traits>
 
@@ -553,9 +554,34 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
             std::vector<math::Vector3> vertices;for(const auto&e:display.edges)for(std::size_t i=1;i<e.points.size();++i){const auto&a=e.points[i-1];const auto&b=e.points[i];vertices.push_back({a.x(),a.y(),a.z()});vertices.push_back({b.x(),b.y(),b.z()});}
             impl_->solidEdges.setVertices(vertices);impl_->shader.setVector3("uColor",topologyEdgeColor(impl_->displayMode));glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();glDepthFunc(GL_LESS);
         }
-        const auto drawState=[&](const std::optional<SolidTarget>& target,const math::Vector3& color){if(!target)return;
-            if(const auto*face=std::get_if<interaction::TopologyFaceTarget>(&*target)){std::vector<rendering::LitVertex>v;for(const auto&t:display.triangles)if(t.target==*face)for(const auto&p:t.points)v.push_back({{p.x(),p.y(),p.z()},t.normal});impl_->triangles.setVertices(v);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->triangles.draw();}
-            else if(const auto*edge=std::get_if<interaction::TopologyEdgeTarget>(&*target)){std::vector<math::Vector3>v;for(const auto&e:display.edges)if(e.target==*edge)for(std::size_t i=1;i<e.points.size();++i){v.push_back({e.points[i-1].x(),e.points[i-1].y(),e.points[i-1].z()});v.push_back({e.points[i].x(),e.points[i].y(),e.points[i].z()});}impl_->solidEdges.setVertices(v);impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->shader.setVector3("uColor",color);glDepthFunc(GL_LEQUAL);impl_->solidEdges.draw();}glDepthFunc(GL_LESS);};
+        const auto drawState=[&](const std::optional<SolidTarget>& target,const math::Vector3& color){
+            if(!target)return;
+            std::vector<math::Vector3> vertices;
+            for(const auto& edge:display.edges)
+            {
+                const bool selectedFace=std::holds_alternative<interaction::TopologyFaceTarget>(*target)
+                    && std::find(edge.incidentFaces.begin(),edge.incidentFaces.end(),
+                        std::get<interaction::TopologyFaceTarget>(*target))!=edge.incidentFaces.end();
+                const bool selectedEdge=std::holds_alternative<interaction::TopologyEdgeTarget>(*target)
+                    && edge.target==std::get<interaction::TopologyEdgeTarget>(*target);
+                if(!selectedFace&&!selectedEdge)continue;
+                for(std::size_t i=1;i<edge.points.size();++i)
+                {
+                    vertices.push_back({edge.points[i-1].x(),edge.points[i-1].y(),edge.points[i-1].z()});
+                    vertices.push_back({edge.points[i].x(),edge.points[i].y(),edge.points[i].z()});
+                }
+            }
+            impl_->solidEdges.setVertices(vertices);
+            impl_->shader.bind();
+            impl_->shader.setMatrix4("uModel",math::Matrix4::identity());
+            impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));
+            impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(
+                impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
+            impl_->shader.setVector3("uColor",color);
+            glDepthFunc(GL_LEQUAL);
+            impl_->solidEdges.draw();
+            glDepthFunc(GL_LESS);
+        };
         drawState(impl_->solidHover,{0.25,0.9,1.0});
         drawState(impl_->solidSelection,selectedSolidHighlightColor(impl_->selectionAccent));
         // A selected feature has a logical VisualEntityId but no explicit
@@ -581,8 +607,8 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
                 impl_->shader.setVector3("uColor",selectedSolidHighlightColor(impl_->selectionAccent));
                 glDepthFunc(GL_LEQUAL); impl_->solidEdges.draw(); glDepthFunc(GL_LESS);
             }
-        // Face highlights use the lit program. The wire presentation below
-        // shares this pass and requires the base program to be current again.
+        // The selected face is outlined only with visible CAD edges. Recoloring
+        // just one coplanar face patch would create a false tonal seam at a Cut.
         impl_->shader.bind();
         impl_->shader.setMatrix4("uModel",math::Matrix4::identity());
         impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));

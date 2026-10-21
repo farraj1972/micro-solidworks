@@ -73,6 +73,52 @@ TEST(SolidDisplay, BlindPocketDoesNotExposeCoplanarOuterFaceSeams)
  EXPECT_EQ(std::count_if(display.edges.begin(),display.edges.end(),outerSeam),0);
  EXPECT_GT(std::count_if(display.edges.begin(),display.edges.end(),[](const auto&e){return e.points.size()>2;}),0);
 }
+TEST(SolidDisplay, RectangularPocketSplitsOuterWallIntoCoplanarFaceTargetsWithoutVisibleSeam)
+{
+ features::FeatureModel model;
+ sketch::Sketch base;(void)base.addRectangle({0,0},{10,10});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),10);
+ sketch::Sketch pocket;(void)pocket.addRectangle({3,3},{7,7});
+ const auto source=model.addFaceSketch(std::move(pocket),target,features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(source,target,4,features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+ const auto& solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
+ ASSERT_TRUE(solid.isValid());
+ const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
+ std::vector<topology::FaceId> outerWallFaces;
+ for(const auto& triangle:display.triangles){
+  if(std::all_of(triangle.points.begin(),triangle.points.end(),[](const auto&point){return std::abs(point.y())<1e-8;}))
+   if(std::find(outerWallFaces.begin(),outerWallFaces.end(),triangle.target.face)==outerWallFaces.end())
+    outerWallFaces.push_back(triangle.target.face);
+ }
+ EXPECT_GE(outerWallFaces.size(),2u);
+ for(const auto face:outerWallFaces){
+  const interaction::TopologyFaceTarget targetFace{cut,{0},face};
+  EXPECT_GT(std::count_if(display.edges.begin(),display.edges.end(),[&](const auto& edge){
+   return std::find(edge.incidentFaces.begin(),edge.incidentFaces.end(),targetFace)
+    !=edge.incidentFaces.end();
+  }),0);
+ }
+ const auto artificialFloorSeam=std::count_if(display.edges.begin(),display.edges.end(),[](const auto& edge){
+  if(edge.points.size()!=2)return false;
+  const auto& a=edge.points[0];const auto& b=edge.points[1];
+  return std::abs(a.y())<1e-8&&std::abs(b.y())<1e-8
+   &&std::abs(a.z()-6)<1e-8&&std::abs(b.z()-6)<1e-8;
+ });
+ EXPECT_EQ(artificialFloorSeam,0);
+}
+TEST(SolidDisplay, HoledCapVisibleEdgesRetainIncidentFaceIdentity)
+{
+ sketch::Sketch sketch;(void)sketch.addRectangle({-5,-5},{5,5});
+ (void)sketch.addCircle({{0,0},2});
+ const auto extrusion=features::extrudeRegions(features::extractPlanarRegions(sketch),sketch.plane(),3);
+ ASSERT_TRUE(extrusion.succeeded());
+ const auto display=presentation::deriveSolidDisplay(extrusion.solids.front(),features::FeatureId{9},{0});
+ const auto circularEdges=std::count_if(display.edges.begin(),display.edges.end(),[](const auto& edge){
+  return edge.points.size()>2&&edge.incidentFaces.size()==2;
+ });
+ EXPECT_GT(circularEdges,0);
+}
 TEST(SolidDisplay, MultiHoleTopCapKeepsFullAreaAfterPlateWidthEdit)
 {
  const sketch::SketchPlane basePlane;
