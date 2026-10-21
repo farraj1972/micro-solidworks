@@ -63,6 +63,32 @@ TEST(SketchEditor, DrawsEverySketchEntityTypeAndToolState)
     ui.endFrame();
 }
 
+TEST(SketchEditor, DrawsSelectedDimensionWithoutSelectedGeometry)
+{
+    microsw::ApplicationWindow window{900, 700, "Sketch dimension inspector test"};
+    glfwHideWindow(static_cast<GLFWwindow*>(window.nativeHandle()));
+    microsw::OpenGLContext context{window};
+    microsw::ImGuiLayer ui{window, context};
+    microsw::ApplicationShell shell{window};
+    microsw::sketch::Sketch sketch;
+    const auto line = sketch.addLine({{0, 0}, {30, 0}});
+    const auto dimension = sketch.addConstraint(microsw::sketch::LineLength{
+        {line, microsw::sketch::SubElementKind::LineBody}, 30});
+    microsw::features::FeatureModel features;
+    const auto sketchFeature = features.addSketch(sketch);
+    ASSERT_EQ(features.rebuild().status, microsw::features::RebuildStatus::Success);
+    microsw::interaction::EditorContext editor;
+    editor.activateSketch(sketchFeature);
+    editor.select(microsw::interaction::LogicalTarget{dimension});
+
+    ui.beginFrame();
+    shell.drawSketch(microsw::ProjectionMode::Orthographic,
+        microsw::SketchTool::Select, sketch, nullptr, false, &features, &editor);
+    EXPECT_FALSE(shell.sketchGeometryRequest());
+    EXPECT_FALSE(shell.deleteSketchRequest());
+    ui.endFrame();
+}
+
 TEST(FeatureTree, DrawsHistoryStatesDependenciesAndParameters)
 {
     microsw::ApplicationWindow window{900, 700, "Feature tree test"};

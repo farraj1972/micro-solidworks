@@ -1153,7 +1153,11 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         }
         ImGui::Separator();
     }
-    if (!selected && !dimensionId) ImGui::TextWrapped("Choose a tool or select sketch geometry or a dimension.");
+    if (!selected)
+    {
+        if (!dimensionId)
+            ImGui::TextWrapped("Choose a tool or select sketch geometry or a dimension.");
+    }
     else
     {
         std::visit([&](const auto& typed)
