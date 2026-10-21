@@ -1,6 +1,6 @@
 # UX-01.R1 — Canonical CAD workspace composition and visual conformance contract
 
-Status: **DOCUMENTARY DESIGN CONTRACT — READY FOR OWNER REVIEW** (2026-10-21). This document specifies future visual acceptance; it does not amend frozen UX-01, authorize UX-02, or supersede an ADR. The UI/UX v0.3 package remains **PROPOSED — DESIGN REFERENCE**. Where an image depicts unimplemented CAD behavior, the executable contract remains the accepted product and architecture scope.
+Status: **APPROVED / FROZEN** (2026-10-21). The owner approved this documentary composition and interaction contract as normative guidance for subsequent UI/UX campaigns. It does not amend frozen UX-01, supersede an ADR, or authorize capabilities merely because they appear in a reference image. UX-02 is separately authorized in the same owner request. The UI/UX v0.3 package remains **PROPOSED — DESIGN REFERENCE**. Where an image depicts unimplemented CAD behavior, the executable contract remains the accepted product and architecture scope.
 
 ## 1. Purpose, authority and evidence
 
