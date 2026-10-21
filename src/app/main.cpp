@@ -13,6 +13,7 @@
 #include "presentation/SketchPresentation.h"
 #include "rendering/OpenGLContext.h"
 #include "ui/ApplicationShell.h"
+#include "ui/FeatureTreeModel.h"
 #include "ui/ImGuiLayer.h"
 #include "viewer/WorkspaceViewport.h"
 #include <exception>
@@ -118,7 +119,17 @@ int main(){
         return microsw::interaction::ScreenPoint{screen->x,screen->y};
       }));
    }else shell.setSketchDimensionCallouts({});
+   if(editor.selection()&&microsw::interaction::isTopologyTarget(*editor.selection())
+      &&!microsw::ui::inspectTopologySelection(session.model(),*editor.selection())){
+    editor.clearTopologySelectionOnRebuild();workspace.clearSelection();shell.setSelectedFeature(std::nullopt);
+   }
    shell.setCurrentFilePath(session.currentFilePath()?session.currentFilePath()->string():std::string{});shell.setDocumentState(session.isDirty(),session.canUndo(),session.canRedo());window.setTitle(std::string{"Micro SolidWorks — "}+(session.currentFilePath()?session.currentFilePath()->filename().string():"Untitled")+(session.isDirty()?" *":"")); shell.drawSketch(workspace.projectionMode(),tools.tool(),workingSketch,selected,hasSolid(session.model()),&session.model(),&editor);
+   if(editor.selection()&&std::holds_alternative<microsw::features::FeatureId>(*editor.selection())
+      &&workspace.selectedSolidTarget()){
+    workspace.clearSelection();
+    if(shell.selectedFeature())workspace.selectEntity(featureView.visualId(*shell.selectedFeature()));
+   }
+   else if(!editor.selection()&&workspace.selectedSolidTarget())workspace.clearSelection();
    try {
    if (shell.exportBrowseRequest())
    {

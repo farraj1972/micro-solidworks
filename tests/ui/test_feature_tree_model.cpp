@@ -121,3 +121,35 @@ TEST(FeatureTreeModel, BlockedDiagnosticNamesFailedUpstreamFeature)
     EXPECT_NE(message.find("Extrude1"), std::string::npos);
     EXPECT_EQ(message.find("FeatureId"), std::string::npos);
 }
+
+TEST(FeatureTreeModel, TopologyInspectionResolvesOwnerAndRejectsStaleTargets)
+{
+    using namespace microsw;
+    features::FeatureModel model;
+    const auto sketch=model.addSketch(rectangle(0));
+    const auto extrusion=model.addExtrude(sketch,2);
+    ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+    const auto face=interaction::LogicalTarget{interaction::TopologyFaceTarget{
+        extrusion,{0},topology::FaceId{0}}};
+    const auto edge=interaction::LogicalTarget{interaction::TopologyEdgeTarget{
+        extrusion,{0},topology::EdgeId{0}}};
+    const auto faceDetails=ui::inspectTopologySelection(model,face);
+    const auto edgeDetails=ui::inspectTopologySelection(model,edge);
+    ASSERT_TRUE(faceDetails);
+    ASSERT_TRUE(edgeDetails);
+    EXPECT_EQ(faceDetails->owner,extrusion);
+    EXPECT_TRUE(faceDetails->isFace);
+    EXPECT_FALSE(edgeDetails->isFace);
+    EXPECT_EQ(edgeDetails->owner,extrusion);
+    EXPECT_FALSE(ui::inspectTopologySelection(model,interaction::LogicalTarget{sketch}));
+    EXPECT_FALSE(ui::inspectTopologySelection(model,interaction::LogicalTarget{
+        interaction::TopologyFaceTarget{extrusion,{0},topology::FaceId{999}}}));
+    EXPECT_FALSE(ui::inspectTopologySelection(model,interaction::LogicalTarget{
+        interaction::TopologyEdgeTarget{extrusion,{9},topology::EdgeId{0}}}));
+    EXPECT_FALSE(ui::inspectTopologySelection(model,interaction::LogicalTarget{
+        interaction::TopologyFaceTarget{sketch,{0},topology::FaceId{0}}}));
+    const auto removed=model.deleteFeature(extrusion);
+    EXPECT_FALSE(removed.empty());
+    EXPECT_FALSE(ui::inspectTopologySelection(model,face));
+    EXPECT_FALSE(ui::inspectTopologySelection(model,edge));
+}

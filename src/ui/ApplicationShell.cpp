@@ -540,6 +540,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         }
         ImGui::TextUnformatted("Feature Manager");
         ImGui::TextDisabled("How this part was built");
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ImGui::GetStyle().ItemSpacing.x, 6.0F});
         const auto statusCue=[](const ui::FeatureTreeNode& node)
             -> std::pair<const char*,const char*>{
             switch(node.state){
@@ -570,6 +571,16 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 static_cast<std::uintptr_t>(node.featureId.value())+1),flags,
                 "%s",node.displayName.c_str());
             if (selectedFeature_ == node.featureId) ImGui::PopStyleColor(3);
+            if(ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)){
+                const auto detail=ui::featureStatusDescription(*featureModel,node.featureId);
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted(node.displayName.c_str());
+                if(node.activeEditing)ImGui::TextUnformatted("Editing this Sketch");
+                if(node.displayState==interaction::DisplayState::Hidden)
+                    ImGui::TextUnformatted("Hidden in the Graphics Area");
+                if(!detail.empty())ImGui::TextWrapped("%s",detail.c_str());
+                ImGui::EndTooltip();
+            }
             const auto icon=node.kind==features::FeatureKind::Sketch?CadIcon::Sketch:
                 node.kind==features::FeatureKind::Extrude?CadIcon::Extrude:
                 node.kind==features::FeatureKind::CutExtrude?CadIcon::CutExtrude:CadIcon::Boolean;
@@ -578,24 +589,26 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             drawFeatureTreeIcon(ImGui::GetWindowDrawList(),icon,{right.x-53,(top.y+right.y)*0.5F},
                 ImGui::GetColorU32(ImGuiCol_Text));
             if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
-                if(selectedFeature_!=node.featureId){editingFeature_.reset();workflowFeedback_.clear();}
-                selectedFeature_=node.featureId;
+                setSelectedFeature(node.featureId);
                 if(editor)editor->select(interaction::LogicalTarget{node.featureId});
             }
             if(ImGui::IsItemHovered()&&ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)){
                 beginFeatureEdit(node.featureId,*featureModel);
             }
             if(ImGui::BeginPopupContextItem("Feature actions")){
+                setSelectedFeature(node.featureId);
+                if(editor)editor->select(interaction::LogicalTarget{node.featureId});
                 if(node.kind!=features::FeatureKind::Boolean&&ImGui::MenuItem(
                     node.kind==features::FeatureKind::Sketch?"Edit Sketch":"Edit"))
                     beginFeatureEdit(node.featureId,*featureModel);
                 if(node.kind==features::FeatureKind::Boolean&&ImGui::MenuItem("Inspect"))
-                    {selectedFeature_=node.featureId;}
+                    selectedFeature_=node.featureId;
                 if(ImGui::MenuItem("Rename","F2"))
                     beginFeatureRename(node.featureId,*featureModel);
-                if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide"))
+                if(ImGui::MenuItem(node.displayState==interaction::DisplayState::Hidden?"Show":"Hide",
+                    nullptr,false,!node.activeEditing))
                     visibilityToggleRequest_=node.featureId;
-                if(ImGui::MenuItem("Delete")){
+                if(ImGui::MenuItem("Delete",nullptr,false,!node.activeEditing)){
                     const auto closure=featureModel->deletionClosure(node.featureId);
                     if(closure.size()==1)deleteFeatureRequest_=node.featureId;
                     else{pendingDeleteFeature_=node.featureId;openDeleteConfirmation_=true;}
@@ -605,10 +618,6 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             if(const auto cue=statusCue(node);cue.first){
                 ImGui::GetWindowDrawList()->AddText({right.x-33,top.y+2},
                     ImGui::GetColorU32(ImGuiCol_TextDisabled),cue.first);
-                if(ImGui::IsMouseHoveringRect({right.x-38,top.y},right)){
-                    ImGui::BeginTooltip();
-                    const auto detail=ui::featureStatusDescription(*featureModel,node.featureId);
-                    ImGui::TextWrapped("%s",detail.empty()?cue.second:detail.c_str());ImGui::EndTooltip();}
             }
             if(open&&!node.children.empty()){
                 for(const auto& child:node.children)drawNode(child);
@@ -628,6 +637,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 if(ImGui::BeginPopupContextItem("Plane actions")){
                     if(ImGui::MenuItem("Sketch on Plane")){
                         selectedPrincipalPlane_=plane;selectedFeature_.reset();sketchPlaneRequest_=plane;
+                        if(editor)editor->select(std::nullopt);
                     }
                     ImGui::EndPopup();
                 }
@@ -639,9 +649,21 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 drawPlane("Right Plane",PrincipalPlane::Right);
                 ImGui::TreePop();
             }
-            for(const auto& node:tree.roots)drawNode(node);
+            const auto drawGroup=[&](const char* label,bool sketches){
+                const bool hasNodes=std::any_of(tree.roots.begin(),tree.roots.end(),
+                    [&](const auto& node){return (node.kind==features::FeatureKind::Sketch)==sketches;});
+                if(!hasNodes)return;
+                if(ImGui::TreeNodeEx(label,ImGuiTreeNodeFlags_DefaultOpen|ImGuiTreeNodeFlags_SpanAvailWidth)){
+                    for(const auto& node:tree.roots)
+                        if((node.kind==features::FeatureKind::Sketch)==sketches)drawNode(node);
+                    ImGui::TreePop();
+                }
+            };
+            drawGroup("Modeling Features",false);
+            drawGroup("Unconsumed Sketches",true);
             ImGui::TreePop();
         }
+        ImGui::PopStyleVar();
         if(openDeleteConfirmation_){ImGui::OpenPopup("Confirm feature deletion");openDeleteConfirmation_=false;}
         if(ImGui::BeginPopupModal("Confirm feature deletion",nullptr,ImGuiWindowFlags_AlwaysAutoResize)){
             if(pendingDeleteFeature_){
@@ -691,16 +713,17 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         {inspectorPanelWidth_, contentSize.y});
     ImGui::TextUnformatted("Context Inspector");
     ImGui::Separator();
+    const bool commandFocused=editor&&editor->activeCommand()!=interaction::EditorCommand::Select;
     if (featureModel)
     {
-        if(selectedPrincipalPlane_){
+        if(selectedPrincipalPlane_&&!commandFocused){
             const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
             ImGui::TextUnformatted("REFERENCE PLANE");
             ImGui::Text("%s",name);
             ImGui::TextWrapped("Create a sketch on this plane, then choose Line, Rectangle or Circle.");
             if(ImGui::Button("Sketch on Plane")){sketchPlaneRequest_=selectedPrincipalPlane_;}
         }
-        if (selectedFeature_)
+        if (selectedFeature_&&!commandFocused)
         {
             const auto& feature = featureModel->find(*selectedFeature_);
             if(editingFeature_==feature.id()&&ImGui::IsKeyPressed(ImGuiKey_Escape)){
@@ -715,7 +738,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;
                 }
             }
-            ImGui::TextUnformatted("SELECTION");
+            const auto details=editor&&editor->selection()
+                ?ui::inspectTopologySelection(*featureModel,*editor->selection()):std::nullopt;
+            ImGui::TextUnformatted(details&&details->owner==feature.id()
+                ?(details->isFace?"FACE SELECTION":"EDGE SELECTION"):"FEATURE SELECTION");
             ImGui::Text("%s", feature.displayName().c_str());
             const auto* kind = feature.kind() == features::FeatureKind::Sketch ? "Sketch"
                 : feature.kind() == features::FeatureKind::Extrude ? "Extrude"
@@ -731,36 +757,18 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::TextColored({0.42F, 0.73F, 1.0F, 1.0F},
                     "Editing parameters — Confirm applies; Cancel discards");
             ImGui::Separator();
-            if(editor&&editor->selection()){
-                if(const auto*t=std::get_if<interaction::TopologyFaceTarget>(&*editor->selection())){
-                    const auto& owner=featureModel->find(t->feature);
-                    ImGui::TextUnformatted("Face");
-                    if(owner.cache()&&std::holds_alternative<features::SolidFeatureCache>(*owner.cache())){
-                        const auto& cache=std::get<features::SolidFeatureCache>(*owner.cache());
-                        if(t->body.index<cache.solids.size()){
-                            const auto& face=cache.solids[t->body.index].find(t->face);
-                            ImGui::TextUnformatted(std::holds_alternative<geometry::Plane>(face.support())?"Plane":"Cylinder");
-                        }
+            if(editingFeature_!=feature.id()&&details&&details->owner==feature.id()){
+                    ImGui::TextUnformatted(details->isFace?"Selected face":"Selected edge");
+                    ImGui::Text("Geometry: %s",details->geometryType.c_str());
+                    ImGui::Text("Owning feature: %s",feature.displayName().c_str());
+                    if(details->isFace){
+                        if(details->faceRole){
+                            ImGui::Text("Support: %s of %s",
+                                features::semanticFaceRoleName(*details->faceRole),feature.displayName().c_str());
+                            if(ImGui::Button("Sketch on this face"))enterSketchRequest_=true;
+                        }else ImGui::TextDisabled("Sketch on this face is not yet supported.");
                     }
-                    ImGui::Text("Owning feature: %s",owner.displayName().c_str());
-                    const auto role=featureModel->semanticFaceRole(t->feature,t->body.index,t->face);
-                    if(role){ImGui::Text("Support: %s of %s",features::semanticFaceRoleName(*role),owner.displayName().c_str());}
-                    else ImGui::TextDisabled("Sketch on this face is not yet supported.");
-                    if(role&&ImGui::Button("Sketch on this face"))
-                        {selectedFeature_=owner.id();enterSketchRequest_=true;}
-                }
-                else if(const auto*t=std::get_if<interaction::TopologyEdgeTarget>(&*editor->selection())){
-                    const auto& owner=featureModel->find(t->feature);
-                    ImGui::TextUnformatted("Edge");
-                    if(owner.cache()&&std::holds_alternative<features::SolidFeatureCache>(*owner.cache())){
-                        const auto& cache=std::get<features::SolidFeatureCache>(*owner.cache());
-                        if(t->body.index<cache.solids.size()){
-                            const auto& edge=cache.solids[t->body.index].find(t->edge);
-                            ImGui::TextUnformatted(std::holds_alternative<geometry::Segment3>(edge.geometry())?"Line":"Arc");
-                        }
-                    }
-                    ImGui::Text("Owning feature: %s",owner.displayName().c_str());
-                }
+                    ImGui::Separator();
             }
             if (feature.kind() == features::FeatureKind::Sketch)
             {
@@ -845,7 +853,8 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
         if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
         ImGui::Separator();
     }
-    if (!selectedFeature_ && !selectedPrincipalPlane_ && (!editor || !editor->activeSketchFeatureId()))
+    if (!selectedFeature_ && !selectedPrincipalPlane_ && !commandFocused
+        && (!editor || !editor->activeSketchFeatureId()))
         ImGui::TextWrapped("Select a feature in the browser or a face in the viewport to inspect it.");
     if (editor && editor->activeSketchFeatureId())
     {

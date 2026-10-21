@@ -4,6 +4,7 @@
 #include "interaction/EditorContext.h"
 
 #include <string>
+#include <optional>
 #include <vector>
 
 namespace microsw::ui
@@ -25,9 +26,19 @@ struct FeatureTreeModel
     std::vector<FeatureTreeNode> roots;
 };
 
+struct TopologySelectionDetails
+{
+    features::FeatureId owner;
+    std::string geometryType;
+    bool isFace{};
+    std::optional<features::ExtrudeCapRole> faceRole;
+};
+
 [[nodiscard]] FeatureTreeModel deriveFeatureTree(
     const features::FeatureModel& model,
     const interaction::EditorContext* editor = nullptr);
 [[nodiscard]] std::string featureStatusDescription(
     const features::FeatureModel& model, features::FeatureId id);
+[[nodiscard]] std::optional<TopologySelectionDetails> inspectTopologySelection(
+    const features::FeatureModel& model, const interaction::LogicalTarget& selection);
 }

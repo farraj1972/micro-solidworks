@@ -1,5 +1,6 @@
 #include "ui/FeatureTreeModel.h"
 
+#include <algorithm>
 #include <map>
 #include <optional>
 
@@ -75,5 +76,32 @@ std::string featureStatusDescription(const features::FeatureModel& model,
         return "Blocked by an earlier feature. Review upstream dependencies.";
     }
     return {};
+}
+
+std::optional<TopologySelectionDetails> inspectTopologySelection(
+    const features::FeatureModel& model, const interaction::LogicalTarget& selection)
+{
+    const auto ownerId=interaction::owningFeature(selection);
+    if(!ownerId || !interaction::isTopologyTarget(selection))return std::nullopt;
+    const auto record=std::find_if(model.history().begin(),model.history().end(),
+        [&](const auto& candidate){return candidate.id()==*ownerId;});
+    if(record==model.history().end() || !record->cache()
+        || !std::holds_alternative<features::SolidFeatureCache>(*record->cache()))return std::nullopt;
+    const auto& bodies=std::get<features::SolidFeatureCache>(*record->cache()).solids;
+    if(const auto* face=std::get_if<interaction::TopologyFaceTarget>(&selection))
+    {
+        if(face->body.index>=bodies.size() || face->face.value()>=bodies[face->body.index].faces().size())
+            return std::nullopt;
+        const auto& support=bodies[face->body.index].find(face->face).support();
+        return TopologySelectionDetails{*ownerId,
+            std::holds_alternative<geometry::Plane>(support)?"Planar face":"Cylindrical face",
+            true,model.semanticFaceRole(*ownerId,face->body.index,face->face)};
+    }
+    const auto& edge=std::get<interaction::TopologyEdgeTarget>(selection);
+    if(edge.body.index>=bodies.size() || edge.edge.value()>=bodies[edge.body.index].edges().size())
+        return std::nullopt;
+    const auto& curve=bodies[edge.body.index].find(edge.edge).geometry();
+    return TopologySelectionDetails{*ownerId,
+        std::holds_alternative<geometry::Segment3>(curve)?"Straight edge":"Circular edge",false,{}};
 }
 }
