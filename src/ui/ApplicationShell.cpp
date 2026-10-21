@@ -1071,6 +1071,14 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     if (dimensionId)
     {
         const auto& value = model.findConstraint(*dimensionId).value();
+        const auto associatedEntity = std::visit([](const auto& dimension) {
+            using T = std::decay_t<decltype(dimension)>;
+            if constexpr (std::is_same_v<T, sketch::LineLength>) return dimension.line.entity;
+            else if constexpr (std::is_same_v<T, sketch::CircleRadius>) return dimension.radius.entity;
+            else if constexpr (std::is_same_v<T, sketch::HorizontalDistance>
+                || std::is_same_v<T, sketch::VerticalDistance>) return dimension.first.entity;
+            else return sketch::SketchEntityId{};
+        }, value);
         const double committed = std::visit([](const auto& dimension) -> double {
             using T = std::decay_t<decltype(dimension)>;
             if constexpr (std::is_same_v<T, sketch::HorizontalDistance>
@@ -1085,6 +1093,31 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             : "Vertical distance";
         ImGui::TextUnformatted("SELECTED DIMENSION");
         ImGui::Text("%s: %.6g mm", kind, committed);
+        if (model.contains(associatedEntity))
+            ImGui::TextDisabled("Associated %s",
+                model.find(associatedEntity).type() == sketch::SketchEntityType::Circle
+                    ? "circle" : "line");
+        std::size_t relatedCount = 0;
+        for (const auto relatedId : model.constraintIds())
+        {
+            const auto& related = model.findConstraint(relatedId).value();
+            const bool refers = std::visit([&](const auto& constraint) {
+                using T = std::decay_t<decltype(constraint)>;
+                if constexpr (std::is_same_v<T, sketch::Coincident>
+                    || std::is_same_v<T, sketch::Parallel>
+                    || std::is_same_v<T, sketch::Perpendicular>
+                    || std::is_same_v<T, sketch::HorizontalDistance>
+                    || std::is_same_v<T, sketch::VerticalDistance>)
+                    return constraint.first.entity == associatedEntity
+                        || constraint.second.entity == associatedEntity;
+                else if constexpr (std::is_same_v<T, sketch::CircleRadius>)
+                    return constraint.radius.entity == associatedEntity;
+                else return constraint.line.entity == associatedEntity;
+            }, related);
+            if (refers) ++relatedCount;
+        }
+        ImGui::TextDisabled("Related constraints: %zu", relatedCount);
+        ImGui::TextWrapped("Double-click the canvas label to edit, or use Edit below.");
         if (editingDimension_ == dimensionId)
         {
             if (!editingDimensionInitialized_)
@@ -1214,8 +1247,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
         }
     }
-    ImGui::Separator(); ImGui::TextUnformatted("Constraint glyphs / dimensions");
-    for (const auto id : model.constraintIds())
+    ImGui::Separator();
+    const auto showAllConstraints = ImGui::CollapsingHeader("All sketch constraints");
+    if (showAllConstraints) for (const auto id : model.constraintIds())
     {
         ImGui::PushID(static_cast<int>(id.value()));
         const auto& value = model.findConstraint(id).value();
@@ -1244,8 +1278,9 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     || std::is_same_v<T, sketch::CircleRadius>) return c.value;
                 else return 0;
             }, value);
-            if(primaryDimension&&*primaryDimension==id)
-                ImGui::TextDisabled("Value is edited in the selected entity properties above.");
+            if ((primaryDimension && *primaryDimension == id)
+                || (dimensionId && *dimensionId == id))
+                ImGui::TextDisabled("Value is edited in the selected properties above.");
             else
             {
                 auto& driving = dimensionDraft(id, committed);
@@ -1618,6 +1653,36 @@ void ApplicationShell::drawWorkspace(SketchTool activeTool, interaction::EditorC
             draw->AddText(label, IM_COL32(234, 242, 250, 255), callout.text.c_str());
         }
         draw->PopClipRect();
+        // A single local action opens the same Inspector draft as double-click.
+        const auto selectedId = editor->selection()
+            ? std::get_if<sketch::SketchConstraintId>(&*editor->selection()) : nullptr;
+        if (activeTool == SketchTool::Select && selectedId && editingDimension_ != *selectedId)
+            for (const auto& callout : sketchDimensionCallouts_)
+                if (callout.constraint == *selectedId)
+                {
+                    const auto textWidth = ImGui::CalcTextSize(callout.text.c_str()).x;
+                    const float labelX = origin.x + static_cast<float>(callout.label.x);
+                    const float labelY = origin.y + static_cast<float>(callout.label.y);
+                    const float x = labelX + textWidth + 14.0F + 46.0F <= clipMax.x
+                        ? labelX + textWidth + 14.0F : labelX - 54.0F;
+                    const float y = labelY + 24.0F <= clipMax.y ? labelY : labelY - 26.0F;
+                    if (x >= clipMin.x && x + 46.0F <= clipMax.x
+                        && y >= clipMin.y && y + 24.0F <= clipMax.y)
+                    {
+                        ImGui::SetCursorScreenPos({x, y});
+                        if (ImGui::Button("Edit##selectedDimension", {46.0F, 24.0F}))
+                        {
+                            editingDimension_ = *selectedId;
+                            editingDimensionInitialized_ = false;
+                        }
+                        if (ImGui::IsItemHovered())
+                        {
+                            dimensionPointerClaimed_ = true;
+                            ImGui::SetTooltip("Edit the selected dimension in the Inspector");
+                        }
+                    }
+                    break;
+                }
     }
     ImGui::End();
 }
