@@ -18,6 +18,7 @@ UI/UX v0.3: owner-designated Model/Sketch/Export/Manufacture design target; pack
 SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; ADR inventory 71/71 ACCEPTED
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
 UX-01: FROZEN — V3 928/928 PASS; Experience Gate APPROVED WITH CHANGES; UX-01.R1: APPROVED / FROZEN; UX-02: FROZEN — V3 940/940 PASS and owner Experience Gate APPROVED; CAD/CAM capability horizon: PRESERVED
+UX-ROADMAP-R1: REVIEW COMPLETE / READY FOR OWNER DECISION; proposes Model refinement before UX-03 Export; no executable campaign authorized by this review
 V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: FROZEN WITH CLEAN-ENVIRONMENT WAIVER; C4: FROZEN UNDER REVISED BOUNDED N2 ACCEPTANCE
 ```
 
@@ -73,13 +74,16 @@ implementation candidates and evidence without authorizing executable changes.
 | UX-01 — Model/Sketch shell | Left browser continuously visible, right contextual inspector, clear mode and usable viewport; preserve current CAD commands and document safety. | FROZEN after final V3 928/928 PASS and owner Experience Gate APPROVED WITH CHANGES. Remaining conceptual/design differences require later formalization. |
 | UX-01.R1 — Canonical UI contract | Documentary comparison of all four design images with actual UX-01 Model captures; region, design-system and UX-02 handoff contracts. | APPROVED / FROZEN; normative UI/UX composition guidance; UX-01 remains FROZEN. |
 | UX-02 — Guided Sketch interaction | In-canvas dimension editing, selection cues and contextual micro-toolbar in bounded slices. | FROZEN; executable slices, final V3 940/940 PASS and full owner Experience Gate APPROVED. See [validation and roteiro](UX_02_GUIDED_SKETCH_VALIDATION.md). No new geometry or solver capability implied by the image. |
-| UX-03 — Export UX | Bounded STL export from v1.2.0 is frozen; a fuller Export workspace, validation display and split CAD/mesh preview remain optional future work. | Planned separately; broader interchange remains unapproved. |
-| UX-04 — Future workspaces | Preserve Manufacture, simulation, operations and later interoperability as design references. | Vision only; no CAM implementation authorization. |
+| UX-04 — Model Workspace Visual & Interaction Refinement | Proposed Model clarity and selection-display work, beginning with a bounded face-highlight/Inspector slice; preserve CAD ownership and supported commands. | **PROPOSED / OWNER DECISION REQUIRED** after [post-UX-02 review](UX_ROADMAP_R1_POST_UX02_REVIEW.md); no executable work authorized. The number is a proposed reassignment of the previously unstarted UX-04 future-workspaces placeholder. |
+| UX-03 — Export UX | Bounded STL export from v1.2.0 is frozen; a clearer real validation/result workflow and, later, CAD/mesh preview remain optional. | **PLANNED / NOT AUTHORIZED**, proposed after UX-04; no additional formats or printability guarantee. |
+| Future Manufacture and other workspaces | Preserve Manufacture, simulation, operations and later interoperability as design references. | **VISION ONLY**, unnumbered while UX-04 is proposed for Model refinement; no CAM implementation authorization. |
 
-The R1 request recommends a later **Model Workspace Refinement** and **Export
-Experience**, but existing candidate identifiers already assign UX-03 to
-Export UX and UX-04 to future workspaces. Do not renumber automatically: the
-owner must reconcile sequence and scope before authorizing either campaign.
+The [UX-ROADMAP-R1 review](UX_ROADMAP_R1_POST_UX02_REVIEW.md) compares Model,
+Export and mixed slices and recommends **UX-04 Model refinement before UX-03
+Export UX**. UX-03 retains its established name. UX-04 was an unstarted vision
+placeholder, so its proposed Model designation and the unnumbered future-workspace
+vision require the owner's sequencing decision before implementation. Frozen
+campaign names, accepted ADRs and the v1.2.0 release do not change.
 
 **SET-D01 — Application Settings & Preferences Architecture** is [FROZEN](PERSONAL_SOLIDWORKS_SETTINGS_PREFERENCES_PROPOSAL.md), with [ADR-0070](adr/ADR-0070-application-preferences-ownership-and-persistence.md) and [ADR-0071](adr/ADR-0071-configurable-navigation-and-selection-appearance.md) **ACCEPTED** (71/71 ADRs accepted). The bounded [SET-01 first-slice campaign](PERSONAL_SOLIDWORKS_SET_01_CAMPAIGN_PROPOSAL.md) is **FROZEN** after an approved owner Experience Gate and clean V3 (918/918 tests). It implements typed per-user Profile A/B navigation and Orange/Blue selected geometry, preserving Profile A/Orange defaults. The two specific v0.3 compatibility gaps are resolved by executable opt-in settings. UX-01 is now [FROZEN](UX_01_CAD_WORKSPACE_VALIDATION.md). SET-01 is cross-cutting; v1.1.0 and v1.2.0 remain frozen.
 
