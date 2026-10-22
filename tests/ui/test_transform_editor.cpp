@@ -204,3 +204,53 @@ TEST(CadWorkspaceLayout, KeepsGraphicsAreaUsableAtDesktopSizes)
         ui.endFrame();
     }
 }
+
+TEST(FeatureTree, ContextChangesAndLongNamesRemainReadOnlyAtDesktopSizes)
+{
+    using namespace microsw;
+    ApplicationWindow window{1366, 768, "Inspector context test"};
+    glfwHideWindow(static_cast<GLFWwindow*>(window.nativeHandle()));
+    OpenGLContext context{window};
+    ImGuiLayer ui{window, context};
+    ApplicationShell shell{window};
+    features::FeatureModel model;
+    interaction::EditorContext editor;
+    sketch::Sketch profile;
+    (void)profile.addRectangle({0, 0}, {4, 4});
+    const auto sketchId=model.addSketch(profile);
+    const auto extrudeId=model.addExtrude(sketchId, 4);
+    const std::string longName="Base extrusion with a deliberately long human-readable feature name";
+    model.renameFeature(extrudeId,longName);
+    ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+    const auto originalSize=model.history().size();
+    const auto originalDistance=std::get<features::ExtrudeFeature>(model.find(extrudeId).data()).distance;
+    sketch::Sketch empty;
+
+    for(const auto [width,height]:std::array<std::array<int,2>,2>{
+        std::array{1366,768},std::array{1920,1080}})
+    {
+        glfwSetWindowSize(static_cast<GLFWwindow*>(window.nativeHandle()),width,height);
+        glfwPollEvents();
+        for(const interaction::LogicalTarget selection:{
+            interaction::LogicalTarget{extrudeId},
+            interaction::LogicalTarget{interaction::TopologyFaceTarget{extrudeId,{0},topology::FaceId{0}}},
+            interaction::LogicalTarget{interaction::TopologyEdgeTarget{extrudeId,{0},topology::EdgeId{0}}},
+            interaction::LogicalTarget{sketchId}})
+        {
+            editor.select(selection);
+            shell.setSelectedFeature(interaction::owningFeature(selection));
+            ui.beginFrame();
+            shell.drawSketch(ProjectionMode::Perspective,SketchTool::Select,empty,
+                nullptr,true,&model,&editor);
+            EXPECT_GE(shell.workspaceRect().width,width*0.50);
+            EXPECT_FALSE(shell.featureDistanceRequest());
+            EXPECT_FALSE(shell.featureCutRequest());
+            EXPECT_FALSE(shell.deleteFeatureRequest());
+            ui.endFrame();
+        }
+    }
+    EXPECT_EQ(model.history().size(),originalSize);
+    EXPECT_EQ(std::get<features::ExtrudeFeature>(model.find(extrudeId).data()).distance,
+        originalDistance);
+    EXPECT_EQ(model.find(extrudeId).displayName(),longName);
+}

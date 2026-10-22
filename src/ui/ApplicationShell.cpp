@@ -168,6 +168,28 @@ void beginStructuralWindow(const char* name, const ImVec2& position, const ImVec
     ImGui::SetNextWindowSize(size);
     ImGui::Begin(name, nullptr, structuralWindowFlags);
 }
+
+void inspectorSection(const char* label)
+{
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::TextDisabled("%s", label);
+}
+
+std::string treeRowLabel(const std::string& name, float maxWidth)
+{
+    if(ImGui::CalcTextSize(name.c_str()).x<=maxWidth)return name;
+    std::string clipped=name;
+    while(!clipped.empty()){
+        std::size_t start=clipped.size()-1;
+        while(start>0&&(static_cast<unsigned char>(clipped[start])&0xc0U)==0x80U)
+            --start;
+        clipped.resize(start);
+        if(ImGui::CalcTextSize((clipped+"...").c_str()).x<=maxWidth)
+            return clipped+"...";
+    }
+    return {};
+}
 }
 
 namespace microsw
@@ -204,7 +226,7 @@ void ApplicationShell::beginFeatureEdit(features::FeatureId id, const features::
 
 void ApplicationShell::beginFeatureRename(features::FeatureId id, const features::FeatureModel& model)
 {
-    selectedFeature_ = id;
+    setSelectedFeature(id);
     renamingFeature_ = id;
     renameDraft_.fill('\0');
     const auto& name = model.find(id).displayName();
@@ -538,8 +560,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             if(closure.size()==1)deleteFeatureRequest_=*selectedFeature_;
             else{pendingDeleteFeature_=*selectedFeature_;openDeleteConfirmation_=true;}
         }
-        ImGui::TextUnformatted("Feature Manager");
-        ImGui::TextDisabled("How this part was built");
+        ImGui::TextDisabled("History (right-click for actions)");
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ImGui::GetStyle().ItemSpacing.x, 6.0F});
         const auto statusCue=[](const ui::FeatureTreeNode& node)
             -> std::pair<const char*,const char*>{
@@ -567,9 +588,14 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 ImGui::PushStyleColor(ImGuiCol_HeaderHovered, selectedTint);
                 ImGui::PushStyleColor(ImGuiCol_HeaderActive, selectedTint);
             }
+            const auto cue=statusCue(node);
+            const float reservedWidth=cue.first?75.0F:48.0F;
+            const auto label=treeRowLabel(node.displayName,
+                std::max(0.0F,ImGui::GetContentRegionAvail().x
+                    -ImGui::GetTreeNodeToLabelSpacing()-reservedWidth));
             const bool open=ImGui::TreeNodeEx(reinterpret_cast<void*>(
                 static_cast<std::uintptr_t>(node.featureId.value())+1),flags,
-                "%s",node.displayName.c_str());
+                "%s",label.c_str());
             if (selectedFeature_ == node.featureId) ImGui::PopStyleColor(3);
             if(ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)){
                 const auto detail=ui::featureStatusDescription(*featureModel,node.featureId);
@@ -586,7 +612,8 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 node.kind==features::FeatureKind::CutExtrude?CadIcon::CutExtrude:CadIcon::Boolean;
             const auto top=ImGui::GetItemRectMin();
             const auto right=ImGui::GetItemRectMax();
-            drawFeatureTreeIcon(ImGui::GetWindowDrawList(),icon,{right.x-53,(top.y+right.y)*0.5F},
+            drawFeatureTreeIcon(ImGui::GetWindowDrawList(),icon,
+                {right.x-(cue.first?57.0F:20.0F),(top.y+right.y)*0.5F},
                 ImGui::GetColorU32(ImGuiCol_Text));
             if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
                 setSelectedFeature(node.featureId);
@@ -615,7 +642,7 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                 }
                 ImGui::EndPopup();
             }
-            if(const auto cue=statusCue(node);cue.first){
+            if(cue.first){
                 ImGui::GetWindowDrawList()->AddText({right.x-33,top.y+2},
                     ImGui::GetColorU32(ImGuiCol_TextDisabled),cue.first);
             }
@@ -632,11 +659,12 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     ImGuiTreeNodeFlags_SpanAvailWidth|(selectedPrincipalPlane_==plane?ImGuiTreeNodeFlags_Selected:0);
                 ImGui::TreeNodeEx(label,flags);
                 if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
-                    selectedPrincipalPlane_=plane;selectedFeature_.reset();if(editor)editor->select(std::nullopt);
+                    selectedPrincipalPlane_=plane;setSelectedFeature(std::nullopt);
+                    if(editor)editor->select(std::nullopt);
                 }
                 if(ImGui::BeginPopupContextItem("Plane actions")){
                     if(ImGui::MenuItem("Sketch on Plane")){
-                        selectedPrincipalPlane_=plane;selectedFeature_.reset();sketchPlaneRequest_=plane;
+                        selectedPrincipalPlane_=plane;setSelectedFeature(std::nullopt);sketchPlaneRequest_=plane;
                         if(editor)editor->select(std::nullopt);
                     }
                     ImGui::EndPopup();
@@ -718,9 +746,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
     {
         if(selectedPrincipalPlane_&&!commandFocused){
             const char* name=*selectedPrincipalPlane_==PrincipalPlane::Front?"Front Plane":*selectedPrincipalPlane_==PrincipalPlane::Top?"Top Plane":"Right Plane";
-            ImGui::TextUnformatted("REFERENCE PLANE");
-            ImGui::Text("%s",name);
-            ImGui::TextWrapped("Create a sketch on this plane, then choose Line, Rectangle or Circle.");
+            ImGui::TextUnformatted(name);
+            ImGui::TextDisabled("Reference plane");
+            inspectorSection("AVAILABLE ACTIONS");
+            ImGui::TextWrapped("Start a sketch on this plane.");
             if(ImGui::Button("Sketch on Plane")){sketchPlaneRequest_=selectedPrincipalPlane_;}
         }
         if (selectedFeature_&&!commandFocused)
@@ -740,44 +769,60 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
             const auto details=editor&&editor->selection()
                 ?ui::inspectTopologySelection(*featureModel,*editor->selection()):std::nullopt;
-            ImGui::TextUnformatted(details&&details->owner==feature.id()
-                ?(details->isFace?"FACE SELECTION":"EDGE SELECTION"):"FEATURE SELECTION");
-            ImGui::Text("%s", feature.displayName().c_str());
+            const bool topologySelected=details&&details->owner==feature.id();
+            // A sub-element pick changes the logical inspection context; discard an
+            // unconfirmed feature draft even when the owning FeatureId is unchanged.
+            if(topologySelected&&editingFeature_==feature.id())editingFeature_.reset();
+            ImGui::TextUnformatted(topologySelected
+                ?(details->isFace?"Selected face":"Selected edge"):feature.displayName().c_str());
             const auto* kind = feature.kind() == features::FeatureKind::Sketch ? "Sketch"
                 : feature.kind() == features::FeatureKind::Extrude ? "Extrude"
                 : feature.kind() == features::FeatureKind::CutExtrude ? "Cut Extrude" : "Boolean";
-            ImGui::TextDisabled("%s", kind);
-            if (feature.state() == features::FeatureState::Failed)
-                ImGui::TextColored({1.0F, 0.38F, 0.34F, 1.0F}, "FAILED — inspect the diagnostic below");
-            else if (feature.state() == features::FeatureState::BlockedByDependency)
-                ImGui::TextColored({1.0F, 0.57F, 0.30F, 1.0F}, "BLOCKED — inspect the upstream feature");
-            else if (feature.state() == features::FeatureState::Dirty)
-                ImGui::TextColored({1.0F, 0.78F, 0.35F, 1.0F}, "Needs rebuild");
+            ImGui::TextDisabled("%s%s", topologySelected?"Owned by ":"", kind);
+            inspectorSection("IDENTITY");
+            if(topologySelected){
+                ImGui::Text("Geometry: %s",details->geometryType.c_str());
+                ImGui::TextWrapped("Owning feature: %s",feature.displayName().c_str());
+            }else ImGui::Text("Type: %s",kind);
+            if(editor&&editor->displayState(feature.id())==interaction::DisplayState::Hidden)
+                ImGui::TextUnformatted("Visibility: Hidden");
+            if(feature.state()==features::FeatureState::Failed)
+                ImGui::TextUnformatted("Status: FAILED");
+            else if(feature.state()==features::FeatureState::BlockedByDependency)
+                ImGui::TextUnformatted("Status: BLOCKED");
+            else if(feature.state()==features::FeatureState::Dirty)
+                ImGui::TextUnformatted("Status: Needs rebuild");
+            else ImGui::TextUnformatted("Status: Ready");
             if (editingFeature_ == feature.id())
-                ImGui::TextColored({0.42F, 0.73F, 1.0F, 1.0F},
-                    "Editing parameters — Confirm applies; Cancel discards");
-            ImGui::Separator();
-            if(editingFeature_!=feature.id()&&details&&details->owner==feature.id()){
-                    ImGui::TextUnformatted(details->isFace?"Selected face":"Selected edge");
-                    ImGui::Text("Geometry: %s",details->geometryType.c_str());
-                    ImGui::Text("Owning feature: %s",feature.displayName().c_str());
-                    if(details->isFace){
-                        if(details->faceRole){
-                            ImGui::Text("Support: %s of %s",
-                                features::semanticFaceRoleName(*details->faceRole),feature.displayName().c_str());
-                            if(ImGui::Button("Sketch on this face"))enterSketchRequest_=true;
-                        }else ImGui::TextDisabled("Sketch on this face is not yet supported.");
-                    }
-                    ImGui::Separator();
+                ImGui::TextUnformatted("Editing draft — Confirm applies; Cancel discards");
+            if(topologySelected&&editingFeature_!=feature.id()){
+                if(details->isFace&&details->faceRole){
+                    inspectorSection("RELATIONSHIPS");
+                    ImGui::TextWrapped("Support: %s of %s",
+                        features::semanticFaceRoleName(*details->faceRole),feature.displayName().c_str());
+                    inspectorSection("AVAILABLE ACTIONS");
+                    if(ImGui::Button("Sketch on this face"))enterSketchRequest_=true;
+                }else if(details->isFace){
+                    inspectorSection("AVAILABLE ACTIONS");
+                    ImGui::TextDisabled("Sketch on this face is not yet supported.");
+                }
             }
+            if(!topologySelected)
             if (feature.kind() == features::FeatureKind::Sketch)
             {
                 const auto& sketch = std::get<features::SketchFeature>(feature.data()).sketch;
+                inspectorSection("PROPERTIES");
                 ImGui::Text("%zu entities, %zu constraints", sketch.size(), sketch.constraintCount());
                 if(const auto*support=std::get_if<features::SemanticFaceSupport>(
-                    &std::get<features::SketchFeature>(feature.data()).support))
-                    ImGui::Text("Support: %s of %s",features::semanticFaceRoleName(support->capRole),
+                    &std::get<features::SketchFeature>(feature.data()).support)){
+                    inspectorSection("RELATIONSHIPS");
+                    ImGui::TextWrapped("Support: %s of %s",features::semanticFaceRoleName(support->capRole),
                         featureModel->find(support->sourceFeatureId).displayName().c_str());
+                }else{
+                    inspectorSection("RELATIONSHIPS");
+                    ImGui::TextUnformatted("Support: Explicit sketch plane");
+                }
+                inspectorSection("AVAILABLE ACTIONS");
                 if (ImGui::Button("Edit Sketch")) { enterSketchRequest_ = true;  }
                 ImGui::SameLine();
                 if (ImGui::Button("Extrude")) { editorCommandRequest_ = interaction::EditorCommand::Extrude;  }
@@ -787,55 +832,74 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
             }
             else if (feature.kind() == features::FeatureKind::Extrude)
             {
-                ImGui::TextUnformatted("Property Manager — Extrude");
                 const auto& extrusion=std::get<features::ExtrudeFeature>(feature.data());
-                ImGui::Text("Profile: %s",featureModel->find(extrusion.sourceSketchFeatureId).displayName().c_str());
+                inspectorSection(editingFeature_==feature.id()?"PARAMETERS — DRAFT":"PROPERTIES");
                 if(editingFeature_==feature.id()){
-                    ImGui::InputDouble("Distance", &featureDepthDraft_);
+                    ImGui::TextUnformatted("Distance (mm)");
+                    ImGui::SetNextItemWidth(-1);
+                    ImGui::InputDouble("##ExtrudeDistance", &featureDepthDraft_);
                     const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>geometry::defaultGeometricTolerance;
-                    if(!valid)ImGui::TextDisabled("Distance must be greater than the geometric tolerance.");
+                    if(!valid)ImGui::TextWrapped("Enter a positive distance greater than the geometric tolerance.");
+                    inspectorSection("CONFIRM OR CANCEL");
                     if(!valid)ImGui::BeginDisabled();
                     const bool confirmDistance=ImGui::Button("Confirm");
                     if (valid&&confirmDistance){featureDistanceRequest_ = std::pair{feature.id(), featureDepthDraft_};editingFeature_.reset();}
                     if(!valid)ImGui::EndDisabled();
                     ImGui::SameLine(); if (ImGui::Button("Cancel")) {featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;editingFeature_.reset();cancelPropertyRequest_ = true;}
                 }else{
-                    ImGui::Text("Distance: %.6g",std::get<features::ExtrudeFeature>(feature.data()).distance);
+                    ImGui::Text("Distance: %.6g mm",extrusion.distance);
+                }
+                inspectorSection("RELATIONSHIPS");
+                ImGui::TextWrapped("Profile: %s",featureModel->find(extrusion.sourceSketchFeatureId).displayName().c_str());
+                if(editingFeature_!=feature.id()){
+                    inspectorSection("AVAILABLE ACTIONS");
                     if(ImGui::Button("Edit parameters")){featureDepthDraft_=std::get<features::ExtrudeFeature>(feature.data()).distance;editingFeature_=feature.id();}
                 }
             }
             else if(feature.kind()==features::FeatureKind::CutExtrude)
             {
                 const auto&cut=std::get<features::CutExtrudeFeature>(feature.data());
-                ImGui::TextUnformatted("Property Manager — Cut Extrude");
-                ImGui::Text("Profile: %s",featureModel->find(cut.sourceSketchFeatureId).displayName().c_str());
-                ImGui::Text("Target: %s",featureModel->find(cut.targetResultFeatureId).displayName().c_str());
+                inspectorSection(editingFeature_==feature.id()?"PARAMETERS — DRAFT":"PROPERTIES");
                 if(editingFeature_==feature.id()){
-                    ImGui::InputDouble("Depth",&featureDepthDraft_,1.0,5.0,"%.3f");
+                    ImGui::TextUnformatted("Depth (mm)");
+                    ImGui::SetNextItemWidth(-1);
+                    ImGui::InputDouble("##CutDepth",&featureDepthDraft_,1.0,5.0,"%.3f");
                     ImGui::Checkbox("Reverse Direction",&featureReverseDraft_);
                     const bool valid=std::isfinite(featureDepthDraft_)&&featureDepthDraft_>geometry::defaultGeometricTolerance;
-                    if(!valid)ImGui::TextDisabled("Depth must be greater than the geometric tolerance.");
+                    if(!valid)ImGui::TextWrapped("Enter a positive depth greater than the geometric tolerance.");
+                    inspectorSection("CONFIRM OR CANCEL");
                     if(!valid)ImGui::BeginDisabled();
                     const bool confirmCut=ImGui::Button("Confirm");
                     if(valid&&confirmCut){featureCutRequest_=std::tuple{feature.id(),featureDepthDraft_,
                         featureReverseDraft_?features::CutDirection::Reverse:features::CutDirection::Forward};editingFeature_.reset();}
                     if(!valid)ImGui::EndDisabled();ImGui::SameLine();if(ImGui::Button("Cancel")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;editingFeature_.reset();cancelPropertyRequest_=true;}
                 }else{
-                    ImGui::Text("Depth: %.6g",cut.distance);ImGui::Text("Direction: %s",cut.direction==features::CutDirection::Reverse?"Reverse":"Forward");
+                    ImGui::Text("Depth: %.6g mm",cut.distance);
+                    ImGui::Text("Direction: %s",cut.direction==features::CutDirection::Reverse?"Reverse":"Forward");
+                }
+                inspectorSection("RELATIONSHIPS");
+                ImGui::TextWrapped("Profile: %s",featureModel->find(cut.sourceSketchFeatureId).displayName().c_str());
+                ImGui::TextWrapped("Target: %s",featureModel->find(cut.targetResultFeatureId).displayName().c_str());
+                if(editingFeature_!=feature.id()){
+                    inspectorSection("AVAILABLE ACTIONS");
                     if(ImGui::Button("Edit parameters")){featureDepthDraft_=cut.distance;featureReverseDraft_=cut.direction==features::CutDirection::Reverse;editingFeature_=feature.id();}
                 }
             }
             else
             {
-                ImGui::TextUnformatted("Boolean result");
+                inspectorSection("PROPERTIES");
                 const auto& value=std::get<features::BooleanFeature>(feature.data());
                 ImGui::Text("Operation: %s",value.operation==modeling::BooleanOperation::Union?"Union":
                     value.operation==modeling::BooleanOperation::Difference?"Difference":"Intersection");
-                ImGui::Text("Input A: %s",featureModel->find(value.inputA).displayName().c_str());
-                ImGui::Text("Input B: %s",featureModel->find(value.inputB).displayName().c_str());
+                inspectorSection("RELATIONSHIPS");
+                ImGui::TextWrapped("Input A: %s",featureModel->find(value.inputA).displayName().c_str());
+                ImGui::TextWrapped("Input B: %s",featureModel->find(value.inputB).displayName().c_str());
             }
             const auto status=ui::featureStatusDescription(*featureModel,feature.id());
-            if(!status.empty())ImGui::TextWrapped("%s",status.c_str());
+            if(!status.empty()){
+                inspectorSection("DIAGNOSTICS");
+                ImGui::TextWrapped("%s",status.c_str());
+            }
             if(feature.state()==features::FeatureState::BlockedByDependency)
                 for(const auto dependency:feature.dependencies()){
                     const auto& upstream=featureModel->find(dependency);
@@ -850,8 +914,10 @@ void ApplicationShell::drawSketchPanel(SketchTool activeTool, const sketch::Sket
                     }
                 }
         }
-        if (!featureRebuildStatus_.empty()) ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
-        ImGui::Separator();
+        if (!featureRebuildStatus_.empty()){
+            inspectorSection("LAST REBUILD");
+            ImGui::TextWrapped("%s", featureRebuildStatus_.c_str());
+        }
     }
     if (!selectedFeature_ && !selectedPrincipalPlane_ && !commandFocused
         && (!editor || !editor->activeSketchFeatureId()))
