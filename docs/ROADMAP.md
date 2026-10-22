@@ -19,7 +19,7 @@ SET-D01 Application Settings & Preferences: FROZEN; ADR-0070–0071 ACCEPTED; AD
 SET-01 Application Preferences First Slice: FROZEN; owner Experience Gate APPROVED; V3 918/918 PASS
 UX-01: FROZEN — V3 928/928 PASS; Experience Gate APPROVED WITH CHANGES; UX-01.R1: APPROVED / FROZEN; UX-02: FROZEN — V3 940/940 PASS and owner Experience Gate APPROVED; CAD/CAM capability horizon: PRESERVED
 UX-ROADMAP-R1: REVIEW COMPLETE; owner authorized bounded UX-04.1 Model selection/context work before UX-03 Export
-UX-04.1: TECHNICAL PASS / EXPERIENCE GATE PENDING (paused by owner); UX-04 campaign not frozen
+UX-04.1: TECHNICAL PASS / EXPERIENCE GATE IN PROGRESS; UX-04 campaign not frozen
 V1.2-C1: PASS — validated export mesh; C2: PASS — bounded STL export; C3: FROZEN WITH CLEAN-ENVIRONMENT WAIVER; C4: FROZEN UNDER REVISED BOUNDED N2 ACCEPTANCE
 ```
 

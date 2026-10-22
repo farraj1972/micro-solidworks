@@ -100,8 +100,8 @@ void main(){vec3 n=normalize(vNormal);float d=max(dot(n,normalize(vec3(0.35,-0.4
 struct PassState
 {
     GLint viewport[4]{}, scissor[4]{}, depthFunc{}, program{}, vao{};
-    GLboolean scissorEnabled{}, depthEnabled{}, blendEnabled{}, depthMask{}, colorMask[4]{};
-    GLfloat clearColor[4]{};
+    GLboolean scissorEnabled{}, depthEnabled{}, blendEnabled{}, polygonOffsetEnabled{}, depthMask{}, colorMask[4]{};
+    GLfloat clearColor[4]{}, lineWidth{}, polygonOffsetFactor{}, polygonOffsetUnits{};
     GLdouble clearDepth{};
 
     PassState()
@@ -114,9 +114,13 @@ struct PassState
         scissorEnabled = glIsEnabled(GL_SCISSOR_TEST);
         depthEnabled = glIsEnabled(GL_DEPTH_TEST);
         blendEnabled = glIsEnabled(GL_BLEND);
+        polygonOffsetEnabled = glIsEnabled(GL_POLYGON_OFFSET_FILL);
         glGetBooleanv(GL_DEPTH_WRITEMASK, &depthMask);
         glGetBooleanv(GL_COLOR_WRITEMASK, colorMask);
         glGetFloatv(GL_COLOR_CLEAR_VALUE, clearColor);
+        glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+        glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &polygonOffsetFactor);
+        glGetFloatv(GL_POLYGON_OFFSET_UNITS, &polygonOffsetUnits);
         glGetDoublev(GL_DEPTH_CLEAR_VALUE, &clearDepth);
     }
 
@@ -127,10 +131,13 @@ struct PassState
         if (scissorEnabled) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
         if (depthEnabled) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
         if (blendEnabled) glEnable(GL_BLEND); else glDisable(GL_BLEND);
+        if (polygonOffsetEnabled) glEnable(GL_POLYGON_OFFSET_FILL); else glDisable(GL_POLYGON_OFFSET_FILL);
         glDepthFunc(static_cast<GLenum>(depthFunc));
         glDepthMask(depthMask);
         glColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
         glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
+        glLineWidth(lineWidth);
+        glPolygonOffset(polygonOffsetFactor, polygonOffsetUnits);
         glClearDepth(clearDepth);
         glUseProgram(static_cast<GLuint>(program));
         glBindVertexArray(static_cast<GLuint>(vao));
@@ -523,6 +530,7 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
     glDepthMask(GL_TRUE);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDisable(GL_BLEND);
+    glDisable(GL_POLYGON_OFFSET_FILL);
     glClearColor(0.12F, 0.12F, 0.14F, 1.0F);
     glClearDepth(1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -546,7 +554,12 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
         {
             std::vector<rendering::LitVertex> vertices;vertices.reserve(display.triangles.size()*3);
             for(const auto&t:display.triangles)for(const auto&p:t.points)vertices.push_back({{p.x(),p.y(),p.z()},t.normal});
-            impl_->triangles.setVertices(vertices);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",{0.52,0.64,0.78});impl_->triangles.draw();
+            impl_->triangles.setVertices(vertices);impl_->litShader.bind();impl_->litShader.setMatrix4("uModel",math::Matrix4::identity());impl_->litShader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->litShader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));impl_->litShader.setVector3("uColor",{0.52,0.64,0.78});
+            // Bias filled triangles behind their own CAD edges so a pocket-floor
+            // boundary remains visible without exposing edges behind the solid.
+            glPolygonOffset(1.0F,1.0F);glEnable(GL_POLYGON_OFFSET_FILL);
+            impl_->triangles.draw();
+            glDisable(GL_POLYGON_OFFSET_FILL);
             impl_->shader.bind();impl_->shader.setMatrix4("uModel",math::Matrix4::identity());impl_->shader.setMatrix4("uView",viewMatrix(impl_->camera));impl_->shader.setMatrix4("uProjection",impl_->projection.matrix(impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
         }
         if(passes.topologyEdges)
@@ -604,7 +617,9 @@ void WorkspaceViewport::render(const WorkspaceLayout& layout, int framebufferWid
                 impl_->verticalFov,rect.aspectRatio(),impl_->nearPlane,impl_->farPlane));
             impl_->shader.setVector3("uColor",color);
             glDepthFunc(GL_LEQUAL);
+            if(pickedEdge)glLineWidth(3.0F);
             impl_->solidEdges.draw();
+            if(pickedEdge)glLineWidth(saved.lineWidth);
             glDepthFunc(GL_LESS);
         };
         drawState(impl_->solidHover,{0.25,0.9,1.0});

@@ -1,6 +1,6 @@
 # UX-04.1 — Model Selection & Context Clarity
 
-Status: **TECHNICAL PASS / EXPERIENCE PENDING — OWNER PAUSED GATE** (2026-10-22).
+Status: **TECHNICAL PASS / EXPERIENCE GATE IN PROGRESS** (2026-10-22).
 
 ## Baseline and scope
 
@@ -105,9 +105,27 @@ delete or history restoration. Inspecting does not create a CAD transaction.
   checks face occlusion at that nearest point; **21/21** directed
   Presentation/SolidDisplay/Picker tests passed, including the pocket rim,
   outer horizontal edge and a hidden-edge regression. **7/7** directed
-  Picker/viewport tests passed after the correction. The owner paused the
-  Experience Gate before retesting this final executable. Browser/Inspector,
-  edit/history and preferences checks still await owner decision.
+  Picker/viewport tests passed after the correction. When the owner resumed
+  the Experience Gate, Wireframe Inspector identified the pocket edges, but
+  their selected color did not change. A framebuffer regression reproduced
+  the missing edge highlight at one-pixel width. The selected edge now draws
+  three pixels wide with normal depth occlusion and restores the previous
+  OpenGL line width. The framebuffer test confirms orange pixels in Wireframe,
+  Shaded With Edges and Shaded. All four pocket-rim edges pass a directed
+  picking fixture; **41/41** related Browser, display, picker and viewport
+  tests pass. The owner confirmed picking and visible selection in Wireframe,
+  Shaded With Edges and Shaded, then identified a separate presentation defect:
+  edges at the pocket floor were selectable but not drawn over filled faces.
+  A framebuffer test reproduced this: Shaded and Shaded With Edges had identical
+  pixels at a visible floor edge. The filled-face pass now applies a small
+  OpenGL polygon depth offset; the edge pass retains normal depth testing.
+  Removing the offset makes the regression fail again. OpenGL polygon offset
+  state and line width are restored after the pass. **42/42** directed Browser,
+  display, picker and viewport tests pass, including both framebuffer checks.
+  Owner retest of the pocket floor **PASS** across all three display modes,
+  with hover/selection, no hidden edges and normal exit. The remaining
+  Browser/Inspector, edit/history and preferences checks await the final
+  owner decision.
 - Full CTest, clean configure/build and unrelated geometry suites intentionally
   omitted: no baseline freeze or toolchain/dependency change.
 
@@ -136,12 +154,11 @@ Compare against UX-REF-01 using the same viewport fixture where possible:
    verify the default can be restored. If available, check 125%/150% Windows
    scaling as a separate visual observation. Close normally.
 
-**Resume point:** use `build/Debug/micro_solidworks.exe` and
-`out/ux-01-gate.microsw`. First retest the horizontal exterior edge, the
-pocket rim and an internal pocket edge in hover and selected states; confirm
-the Inspector's owning Feature and normal closing. Then resume the remaining
-Browser/Inspector, edit/history, Save/Open and Orange/Blue checks above. The
-owner expressly paused the gate on 2026-10-22. No approval or freeze is claimed.
+**Current gate:** the owner confirmed the exterior, pocket-rim and pocket-floor
+edge retests in `build/Debug/micro_solidworks.exe` using
+`out/ux-01-gate.microsw`. Resume the remaining Browser/Inspector,
+edit/history, Save/Open and Orange/Blue checks above. The owner paused and
+subsequently resumed the gate on 2026-10-22. No approval or freeze is claimed.
 
 Record any first failing step, display mode and selected element. Real
 screenshots may be stored in `docs/ux04_validation/`; canonical package images

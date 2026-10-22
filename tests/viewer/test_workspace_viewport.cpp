@@ -19,6 +19,8 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <numbers>
@@ -179,6 +181,117 @@ TEST_F(WorkspaceViewportTest, ActiveSketchPickingWinsWhileExistingSolidRemainsCo
     EXPECT_EQ(viewport.hoveredEntity(),sketchPoint);
     EXPECT_NO_THROW(viewport.render(layout,128,128));
     EXPECT_EQ(glGetError(),GL_NO_ERROR);
+}
+
+TEST_F(WorkspaceViewportTest, PocketRimSelectionChangesVisibleEdgeColor)
+{
+    microsw::features::FeatureModel model;
+    microsw::sketch::Sketch base;
+    (void)base.addRectangle({-40,-25},{40,25});
+    const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+    microsw::sketch::Sketch pocket;
+    (void)pocket.addRectangle({-9,-7},{9,7});
+    const auto profile=model.addFaceSketch(std::move(pocket),target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    (void)model.addCutExtrude(profile,target,3,microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    microsw::presentation::FeaturePresentation presentation;
+    presentation.update(model,[&](auto feature){return feature!=target;});
+    WorkspaceViewport viewport{presentation.geometry()};
+    viewport.setFeaturePresentation(&presentation);
+    viewport.fitVisibleGeometry();
+    const WorkspaceLayout layout{0,0,128,128,128,128};
+    const auto screen=viewport.projectPoint(layout,128,128,{0,-7,8});
+    ASSERT_TRUE(screen);
+    microsw::WorkspaceInput input{};
+    input.x=screen->x;input.y=screen->y;
+    input.focused=true;input.pointerValid=true;input.workspaceHovered=true;
+    input.leftPressed=true;
+    viewport.updateSelection(layout,input,128,128);
+    ASSERT_TRUE(viewport.selectedSolidTarget());
+    ASSERT_TRUE(std::holds_alternative<microsw::interaction::TopologyEdgeTarget>(
+        *viewport.selectedSolidTarget()));
+    const auto selectedEdge=std::get<microsw::interaction::TopologyEdgeTarget>(
+        *viewport.selectedSolidTarget());
+    EXPECT_NE(std::find_if(presentation.solidDisplay().edges.begin(),
+        presentation.solidDisplay().edges.end(),[&](const auto& edge){
+            return edge.target==selectedEdge;
+        }),presentation.solidDisplay().edges.end());
+    for(const auto mode:{microsw::viewer::SolidDisplayMode::Wireframe,
+        microsw::viewer::SolidDisplayMode::ShadedWithEdges,
+        microsw::viewer::SolidDisplayMode::Shaded})
+    {
+        viewport.setDisplayMode(mode);
+        viewport.render(layout,128,128);
+        std::array<unsigned char,128*128*4> pixels{};
+        glReadPixels(0,0,128,128,GL_RGBA,GL_UNSIGNED_BYTE,pixels.data());
+        int orange=0;
+        for(std::size_t i=0;i<pixels.size();i+=4)
+            if(pixels[i]>200&&pixels[i+1]>70&&pixels[i+1]<180&&pixels[i+2]<70)
+                ++orange;
+        EXPECT_GT(orange,0) << "display mode=" << static_cast<int>(mode);
+    }
+}
+
+TEST_F(WorkspaceViewportTest, PocketFloorEdgesRemainVisibleWithShadedEdges)
+{
+    glfwSetWindowSize(static_cast<GLFWwindow*>(window->nativeHandle()),512,512);
+    glfwPollEvents();
+    const auto framebuffer=window->framebufferSize();
+    ASSERT_EQ(framebuffer.width,512);
+    ASSERT_EQ(framebuffer.height,512);
+    microsw::features::FeatureModel model;
+    microsw::sketch::Sketch base;
+    (void)base.addRectangle({-40,-25},{40,25});
+    const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+    microsw::sketch::Sketch pocket;
+    (void)pocket.addRectangle({-9,-7},{9,7});
+    const auto profile=model.addFaceSketch(std::move(pocket),target,
+        microsw::features::ExtrudeCapRole::EndCap);
+    (void)model.addCutExtrude(profile,target,3,microsw::features::CutDirection::Reverse);
+    ASSERT_EQ(model.rebuild().status,microsw::features::RebuildStatus::Success);
+    microsw::presentation::FeaturePresentation presentation;
+    presentation.update(model,[&](auto feature){return feature!=target;});
+    WorkspaceViewport viewport{presentation.geometry()};
+    viewport.setFeaturePresentation(&presentation);
+    viewport.fitVisibleGeometry();
+    const WorkspaceLayout layout{0,0,512,512,512,512};
+    std::optional<microsw::viewer::ScreenPoint> visibleFloorEdge;
+    for(const auto& edge:presentation.solidDisplay().edges)
+    {
+        if(edge.points.size()!=2)continue;
+        const auto& a=edge.points[0];const auto& b=edge.points[1];
+        if(std::abs(a.z()-5)>1e-8||std::abs(b.z()-5)>1e-8)continue;
+        if(std::max(std::abs(a.x()),std::abs(b.x()))>9.01||
+            std::max(std::abs(a.y()),std::abs(b.y()))>7.01)continue;
+        const microsw::geometry::Point3 midpoint{
+            (a.x()+b.x())/2,(a.y()+b.y())/2,5};
+        const auto projected=viewport.projectPoint(layout,512,512,midpoint);
+        if(!projected)continue;
+        const auto hit=viewport.pickSolidTarget(layout,512,512,projected->x,projected->y);
+        if(hit&&std::holds_alternative<microsw::interaction::TopologyEdgeTarget>(hit->target)
+            &&std::get<microsw::interaction::TopologyEdgeTarget>(hit->target)==edge.target){
+            visibleFloorEdge=projected;break;
+        }
+    }
+    ASSERT_TRUE(visibleFloorEdge);
+    const int x=static_cast<int>(std::round(visibleFloorEdge->x));
+    const int y=511-static_cast<int>(std::round(visibleFloorEdge->y));
+    ASSERT_GE(x,4);ASSERT_LT(x,508);ASSERT_GE(y,4);ASSERT_LT(y,508);
+    const auto darkness=[&](microsw::viewer::SolidDisplayMode mode){
+        viewport.setDisplayMode(mode);
+        viewport.render(layout,512,512);
+        std::array<unsigned char,5*5*4> pixels{};
+        glReadPixels(x-2,y-2,5,5,GL_RGBA,GL_UNSIGNED_BYTE,pixels.data());
+        int darkest=765;
+        for(std::size_t i=0;i<pixels.size();i+=4)
+            darkest=std::min(darkest,static_cast<int>(pixels[i])
+                +pixels[i+1]+pixels[i+2]);
+        return darkest;
+    };
+    const auto shaded=darkness(microsw::viewer::SolidDisplayMode::Shaded);
+    const auto edged=darkness(microsw::viewer::SolidDisplayMode::ShadedWithEdges);
+    EXPECT_LT(edged,shaded-20) << "shaded=" << shaded << " edged=" << edged;
 }
 
 TEST(SolidDisplayMode, MapsToExplicitFaceAndTopologyEdgePasses)
@@ -361,6 +474,9 @@ TEST_F(WorkspaceViewportTest, RenderRestoresPassState)
     glEnable(GL_SCISSOR_TEST);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-2.0F,-3.0F);
+    glLineWidth(2.0F);
     glDepthFunc(GL_GREATER);
     glDepthMask(GL_FALSE);
     glColorMask(GL_TRUE, GL_FALSE, GL_TRUE, GL_FALSE);
@@ -378,6 +494,14 @@ TEST_F(WorkspaceViewportTest, RenderRestoresPassState)
     EXPECT_EQ(glIsEnabled(GL_SCISSOR_TEST), GL_TRUE);
     EXPECT_EQ(glIsEnabled(GL_DEPTH_TEST), GL_FALSE);
     EXPECT_EQ(glIsEnabled(GL_BLEND), GL_TRUE);
+    EXPECT_EQ(glIsEnabled(GL_POLYGON_OFFSET_FILL), GL_TRUE);
+    GLfloat factor{}, units{}, width{};
+    glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &factor);
+    glGetFloatv(GL_POLYGON_OFFSET_UNITS, &units);
+    glGetFloatv(GL_LINE_WIDTH, &width);
+    EXPECT_FLOAT_EQ(factor,-2.0F);
+    EXPECT_FLOAT_EQ(units,-3.0F);
+    EXPECT_FLOAT_EQ(width,2.0F);
     glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
     EXPECT_EQ(depthFunc, GL_GREATER);
     GLboolean mask{}, colors[4]{};

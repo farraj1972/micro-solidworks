@@ -105,6 +105,40 @@ TEST(SolidPicker, PicksPocketRimEdgeWithinPixelTolerance)
  ASSERT_TRUE(std::holds_alternative<interaction::TopologyEdgeTarget>(hit->target));
  EXPECT_EQ(std::get<interaction::TopologyEdgeTarget>(hit->target),edge->target);
 }
+TEST(SolidPicker, PicksEveryPocketRimEdgeAtTheVisibleSurface)
+{
+ features::FeatureModel model;
+ sketch::Sketch base;(void)base.addRectangle({-40,-25},{40,25});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+ sketch::Sketch pocket;(void)pocket.addRectangle({-9,-7},{9,7});
+ const auto profile=model.addFaceSketch(std::move(pocket),target,features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(profile,target,3,features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+ const auto& solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
+ const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
+ viewer::PickingContext context;
+ context.camera=viewer::OrbitCamera{{0,0,4},130,-std::numbers::pi/4,std::numbers::pi/6};
+ context.width=1260;context.height=798;
+ int rimCount=0;
+ for(const auto& edge:display.edges){
+  if(edge.points.size()!=2)continue;
+  const auto& a=edge.points[0];const auto& b=edge.points[1];
+  if(std::abs(a.z()-8)>1e-8||std::abs(b.z()-8)>1e-8)continue;
+  if(std::max(std::abs(a.x()),std::abs(b.x()))>9.01||
+     std::max(std::abs(a.y()),std::abs(b.y()))>7.01)continue;
+  ++rimCount;
+  const geometry::Point3 midpoint{(a.x()+b.x())/2,(a.y()+b.y())/2,8};
+  const auto projected=viewer::projectWorldToScreen(midpoint,context);
+  ASSERT_TRUE(projected);
+  context.mouseX=projected->x;context.mouseY=projected->y;
+  SCOPED_TRACE("Pocket rim edge " + std::to_string(rimCount));
+  const auto hit=viewer::pickSolid(display,context);
+  ASSERT_TRUE(hit);
+  ASSERT_TRUE(std::holds_alternative<interaction::TopologyEdgeTarget>(hit->target));
+  EXPECT_EQ(std::get<interaction::TopologyEdgeTarget>(hit->target),edge.target);
+ }
+ EXPECT_EQ(rimCount,4);
+}
 TEST(SolidPicker, RejectsEdgeOccludedByFrontFaceAtItsScreenPosition)
 {
  presentation::SolidDisplayData display;
