@@ -57,3 +57,13 @@ selection, editor, session and preferences tests pass; UX-01's final V3
 Command search, in-canvas dimensions, floating toolbar and richer Export UX
 remain UX-02/UX-03 plans. All deferred modeling, STEP/DXF/3MF, drawings,
 assemblies, scripting and CAM capability records above remain preserved.
+
+## UX-04.2 current addendum (historical SPEC-01 cut unchanged)
+
+The owner-approved [UX-04.2 Browser/Inspector refinement](../UX_04_2_BROWSER_INSPECTOR_VALIDATION.md)
+adds evidence for the bounded `CAD-005`, `UX-001`–`UX-003` and
+`UX-005-CONTEXT` children: a derived ordered tree, contextual inspection,
+human-named relationships and diagnostics, and transactional feature drafts.
+It introduces no new CAD identity, geometry, persistence contract or complete
+parent-requirement claim. Name/command search and future CAD/CAM capabilities
+remain deferred; UX-04 is not frozen.

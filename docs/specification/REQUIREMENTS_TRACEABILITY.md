@@ -71,3 +71,17 @@ layout, tree, editor, viewport, history and preference tests. Final V3 passed
 remaining conceptual/design differences to be formalized later. The full
 DRAFT requirements, UX-02/UX-03 and CAM horizon remain
 unchanged; this addendum does not approve them.
+
+## UX-04.2 current trace (historical ledger unchanged)
+
+The owner-approved [UX-04.2 gate](../UX_04_2_BROWSER_INSPECTOR_VALIDATION.md)
+adds bounded `CAD-005`, `UX-001`–`UX-003` and `UX-005-CONTEXT` evidence:
+[`ApplicationShell`](../../src/ui/ApplicationShell.cpp) derives the Browser and
+contextual Inspector from existing FeatureModel and EditorContext state;
+[`FeatureTreeModel`](../../src/ui/FeatureTreeModel.cpp) preserves feature order,
+single absorbed-Sketch placement and human-named FAILED/BLOCKED diagnostics.
+Directed [UI tests](../../tests/ui/test_transform_editor.cpp),
+[tree/selection tests](../../tests/ui/test_feature_tree_model.cpp),
+EditorContext, history and persistence contracts passed targeted validation.
+This does not fulfill search/onboarding, create persistent topology identity,
+approve later UX-04/UX-03 work or revise the frozen source requirement status.

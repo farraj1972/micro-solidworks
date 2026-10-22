@@ -247,7 +247,9 @@ selection/context increment on 2026-10-21 and approved its Experience Gate
 on 2026-10-22. The review below remains the historical proposal;
 [UX-04.1 validation](UX_04_1_MODEL_SELECTION_VALIDATION.md) records the
 completed slice and the omitted separate manual HiDPI check. UX-03 and later
-UX-04 slices remain outside that authorization.
+UX-04 slices remained outside that authorization. The owner subsequently
+authorized and approved the bounded [UX-04.2 Browser/Inspector refinement](UX_04_2_BROWSER_INSPECTOR_VALIDATION.md).
+UX-04 is still in progress and not frozen; UX-03 remains planned.
 
 1. Approve or reject **Option A before UX-03**, including proposed use of
    `UX-04` for Model refinement and moving the old UX-04 future-workspace
