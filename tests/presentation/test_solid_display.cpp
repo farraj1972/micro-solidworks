@@ -1,6 +1,7 @@
 #include "core/topology/CuboidBuilder.h"
 #include "presentation/SolidDisplay.h"
 #include "viewer/SolidPicker.h"
+#include "viewer/GeometryPicker.h"
 #include "features/GeneralExtrusion.h"
 #include "features/PlanarRegion.h"
 #include "features/FeatureModel.h"
@@ -30,6 +31,96 @@ TEST(SolidPicker, EmptyDisplayHasNoHit)
 {
  viewer::PickingContext context;context.camera=viewer::OrbitCamera{{},10,0,0};context.width=800;context.height=600;context.mouseX=400;context.mouseY=300;
  EXPECT_FALSE(viewer::pickSolid({},context));
+}
+TEST(SolidPicker, PicksVisibleHorizontalPocketPlateEdgeWithinPixelTolerance)
+{
+ features::FeatureModel model;
+ sketch::Sketch base;(void)base.addRectangle({-40,-25},{40,25});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+ sketch::Sketch pocket;(void)pocket.addRectangle({-9,-7},{9,7});
+ const auto profile=model.addFaceSketch(std::move(pocket),target,features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(profile,target,3,features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+ const auto& solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
+ const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
+ const auto edge=std::find_if(display.edges.begin(),display.edges.end(),[](const auto& candidate){
+  if(candidate.points.size()!=2)return false;
+  const auto& a=candidate.points[0];const auto& b=candidate.points[1];
+  return std::abs(a.y()+25)<1e-8&&std::abs(b.y()+25)<1e-8
+   &&std::abs(a.z()-8)<1e-8&&std::abs(b.z()-8)<1e-8
+   &&std::abs(a.x()-b.x())>10;
+ });
+ ASSERT_NE(edge,display.edges.end());
+ viewer::PickingContext context;
+ context.camera=viewer::OrbitCamera{{0,0,4},130,-std::numbers::pi/4,std::numbers::pi/6};
+ context.width=1600;context.height=900;
+ const geometry::Point3 midpoint{(edge->points[0].x()+edge->points[1].x())/2,-25,8};
+ const geometry::Point3 inside{midpoint.x(),-24,8};
+ const auto boundary=viewer::projectWorldToScreen(midpoint,context);
+ const auto inner=viewer::projectWorldToScreen(inside,context);
+ ASSERT_TRUE(boundary);ASSERT_TRUE(inner);
+ const auto dx=inner->x-boundary->x,dy=inner->y-boundary->y;
+ const auto length=std::hypot(dx,dy);
+ ASSERT_GT(length,0);
+ context.mouseX=boundary->x+2*dx/length;
+ context.mouseY=boundary->y+2*dy/length;
+ const auto hit=viewer::pickSolid(display,context);
+ ASSERT_TRUE(hit);
+ ASSERT_TRUE(std::holds_alternative<interaction::TopologyEdgeTarget>(hit->target));
+ EXPECT_EQ(std::get<interaction::TopologyEdgeTarget>(hit->target),edge->target);
+}
+TEST(SolidPicker, PicksPocketRimEdgeWithinPixelTolerance)
+{
+ features::FeatureModel model;
+ sketch::Sketch base;(void)base.addRectangle({-40,-25},{40,25});
+ const auto target=model.addExtrude(model.addSketch(std::move(base)),8);
+ sketch::Sketch pocket;(void)pocket.addRectangle({-9,-7},{9,7});
+ const auto profile=model.addFaceSketch(std::move(pocket),target,features::ExtrudeCapRole::EndCap);
+ const auto cut=model.addCutExtrude(profile,target,3,features::CutDirection::Reverse);
+ ASSERT_EQ(model.rebuild().status,features::RebuildStatus::Success);
+ const auto& solid=std::get<features::SolidFeatureCache>(*model.find(cut).cache()).solids.front();
+ const auto display=presentation::deriveSolidDisplay(solid,cut,{0});
+ const auto edge=std::find_if(display.edges.begin(),display.edges.end(),[](const auto& candidate){
+  if(candidate.points.size()!=2)return false;
+  const auto& a=candidate.points[0];const auto& b=candidate.points[1];
+  return std::abs(a.y()+7)<1e-8&&std::abs(b.y()+7)<1e-8
+   &&std::abs(a.z()-8)<1e-8&&std::abs(b.z()-8)<1e-8
+   &&std::abs(a.x()-b.x())>10;
+ });
+ ASSERT_NE(edge,display.edges.end());
+ viewer::PickingContext context;
+ context.camera=viewer::OrbitCamera{{0,0,4},130,-std::numbers::pi/4,std::numbers::pi/6};
+ context.width=1600;context.height=900;
+ const geometry::Point3 midpoint{(edge->points[0].x()+edge->points[1].x())/2,-7,8};
+ const auto boundary=viewer::projectWorldToScreen(midpoint,context);
+ const auto topFace=viewer::projectWorldToScreen({midpoint.x(),-8,8},context);
+ ASSERT_TRUE(boundary);ASSERT_TRUE(topFace);
+ const auto dx=topFace->x-boundary->x,dy=topFace->y-boundary->y;
+ const auto length=std::hypot(dx,dy);
+ ASSERT_GT(length,0);
+ context.mouseX=boundary->x+2*dx/length;
+ context.mouseY=boundary->y+2*dy/length;
+ const auto hit=viewer::pickSolid(display,context);
+ ASSERT_TRUE(hit);
+ ASSERT_TRUE(std::holds_alternative<interaction::TopologyEdgeTarget>(hit->target));
+ EXPECT_EQ(std::get<interaction::TopologyEdgeTarget>(hit->target),edge->target);
+}
+TEST(SolidPicker, RejectsEdgeOccludedByFrontFaceAtItsScreenPosition)
+{
+ presentation::SolidDisplayData display;
+ const features::FeatureId feature{1};
+ display.triangles.push_back({{geometry::Point3{-2,-2,0},
+   geometry::Point3{2,-2,0},geometry::Point3{0,2,0}},
+  math::Vector3{0,0,1},{feature,{0},topology::FaceId{0}}});
+ display.edges.push_back({{geometry::Point3{-0.5,0,-1},geometry::Point3{0.5,0,-1}},
+  {feature,{0},topology::EdgeId{0}}, {}});
+ viewer::PickingContext context;
+ context.camera=viewer::OrbitCamera{{},10,0,0};
+ context.camera.setOrientation({0,0,-1},{0,1,0});
+ context.width=800;context.height=600;context.mouseX=400;context.mouseY=300;
+ const auto hit=viewer::pickSolid(display,context);
+ ASSERT_TRUE(hit);
+ EXPECT_TRUE(std::holds_alternative<interaction::TopologyFaceTarget>(hit->target));
 }
 TEST(SolidDisplay, HoledCapLeavesHoleEmptyAndCylinderIsTessellated)
 {
