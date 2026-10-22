@@ -1,6 +1,6 @@
 # UX-04.1 — Model Selection & Context Clarity
 
-Status: **TECHNICAL PASS / EXPERIENCE GATE IN PROGRESS** (2026-10-22).
+Status: **PASS — TECHNICAL VALIDATION AND OWNER EXPERIENCE GATE APPROVED** (2026-10-22).
 
 ## Baseline and scope
 
@@ -123,13 +123,25 @@ delete or history restoration. Inspecting does not create a CAD transaction.
   state and line width are restored after the pass. **42/42** directed Browser,
   display, picker and viewport tests pass, including both framebuffer checks.
   Owner retest of the pocket floor **PASS** across all three display modes,
-  with hover/selection, no hidden edges and normal exit. The remaining
-  Browser/Inspector, edit/history and preferences checks await the final
-  owner decision.
+  with hover/selection, no hidden edges and normal exit. The owner then
+  completed the Browser/Inspector, edit/history, Save/Open and Orange/Blue
+  checks and decided **APPROVED; all steps passed**. The application closed
+  normally.
 - Full CTest, clean configure/build and unrelated geometry suites intentionally
   omitted: no baseline freeze or toolchain/dependency change.
 
-## Experience Gate — owner roteiro
+## Experience Gate — owner result and roteiro
+
+**Decision: APPROVED (2026-10-22).** The owner confirmed the corrected
+exterior and pocket-edge selection, the visible pocket-floor boundary in
+Shaded With Edges, separate Shaded/Wireframe behavior, hover versus selection,
+and normal shutdown. The final gate covered Browser hierarchy and context
+actions, synchronized Feature/face/edge Inspector, no internal IDs, Cut Extrude
+Cancel/Confirm, Rebuild, Undo/Redo, Save/Open, read-only inspection without
+dirty/Undo changes, and both Orange and Blue preferences with default
+restoration. No step was reported untested or blocking. The owner compared
+the Model workspace with UX-REF-01; this is an owner observation, not an
+automated pixel-conformance claim. Manual HiDPI was not separately confirmed.
 
 Open a saved mechanical part with a blind pocket in the new Debug build.
 Compare against UX-REF-01 using the same viewport fixture where possible:
@@ -154,16 +166,14 @@ Compare against UX-REF-01 using the same viewport fixture where possible:
    verify the default can be restored. If available, check 125%/150% Windows
    scaling as a separate visual observation. Close normally.
 
-**Current gate:** the owner confirmed the exterior, pocket-rim and pocket-floor
-edge retests in `build/Debug/micro_solidworks.exe` using
-`out/ux-01-gate.microsw`. Resume the remaining Browser/Inspector,
-edit/history, Save/Open and Orange/Blue checks above. The owner paused and
-subsequently resumed the gate on 2026-10-22. No approval or freeze is claimed.
+The owner paused and subsequently resumed the gate on 2026-10-22, completing
+all listed scenarios on `build/Debug/micro_solidworks.exe` with
+`out/ux-01-gate.microsw`. This approves **UX-04.1** only; the broader UX-04
+campaign is not frozen.
 
-Record any first failing step, display mode and selected element. Real
-screenshots may be stored in `docs/ux04_validation/`; canonical package images
-must not be presented as executable evidence. **Do not mark the Experience
-Gate approved until the owner reports APPROVED or APPROVED WITH CHANGES.**
+Real screenshots may be stored in `docs/ux04_validation/`; canonical package
+images must not be presented as executable evidence. Owner-observed behavior
+and the directed framebuffer tests are the validation evidence for this slice.
 
 ## Architecture and remaining limits
 
