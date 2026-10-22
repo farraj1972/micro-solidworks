@@ -1,6 +1,6 @@
 # UX-04.1 — Model Selection & Context Clarity
 
-Status: **TECHNICAL PASS / EXPERIENCE GATE PENDING** (2026-10-22).
+Status: **TECHNICAL PASS / EXPERIENCE PENDING — OWNER PAUSED GATE** (2026-10-22).
 
 ## Baseline and scope
 
@@ -26,12 +26,22 @@ owner-observed tonal boundary only when that face was hovered or selected.
 This is a **derived selection-overlay defect**, not evidence of a broken or
 open CAD face. Face normals and the underlying Solid were not changed.
 
-The selected and hovered face overlay now follows only visible, real CAD
-edges incident to the exact selected face. The coplanar suppressed edge stays
-absent; face and edge picking retain their existing rebuild-local typed
-targets. Shaded keeps lit faces without global edges; Shaded With Edges keeps
-lit faces and real topology edges; Wireframe keeps topology edges without face
-fill. Depth testing still occludes hidden geometry. Hover remains cyan;
+The first correction drew only visible incident CAD edges around the exact
+picked FaceId. During the owner gate, this showed intrusive lines on hover and
+selection, and the face itself did not change tone. The owner rejected that
+visual behavior. A second, bounded correction derived a **connected coplanar
+visual highlight region** from suppressed seam adjacency and applied one
+consistent fill across that region in Shaded and Shaded With Edges. The owner's
+second retest still showed the line: `FeaturePresentation::update` had copied
+triangles and edges from each Solid but omitted the new coplanar adjacency when
+assembling the actual viewport display. A third correction propagates that
+adjacency into the aggregate, with an integration test using the saved plate's
+base and rectangular pocket dimensions. Picking,
+Inspector and every triangle retain the exact selected rebuild-local FaceId;
+the region is display-only and never a CAD selection set. Wireframe uses only
+visible topology-edge feedback without filling faces. Shaded keeps lit faces
+without global edges; Shaded With Edges keeps lit faces and real topology
+edges. Depth testing still occludes hidden geometry. Hover remains cyan;
 selection uses the SET-01 Orange/Blue preference. A circular boundary fixture
 checks that derived curved edges retain incident face identity.
 
@@ -57,16 +67,47 @@ delete or history restoration. Inspecting does not create a CAD transaction.
 - **V2, targeted affected closure:** Presentation, Viewer, Interaction, UI,
   Application and directly related FeatureModel/history/persistence contracts.
 - Incremental Debug build of `micro_solidworks_tests` and `micro_solidworks`:
-  **PASS**, with no project compiler warnings reported.
+  latest face-and-edge candidate **PASS**, with no project compiler warnings
+  reported.
 - Directed tests: pocket coplanar face/edge reproduction; curved boundary
   mapping; display-mode policy; picker; viewport highlight/depth state;
   Browser tree; topology context validity; editor selection/rebuild; feature
   history and document persistence. **61/61** Presentation/Viewer/Interaction
-  tests and **43/43** FeatureModel/history/persistence tests passed. After the
-  final UI adjustment, the directly affected Browser tests passed **10/10**.
+  tests and **43/43** FeatureModel/history/persistence tests passed on the first
+  candidate. The directly affected Browser tests passed **10/10**. Recheck
+  of the corrected coplanar-region aggregation: **19/19** directly affected
+  FeaturePresentation/SolidDisplay/Picker/display-mode tests passed, including
+  the new Presentation aggregation test. A subsequent owner check found that
+  the exterior vertical CAD edge highlights only one of its split segments.
+  A directed test confirms the two collinear visible `EdgeId`s at the pocket
+  floor; a display-only edge region now joins their highlight while retaining
+  the exact picked `EdgeId`. The final **21/21** directed Presentation,
+  Picker, display-mode and OpenGL viewport tests passed.
+  **31/31** viewport, Browser and EditorContext tests passed before the edge
+  correction; the directly affected viewport GL test passed after it.
 - `git diff --check`: **PASS** (line-ending conversion notices only).
-- Runtime GL/ImGui construction and shutdown occurred in the targeted tests;
-  visible end-user behavior remains to be confirmed in the owner gate.
+- Runtime GL/ImGui construction and shutdown occurred in the targeted tests.
+  The first owner visual check **did not pass**: hover and selected outlines
+  remained intrusive, including in the saved plate with Sketch3 hidden.
+  The second owner visual check also **did not pass** because the aggregate
+  omitted the region adjacency. The third candidate's directed owner retest
+  **passed**: with Sketch3 hidden, hover/selection on the exterior pocket wall
+  was continuous in Shaded and Shaded With Edges, Wireframe showed only actual
+  edges, and the application closed normally. During the remaining gate the
+  owner observed a new failure: a vertical exterior edge's hover/selection
+  highlight stopped at the pocket-floor split. The owner confirmed the
+  corrected edge no longer breaks. Individual horizontal/pocket-edge selection
+  then failed in the owner check: only the outer vertical edges could be picked.
+  A directed test reproduced the pocket-rim case at a cursor offset of two
+  logical pixels, within the six-pixel picking tolerance: the old picker chose
+  the adjacent face. It compared edge depth with face depth at the displaced
+  cursor rather than at the edge's nearest screen point. The corrected picker
+  checks face occlusion at that nearest point; **21/21** directed
+  Presentation/SolidDisplay/Picker tests passed, including the pocket rim,
+  outer horizontal edge and a hidden-edge regression. **7/7** directed
+  Picker/viewport tests passed after the correction. The owner paused the
+  Experience Gate before retesting this final executable. Browser/Inspector,
+  edit/history and preferences checks still await owner decision.
 - Full CTest, clean configure/build and unrelated geometry suites intentionally
   omitted: no baseline freeze or toolchain/dependency change.
 
@@ -94,6 +135,13 @@ Compare against UX-REF-01 using the same viewport fixture where possible:
 5. Repeat the selection comparison with Orange and Blue in Preferences;
    verify the default can be restored. If available, check 125%/150% Windows
    scaling as a separate visual observation. Close normally.
+
+**Resume point:** use `build/Debug/micro_solidworks.exe` and
+`out/ux-01-gate.microsw`. First retest the horizontal exterior edge, the
+pocket rim and an internal pocket edge in hover and selected states; confirm
+the Inspector's owning Feature and normal closing. Then resume the remaining
+Browser/Inspector, edit/history, Save/Open and Orange/Blue checks above. The
+owner expressly paused the gate on 2026-10-22. No approval or freeze is claimed.
 
 Record any first failing step, display mode and selected element. Real
 screenshots may be stored in `docs/ux04_validation/`; canonical package images
