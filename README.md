@@ -17,6 +17,13 @@ full model/sketch UX and execution on a developer-free Windows machine were
 waived, not demonstrated. The final technical V3 passed 927/927 tests and
 normal startup/shutdown. See [v1.2 release evidence](docs/V1_2_0_RELEASE.md).
 
+**UX-04 — Model Workspace Visual & Interaction Refinement: FROZEN.** The
+selection/highlight and Browser/Inspector slices passed a final clean Debug
+build, 952/952 CTest tests and the owner Experience Gate. See the
+[UX-04 validation](docs/UX_04_FINAL_VALIDATION.md). UX-03 Export UX is the
+next candidate, not yet authorized. Manual Windows 125%/150% scaling remains
+unverified.
+
 **Micro SolidWorks v1.1.0 — FROZEN.** That earlier release combines a CAD-first
 workspace, guided sketching with constraints and dimensions, general additive
 Extrude, solid shading and face/edge selection, Feature Manager hierarchy,

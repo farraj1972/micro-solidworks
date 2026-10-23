@@ -708,3 +708,11 @@ v0.3 remains PROPOSED. V1.2-C1–C4 are complete; v1.2.0 is FROZEN under
 the owner's revised acceptance of one as-built STL with explicit pocket,
 model/sketch UX, slicer and clean-Windows waivers. Final V3 passed 927/927
 tests; see `docs/V1_2_0_RELEASE.md`. V1.3+ remains unapproved.
+
+UX-01, UX-01.R1 and UX-02 are FROZEN. UX-04.1 and UX-04.2 are COMPLETE;
+UX-04 Model Workspace Refinement is FROZEN after its clean V3 (952/952 tests,
+zero project warnings) and owner Experience Gate APPROVED. See
+`docs/UX_04_FINAL_VALIDATION.md`. UX-03 Export UX is the next candidate,
+NOT STARTED and not yet authorized. The UI/UX v0.3 package remains a
+PROPOSED design reference, and manual Windows 125%/150% scale evidence is
+NOT VERIFIED.

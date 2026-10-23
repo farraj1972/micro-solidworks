@@ -2,6 +2,8 @@
 
 Status: **READY FOR OWNER DECISION — recommendation only; UX-04 remains IN PROGRESS / NOT FROZEN** (2026-10-23).
 
+Subsequent owner decision: **Option B APPROVED**. [UX-04.FREEZE](UX_04_FINAL_VALIDATION.md) then passed final V3 952/952 and the owner Experience Gate and froze UX-04. The status above records the review at the time it was written; this review itself did not freeze the campaign.
+
 ## Executive summary and baseline
 
 Recommend **B — proceed to a final UX-04 validation and freeze**, without an additional executable UX-04.3. UX-04.1 and UX-04.2 corrected the demonstrated Model selection and context problems, and the owner approved both Experience Gates. No remaining P0 or demonstrated P1 blocker was found in the tested mechanical-part workflow. The remaining differences from the canonical Model image are visual refinement, scale-evidence gaps, or future capabilities. This review does not authorize or perform the freeze.
